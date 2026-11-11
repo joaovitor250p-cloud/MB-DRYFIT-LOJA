@@ -8,7 +8,7 @@ export async function ensureSalesDirectory(env){
  const now=new Date().toISOString(),statements=salesDirectoryDefaults.map(([id,name,phone])=>env.DB.prepare('INSERT INTO sales_agents (id,name,phone,created_at,updated_at) SELECT ?,?,?,?,? WHERE NOT EXISTS (SELECT 1 FROM sales_directory_bootstrap WHERE id=?) ON CONFLICT(id) DO NOTHING').bind('agent-'+id,name,phone,now,now,'mb-initial-team'));
  statements.push(env.DB.prepare('INSERT INTO sales_directory_bootstrap (id,created_at) VALUES (?,?) ON CONFLICT(id) DO NOTHING').bind('mb-initial-team',now));await env.DB.batch(statements);
 }
-export async function publicSalesAgents(env){await ensureSalesDirectory(env);const {results}=await env.DB.prepare("SELECT id,name,phone FROM sales_agents WHERE active=1 AND whatsapp_enabled=1 AND phone!='' ORDER BY name COLLATE NOCASE").all();return results}
+export async function publicSalesAgents(env){await ensureSalesDirectory(env);const {results}=await env.DB.prepare("SELECT id,name,phone,photo FROM sales_agents WHERE active=1 AND whatsapp_enabled=1 AND phone!='' ORDER BY name COLLATE NOCASE").all();return results.map(a=>({...a,photo:a.photo?'/api/shop/seller-photo/'+a.id:null}))}
 function agentInput(input,previous={}){
  const name=String(input.name??previous.name??'').trim(),raw=String(input.phone??previous.phone??'').replace(/\D/g,''),phone=raw?raw.startsWith('55')&&raw.length>=12?raw:'55'+raw:'',email=String(input.member_email??previous.member_email??'').trim().toLowerCase()||null;
  if(!name||name.length>80)throw Error('Informe um nome de até 80 caracteres.');
@@ -17,7 +17,7 @@ function agentInput(input,previous={}){
  for(const key of ['active','whatsapp_enabled'])if(input[key]!==undefined&&typeof input[key]!=='boolean')throw Error('Confira as opções do vendedor.');
  const active=input.active===undefined?(previous.active??1):Number(input.active),whatsapp=input.whatsapp_enabled===undefined?(previous.whatsapp_enabled??1):Number(input.whatsapp_enabled);
  if(active&&whatsapp&&!phone)throw Error('Informe o número para exibir no WhatsApp.');
- return {name,phone,member_email:email,active,whatsapp_enabled:whatsapp};
+ const photo=input.photo===undefined?(previous.photo||null):input.photo||null;if(photo!==null&&!/^\/api\/photos\/[a-zA-Z0-9-]+$/.test(photo))throw Error('Confira a foto do vendedor.');return {name,phone,member_email:email,active,whatsapp_enabled:whatsapp,photo};
 }
 export async function handleSalesAgents(req,env,member){
  try{
@@ -28,8 +28,8 @@ export async function handleSalesAgents(req,env,member){
   if(!['POST','PUT','DELETE'].includes(req.method)||req.method==='POST'&&id||req.method!=='POST'&&!id)return agentReply({error:'Operação inválida.'},405);
   const previous=id?await env.DB.prepare('SELECT * FROM sales_agents WHERE id=?').bind(id).first():null;if(id&&!previous)return agentReply({error:'Vendedor não encontrado.'},404);
   const input=req.method==='DELETE'?{active:false,whatsapp_enabled:false}:await req.json(),data=agentInput(input,previous||{}),agentId=id||crypto.randomUUID(),now=new Date().toISOString();
-  if(id)await env.DB.prepare('UPDATE sales_agents SET name=?,phone=?,member_email=?,active=?,whatsapp_enabled=?,updated_at=? WHERE id=?').bind(data.name,data.phone,data.member_email,data.active,data.whatsapp_enabled,now,id).run();
-  else await env.DB.prepare('INSERT INTO sales_agents (id,name,phone,member_email,active,whatsapp_enabled,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)').bind(agentId,data.name,data.phone,data.member_email,data.active,data.whatsapp_enabled,now,now).run();
+  if(id)await env.DB.prepare('UPDATE sales_agents SET name=?,phone=?,member_email=?,active=?,whatsapp_enabled=?,photo=?,updated_at=? WHERE id=?').bind(data.name,data.phone,data.member_email,data.active,data.whatsapp_enabled,data.photo,now,id).run();
+  else await env.DB.prepare('INSERT INTO sales_agents (id,name,phone,member_email,active,whatsapp_enabled,photo,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)').bind(agentId,data.name,data.phone,data.member_email,data.active,data.whatsapp_enabled,data.photo,now,now).run();
   return agentReply({id:agentId,...data},id?200:201);
  }catch(error){return agentReply({error:String(error.message).includes('UNIQUE')?'Esse e-mail já está vinculado a outro vendedor ativo.':/^(Informe|Confira)/.test(error.message)?error.message:'Não foi possível salvar o vendedor.'},400)}
 }
