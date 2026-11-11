@@ -178,3 +178,30 @@ html[data-theme=dark] .operations-metric,html[data-theme=dark] .operations-short
 @media(max-width:800px){.staff-workspace .shell{grid-template-columns:minmax(0,1fr)}.staff-workspace .topbar{height:auto;min-height:72px;gap:10px}.operations-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}.operations-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.operations-heading{align-items:flex-start;flex-direction:column;gap:12px}.operations-heading h1{font-size:25px}.staff-workspace .workspace{padding:22px 14px}.operations-shortcuts>button{padding:13px 10px}.operations-shortcuts small{font-size:9px}.staff-workspace .profile{gap:6px}.staff-workspace .profile .avatar{display:none}.operations-metric{padding:16px 13px}.operations-metric>strong{font-size:23px}.staff-workspace .workspace-search-trigger{padding:10px;min-width:38px}.staff-workspace #vendorLogout{font-size:11px;padding:9px}.registration-start .secondary{margin-left:0;width:100%}.registration-start .primary{width:100%}}
 @media(prefers-reduced-motion:reduce){.operations-shortcuts>button{transition:none}.operations-shortcuts>button:hover{transform:none}}
 }
+
+/* Brand-led refinement: retain the original retail studio components. */
+@media screen {
+.staff-workspace .operations-brand-hero{margin:0 0 26px;min-height:270px;border:1px solid #ffffff14;border-radius:18px;box-shadow:0 16px 40px #17223812}
+.operations-brand-hero .hero-copy{position:relative;z-index:2;max-width:66%}
+.staff-workspace .operations-brand-hero h2{font:800 clamp(32px,4vw,57px)/.98 'Barlow Condensed',Impact,sans-serif;letter-spacing:-.8px;margin:20px 0 14px}
+.operations-brand-hero .hero-art{opacity:.8}
+.operations-heading{margin-bottom:22px}
+.operations-heading h1{font-size:clamp(25px,2.7vw,36px);letter-spacing:-1.2px}
+.operations-shortcuts{gap:14px;margin-bottom:28px}
+.operations-shortcuts>button{padding:20px 15px;border-radius:13px;box-shadow:0 3px 12px #17223804;transition:transform .2s,box-shadow .2s,border-color .2s}
+.operations-shortcuts>button:hover{transform:translateY(-3px);box-shadow:0 10px 24px #1722380e}
+.operations-metric{position:relative;padding:22px 20px;border-radius:13px;box-shadow:0 3px 14px #17223804}
+.operations-metric:first-child{border-top:3px solid var(--orange)}
+.operations-metric>strong{font-size:clamp(24px,2.1vw,31px);margin:14px 0 10px;font-variant-numeric:tabular-nums}
+.operations-columns>.panel{border-radius:15px;padding:25px}
+.operations-list-row{padding:15px 0}
+.operations-list-row>.sale-photo{width:48px;height:62px;border-radius:8px}
+.operations-list-row b{font-weight:600}
+@keyframes operationsReveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.operations-brand-hero,.operations-shortcuts,.operations-metrics,.operations-columns{animation:operationsReveal .32s ease both}
+.operations-shortcuts{animation-delay:.04s}.operations-metrics{animation-delay:.08s}.operations-columns{animation-delay:.12s}
+@media(max-width:800px){.staff-workspace .operations-brand-hero{min-height:245px;padding:25px 22px;border-radius:14px}.operations-brand-hero .hero-copy{max-width:100%}.operations-brand-hero .hero-art{opacity:.14;position:absolute;right:-35px;pointer-events:none}.operations-brand-hero .hero-actions{gap:16px;flex-wrap:wrap}.operations-shortcuts>button{padding:17px 11px}.operations-columns>.panel{padding:20px 16px}.operations-metric{padding:18px 14px}}
+@media(prefers-reduced-motion:reduce){.operations-brand-hero,.operations-shortcuts,.operations-metrics,.operations-columns{animation:none}.operations-shortcuts>button{transition:none}.operations-shortcuts>button:hover{transform:none}}
+}
+
+@media print{#labelPhotoReview{display:none!important}}
