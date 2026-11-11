@@ -15,7 +15,7 @@ test('strict business access ignores ChatGPT identity and requires an explicitly
   const login=await call(db,'/api/staff-access/seller-login',{method:'POST',body:{},cookie:base});assert.equal(login.status,200);const seller=base+'; '+cookies(login);
   const me=await(await call(db,'/api/me',{cookie:seller})).json();assert.equal(me.role,'seller');assert.equal(me.shared_seller,1);
   for(const path of ['/api/vendor-access','/api/shop-admin/coupons','/api/owner-access'])assert.equal((await call(db,path,{cookie:seller})).status,403);
-  assert.equal((await call(db,'/api/staff-access/handoff',{method:'POST',body:{store:'her'},cookie:seller})).status,403);
+  const switchResponse=await call(db,'/api/staff-access/handoff',{method:'POST',body:{store:'her'},cookie:seller});assert.equal(switchResponse.status,200);assert.equal(JSON.parse(Buffer.from((await switchResponse.json()).ticket.split('.')[0],'base64url')).role,'seller');
  }finally{db.sql.close()}
 });
 test('one owner login opens both stores through a signed single-use transfer without copying inventory',async()=>{
@@ -36,7 +36,7 @@ test('seller mode wins over old owner cookies and wrong-store teams cannot creat
   const oldOwnerCookie=owner.cookie.split('; ').find(v=>v.startsWith('__Host-mb_owner='));const current=owner.base+'; '+oldOwnerCookie+'; '+cookies(seller);
   assert.equal((await(await call(db,'/api/me',{cookie:current})).json()).role,'seller');
   const ownerVisitingVendor=await call(db,'/vendedor',{cookie:owner.cookie});assert.equal(ownerVisitingVendor.status,302);assert.match(ownerVisitingVendor.headers.get('Location'),/modo=vendedor/);
-  const other=await account(db,'outra-equipe@example.test','b'.repeat(64));assert.equal((await call(db,'/api/staff-access/seller-login',{method:'POST',body:{},cookie:other})).status,403);
+  const other=await account(db,'outra-equipe@example.test','b'.repeat(64)),originalFetch=globalThis.fetch;try{globalThis.fetch=async()=>Response.json({active:false});assert.equal((await call(db,'/api/staff-access/seller-login',{method:'POST',body:{},cookie:other})).status,403)}finally{globalThis.fetch=originalFetch}
  }finally{db.sql.close()}
 });
 test('changing the canonical owner password revokes the owner in the other store',async()=>{

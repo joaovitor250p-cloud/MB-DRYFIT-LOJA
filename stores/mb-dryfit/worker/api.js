@@ -32,7 +32,7 @@ if(u.pathname==='/acesso'||u.pathname==='/acesso/'){
  if(unifiedStaffEnabled(env)&&env.MB_STORE_KEY==='her'){const target=new URL('https://atelier-loja-mw96xrv3.savoryaccordion3.chatgpt.site/acesso');const mode=u.searchParams.get('modo');if(mode==='dono'||mode==='vendedor')target.searchParams.set('modo',mode);target.searchParams.set('loja','her');return Response.redirect(target.href,302)}
  return new Response(STAFF_HUB,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow'}});
 }
-if(env.MB_INITIAL_VENDOR_EMAIL&&(u.pathname==='/vendedor'||u.pathname.startsWith('/api/account/')||u.pathname==='/api/vendor-access'||u.pathname.startsWith('/api/staff-access/')))await bootstrapVendorAccess(env);
+if(env.MB_INITIAL_VENDOR_EMAIL&&(u.pathname==='/vendedor'||u.pathname==='/acesso/continuar'||u.pathname.startsWith('/api/account/')||u.pathname==='/api/vendor-access'||u.pathname.startsWith('/api/staff-access/')))await bootstrapVendorAccess(env);
 if(u.pathname==='/acesso/continuar'||u.pathname.startsWith('/api/staff-access/'))return handleUnifiedStaff(req,env);
 if(u.pathname==='/conta/acao')return new Response(ACCOUNT_ACTION,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Referrer-Policy':'no-referrer','X-Robots-Tag':'noindex, nofollow'}});
 if(['/api/owner-access/login','/api/owner-access/reset-request','/api/owner-access/reset-confirm'].includes(u.pathname)){if(req.method!=='POST')return json({error:'Use POST.'},405);if(req.headers.get('Origin')!==u.origin)return json({error:'Origem inválida.'},403);return handleOwnerAccess(req,env,{}, {role:'customer'});}

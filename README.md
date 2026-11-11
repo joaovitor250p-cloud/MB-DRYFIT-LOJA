@@ -14,13 +14,13 @@ Consulta produtos, cores, tamanhos e disponibilidade; usa carrinho e favoritos e
 
 ### Vendedor
 
-Escolhe a loja, entra no acesso compartilhado daquela equipe e seleciona o nome responsável por cada venda. Pode usar o leitor USB ou a câmera do celular. A identificação do vendedor fica vinculada à venda, sem conceder acesso de dono. A unidade fica fixa durante a sessão; para trocar, use Sair da conta e entre novamente.
+Entra no acesso compartilhado da equipe e abre a MB Dryfit. Dentro do painel, escolhe a loja e seleciona o nome responsável por cada venda. Pode usar o leitor USB ou a câmera do celular. A identificação do vendedor fica vinculada à venda, sem conceder acesso de dono. Pode trocar diretamente entre MB Dryfit e MB For Her pelos controles Trocar de loja no próprio painel, sem sair ou informar outra senha, mantendo as permissões de vendedor.
 
 ### Dono
 
-Escolhe a loja de destino, entra com e-mail e uma única senha do dono na MB Dryfit. Depois pode alternar entre as duas em Lojas, sem outro login. Estoque, equipe, clientes, fotos, cupons e resultados continuam separados por loja.
+Entra com e-mail e uma única senha do dono e abre a MB Dryfit. Depois pode alternar entre as duas pelo botão Trocar de loja na barra lateral ou superior, sem outro login. Estoque, equipe, clientes, fotos, cupons e resultados continuam separados por loja.
 
-O e-mail do ChatGPT não libera os modos de negócio. O dono não precisa informar uma segunda senha nem entrar primeiro na conta dos vendedores. Ambos os modos usam os cartões de Lojas da entrada principal MB Dryfit e um login com e-mail preenchido, senha, Entrar e Esqueci minha senha. A entrada de equipe da For Her aponta para a principal. Configurações está vazia para reorganização futura. A sessão e as permissões são conferidas no servidor. O login da equipe persiste por 30 dias, com renovação durante o uso do painel, e sobrevive ao fechamento do navegador. Sair explicitamente revoga o acesso.
+O e-mail do ChatGPT não libera os modos de negócio. O dono não precisa informar uma segunda senha nem entrar primeiro na conta dos vendedores. Os novos logins abrem a MB Dryfit. Ambos os modos usam a troca de loja dentro do painel principal e têm login com e-mail preenchido, senha, Entrar e Esqueci minha senha. A entrada de equipe da For Her aponta para a principal. Configurações está vazia para reorganização futura. A sessão e as permissões são conferidas no servidor. O login da equipe persiste por 30 dias, com renovação durante o uso do painel, e sobrevive ao fechamento do navegador. Sair explicitamente revoga o acesso.
 
 O repositório privado guarda o código e é acessível com a conta GitHub autorizada. Para visualizar a loja funcionando, use os links dos catálogos acima. GitHub Pages não executa o Worker, D1 e R2 deste projeto. O GitHub Actions testa e compila o código, mas não publica automaticamente nos sites.
 
