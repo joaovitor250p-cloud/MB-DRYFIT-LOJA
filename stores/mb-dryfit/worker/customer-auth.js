@@ -15,6 +15,7 @@ function validateAccountProfile(data){const first=String(data.first_name||'').tr
 function validAccountEmail(value){const email=String(value||'').trim().toLowerCase();if(email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw Error('Informe um e-mail válido.');return email}
 function validAccountPassword(value){if(typeof value!=='string'||value.length<8||value.length>128)throw Error('Use uma senha com 8 a 128 caracteres.');return value}
 export async function handleCustomerAccount(req,env){try{const path=new URL(req.url).pathname;
+ if(env.MB_UNIFIED_STAFF==='1'&&['register','verify','profile','favorites','notifications-seen'].some(p=>path==='/api/account/'+p||path==='/api/account/firebase/profile'))return accountReply({error:'O catálogo não utiliza contas de clientes.'},410);
  if(req.method==='GET'&&path==='/api/account/me')return accountReply({user:await customerSession(req,env),email_ready:!!firebaseConfiguration(env)||mailReady(env),provider:firebaseConfiguration(env)?'firebase':'legacy'});
  if(req.method==='GET'&&path==='/api/account/firebase/config')return accountReply({config:firebaseConfiguration(env)});
  if(req.method!=='GET'&&req.headers.get('Origin')!==new URL(req.url).origin)return accountReply({error:'Origem inválida.'},403);

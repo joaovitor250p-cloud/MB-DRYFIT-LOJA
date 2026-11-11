@@ -4,23 +4,25 @@ Código da **MB Dryfit** e da **MB For Her**, reunido em um repositório privado
 
 ## Acessos publicados
 
-- [Entrada única: Cliente, Vendedor e Dono](https://atelier-loja-mw96xrv3.savoryaccordion3.chatgpt.site/acesso)
+- [Entrada da equipe: Modo dono e Modo vendedor](https://atelier-loja-mw96xrv3.savoryaccordion3.chatgpt.site/acesso)
 - [Catálogo MB Dryfit](https://atelier-loja-mw96xrv3.savoryaccordion3.chatgpt.site/catalogo)
 - [Catálogo MB For Her](https://mb-for-her.savoryaccordion3.chatgpt.site/catalogo)
 
 ### Cliente
 
-Consulta produtos, cores, tamanhos e disponibilidade; usa carrinho e favoritos e conversa com a equipe. O catálogo abre sem cadastro. Recursos pessoais, como histórico de pedidos, usam a conta do cliente.
+Consulta produtos, cores, tamanhos e disponibilidade; usa carrinho e favoritos e conversa com a equipe. O catálogo abre sem cadastro nem login. Carrinho e favoritos são individuais por navegador; não acompanham automaticamente a pessoa para outro aparelho. Nome e WhatsApp são informados somente ao continuar um pedido.
 
 ### Vendedor
 
-Escolhe a loja, entra no acesso compartilhado daquela equipe e seleciona o nome responsável por cada venda. Pode usar o leitor USB ou a câmera do celular. A identificação do vendedor fica vinculada à venda, sem conceder acesso de dono.
+Escolhe a loja, entra no acesso compartilhado daquela equipe e seleciona o nome responsável por cada venda. Pode usar o leitor USB ou a câmera do celular. A identificação do vendedor fica vinculada à venda, sem conceder acesso de dono. A unidade fica fixa durante a sessão; para trocar, use Sair da conta e entre novamente.
 
 ### Dono
 
-Faz um único login na MB Dryfit, confirma a senha exclusiva e escolhe qual loja administrar. Pode alternar entre as duas sem outro login. Estoque, equipe, clientes, fotos, cupons e resultados continuam separados por loja.
+Escolhe a loja de destino, faz um único login na MB Dryfit e confirma a senha exclusiva. Depois pode alternar entre as duas em Configurações → Escolher loja, sem outro login. Estoque, equipe, clientes, fotos, cupons e resultados continuam separados por loja.
 
-O e-mail do ChatGPT não libera os modos de negócio. A sessão e as permissões são conferidas no servidor.
+O e-mail do ChatGPT não libera os modos de negócio. A sessão e as permissões são conferidas no servidor. O login da equipe persiste por 30 dias, com renovação durante o uso do painel, e sobrevive ao fechamento do navegador. Sair explicitamente revoga o acesso.
+
+O repositório privado guarda o código e é acessível com a conta GitHub autorizada. Para visualizar a loja funcionando, use os links dos catálogos acima. GitHub Pages não executa o Worker, D1 e R2 deste projeto. O GitHub Actions testa e compila o código, mas não publica automaticamente nos sites.
 
 ## Organização
 

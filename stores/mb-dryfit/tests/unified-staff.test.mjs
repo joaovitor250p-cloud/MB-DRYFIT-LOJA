@@ -62,3 +62,27 @@ test('sales in seller mode require a real local seller name and record that name
   assert.equal(db.sql.prepare('SELECT agent_name FROM sales').get().agent_name,'Pessoa da equipe');
  }finally{db.sql.close()}
 });
+
+test('staff login persists without the Firebase cookie and expires only after the remember period or explicit logout',async()=>{
+ const db=await app('dryfit','dono@example.test');try{
+  const owner=await loginOwner(db),cookie=owner.cookie.split('; ').filter(v=>v.startsWith('__Host-mb_staff=')).join('; ');
+  const row=db.sql.prepare("SELECT * FROM staff_access_sessions WHERE role='owner'").get();assert.ok(Date.parse(row.expires_at)>Date.now()+29*86400000);
+  db.sql.prepare("UPDATE customer_sessions SET expires_at='2000-01-01'").run();assert.equal((await(await call(db,'/api/me',{cookie})).json()).role,'owner');
+  const remember=await call(db,'/api/staff-access/remember',{method:'POST',body:{},cookie});assert.equal(remember.status,200);assert.match(remember.headers.get('Set-Cookie'),/Max-Age=2592000; Secure; HttpOnly; SameSite=Lax/);
+  assert.equal((await call(db,'/api/staff-access/remember',{method:'POST',body:{},cookie,origin:'https://evil.test'})).status,403);
+  await call(db,'/api/staff-access/logout',{method:'POST',body:{},cookie});assert.equal((await call(db,'/api/me',{cookie})).status,401);assert.equal((await call(db,'/api/staff-access/remember',{method:'POST',body:{},cookie})).status,401);
+ }finally{db.sql.close()}
+});
+test('owner can switch back to Dryfit with no original browser cookie and logout revokes the whole session family',async()=>{
+ const primary=await app('dryfit','equipe@example.test'),her=await app('her','outra-equipe@example.test');try{
+  const login=await loginOwner(primary),first=await(await call(primary,'/api/staff-access/handoff',{method:'POST',body:{store:'her'},cookie:login.cookie})).json();
+  await withAuthority(primary,async()=>{
+   const remote=cookies(await redeem(her,first.ticket));
+   const renewal=await call(her,'/api/staff-access/remember',{method:'POST',body:{},cookie:remote});assert.equal(renewal.status,200);
+   const back=await(await call(her,'/api/staff-access/handoff',{method:'POST',body:{store:'dryfit'},cookie:remote})).json();assert.equal(back.action,primary.origin+'/acesso/continuar');
+   const restored=cookies(await redeem(primary,back.ticket,her.origin));assert.equal((await(await call(primary,'/api/me',{cookie:restored})).json()).role,'owner');
+   const again=await(await call(primary,'/api/staff-access/handoff',{method:'POST',body:{store:'her'},cookie:restored})).json();assert.equal((await redeem(her,again.ticket)).status,303);
+   await call(primary,'/api/staff-access/logout',{method:'POST',body:{},cookie:restored});assert.equal((await call(her,'/api/me',{cookie:remote})).status,401);assert.notEqual((await(await call(primary,'/api/me',{cookie:login.cookie})).json()).role,'owner');
+  });
+ }finally{primary.sql.close();her.sql.close()}
+});
