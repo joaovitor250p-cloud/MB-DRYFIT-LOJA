@@ -86,3 +86,15 @@ test('owner can switch back to Dryfit with no original browser cookie and logout
   });
  }finally{primary.sql.close();her.sql.close()}
 });
+
+
+test('owner signs in once with email/password, without a Firebase account session, and vendor mode cannot inherit it',async()=>{
+ const db=await app('dryfit','equipe@example.test');try{
+  assert.equal((await call(db,'/api/owner-access/login',{method:'POST',body:{email:'dono@example.test',password:'wrong-password'}})).status,401);
+  assert.equal((await call(db,'/api/owner-access/login',{method:'POST',origin:'https://evil.test',body:{email:'dono@example.test',password:ownerPassword}})).status,403);
+  const result=await call(db,'/api/owner-access/login',{method:'POST',body:{email:'DONO@example.test',password:ownerPassword}});assert.equal(result.status,200);const cookie=cookies(result);assert.match(cookie,/__Host-mb_staff=/);assert.ok(!cookie.includes('__Host-mb_session'));
+  const me=await(await call(db,'/api/me',{cookie})).json();assert.equal(me.role,'owner');assert.equal(me.owner_access,true);assert.equal(db.sql.prepare('SELECT COUNT(*) n FROM customer_sessions').get().n,0);
+  await call(db,'/api/staff-access/logout',{method:'POST',body:{},cookie});assert.equal((await call(db,'/api/me',{cookie})).status,401);
+  const base=await account(db,'equipe@example.test'),vendor=cookies(await call(db,'/api/staff-access/seller-login',{method:'POST',body:{},cookie:base}));assert.equal((await call(db,'/api/owner-access/login',{method:'POST',body:{email:'dono@example.test',password:ownerPassword},cookie:vendor})).status,409);assert.equal((await(await call(db,'/api/me',{cookie:vendor})).json()).role,'seller');
+ }finally{db.sql.close()}
+});

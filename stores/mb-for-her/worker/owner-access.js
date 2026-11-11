@@ -1,5 +1,5 @@
-import {unifiedStaffEnabled,createStaffSession,clearUnifiedStaffSession} from "./staff-access.js";
-import {authDigest,hashCustomerPassword,verifyCustomerPassword} from "./customer-auth.js";
+import {unifiedStaffEnabled,createStaffSession,clearUnifiedStaffSession,readUnifiedStaffSession} from "./staff-access.js";
+import {authDigest,hashCustomerPassword,verifyCustomerPassword,readShopJSON} from "./customer-auth.js";
 const ownerReply=(body,status=200,headers={})=>Response.json(body,{status,headers:{'Cache-Control':'no-store',...headers}});
 const ownerCookie=req=>req.headers.get('Cookie')?.match(/(?:^|;\s*)__Host-mb_owner=([a-f0-9]{64})(?:;|$)/)?.[1];
 const ownerCookieClear='__Host-mb_owner=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax';
@@ -17,6 +17,18 @@ export async function resolveOwnerAccess(req,env,identity,member){
 export async function handleOwnerAccess(req,env,identity,member){
  try{
   const path=new URL(req.url).pathname,config=await env.DB.prepare("SELECT email,password_hash,revision FROM store_owner_access WHERE id='primary'").first();
+  if(path==='/api/owner-access/login'&&req.method==='POST'){
+   if(!unifiedStaffEnabled(env)||env.MB_STORE_KEY!=='dryfit')return ownerReply({error:'Use a entrada única do dono na MB Dryfit.'},409);
+   const active=await readUnifiedStaffSession(req,env);if(active?.role==='seller')return ownerReply({error:'Saia do modo vendedor antes de entrar como dono.'},409);
+   const data=await readShopJSON(req,2000),email=typeof data.email==='string'?data.email.trim().toLowerCase():'';if(email.length>254||typeof data.password!=='string'||data.password.length<8||data.password.length>128)return ownerReply({error:'Confira o e-mail e a senha do dono.'},400);
+   const now=new Date().toISOString(),expires=new Date(Date.now()+900000).toISOString(),throttle=await authDigest('owner-single-login:'+(req.headers.get('CF-Connecting-IP')||'unknown'));
+   await env.DB.prepare('INSERT INTO auth_throttles (id,attempts,expires_at) VALUES (?,1,?) ON CONFLICT(id) DO UPDATE SET attempts=CASE WHEN expires_at<=? THEN 1 ELSE attempts+1 END,expires_at=CASE WHEN expires_at<=? THEN excluded.expires_at ELSE expires_at END').bind(throttle,expires,now,now).run();
+   if((await env.DB.prepare('SELECT attempts FROM auth_throttles WHERE id=?').bind(throttle).first()).attempts>10)return ownerReply({error:'Muitas tentativas. Aguarde 15 minutos para tentar novamente.'},429);
+   const valid=await verifyCustomerPassword(data.password,config?.password_hash||'');if(!valid||email!==config?.email)return ownerReply({error:'E-mail ou senha do dono incorretos.'},401);
+   const person=await env.DB.prepare('SELECT id FROM members WHERE lower(email)=?').bind(email).first(),uid=person?.id||'staff-'+crypto.randomUUID();
+   await env.DB.batch([env.DB.prepare("INSERT INTO members(id,email,role,shared_seller) VALUES (?,?,'customer',0) ON CONFLICT(id) DO NOTHING").bind(uid,email),env.DB.prepare('DELETE FROM auth_throttles WHERE id=?').bind(throttle)]);
+   const session=await createStaffSession(env,{uid,email,role:'owner',owner_revision:config.revision});return ownerReply({ok:true},200,{'Set-Cookie':session.cookie});
+  }
   if(path.endsWith('/status')&&req.method==='GET')return ownerReply({configured:!!config});
   if(path.endsWith('/logout')&&req.method==='POST'){const response=ownerReply({ok:true},200,{'Set-Cookie':await clearOwnerAccess(req,env)});if(unifiedStaffEnabled(env))response.headers.append('Set-Cookie',await clearUnifiedStaffSession(req,env));return response;}
   if(path.endsWith('/unlock')&&req.method==='POST'){

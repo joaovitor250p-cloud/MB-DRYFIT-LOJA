@@ -18,9 +18,9 @@ Escolhe a loja, entra no acesso compartilhado daquela equipe e seleciona o nome 
 
 ### Dono
 
-Escolhe a loja de destino, faz um único login na MB Dryfit e confirma a senha exclusiva. Depois pode alternar entre as duas em Configurações → Escolher loja, sem outro login. Estoque, equipe, clientes, fotos, cupons e resultados continuam separados por loja.
+Escolhe a loja de destino, entra com e-mail e uma única senha do dono na MB Dryfit. Depois pode alternar entre as duas em Configurações → Escolher loja, sem outro login. Estoque, equipe, clientes, fotos, cupons e resultados continuam separados por loja.
 
-O e-mail do ChatGPT não libera os modos de negócio. A sessão e as permissões são conferidas no servidor. O login da equipe persiste por 30 dias, com renovação durante o uso do painel, e sobrevive ao fechamento do navegador. Sair explicitamente revoga o acesso.
+O e-mail do ChatGPT não libera os modos de negócio. O dono não precisa informar uma segunda senha nem entrar primeiro na conta dos vendedores. A sessão e as permissões são conferidas no servidor. O login da equipe persiste por 30 dias, com renovação durante o uso do painel, e sobrevive ao fechamento do navegador. Sair explicitamente revoga o acesso.
 
 O repositório privado guarda o código e é acessível com a conta GitHub autorizada. Para visualizar a loja funcionando, use os links dos catálogos acima. GitHub Pages não executa o Worker, D1 e R2 deste projeto. O GitHub Actions testa e compila o código, mas não publica automaticamente nos sites.
 
