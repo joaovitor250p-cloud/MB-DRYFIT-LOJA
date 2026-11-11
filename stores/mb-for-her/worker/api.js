@@ -25,10 +25,14 @@ const ZXING_SOURCE="__ZXING_SOURCE__";
 const QZ_SOURCE="__QZ_SOURCE__";
 const json=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store'}});
 export function validate(p){if(!p||typeof p.name!=='string'||!p.name.trim()||p.name.length>120)throw Error('Informe um nome de até 120 caracteres.');if(!Number.isInteger(p.price)||p.price<0||p.price>999999999)throw Error('Preço inválido.');if(!Number.isInteger(p.stock)||p.stock<0||p.stock>999999)throw Error('Estoque inválido.');if(p.barcode&&!/^[A-Z0-9 .$/+%\-]{1,48}$/.test(p.barcode))throw Error('Código inválido. Use letras maiúsculas e números.');if(p.brand&&!['Nike','Adidas','Jordan','Puma','On','Outra'].includes(p.brand))throw Error('Marca inválida.');return {brand:p.brand||'',size:String(p.size||'').trim().slice(0,30),color:String(p.color||'').trim().slice(0,50),name:p.name.trim(),description:String(p.description||'').slice(0,3000),category:String(p.category||'Geral').slice(0,60),price:p.price,stock:p.stock,barcode:String(p.barcode||'').trim().slice(0,48),extra_code:String(p.extra_code||'').slice(0,40),photo:p.photo||null,active:p.active===false?0:1};}
+export function staffLoginHTML(template,email){return template.replace('__STAFF_LOGIN_EMAIL__',String(email).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c])))}
 export default {async fetch(req,env){const u=new URL(req.url);try{
 if(env.MB_OWNER_SETUP_JSON&&(u.pathname.startsWith('/api/')||u.pathname==='/gestao'||u.pathname==='/dono'))await bootstrapOwnerCredentials(env);
 if(u.pathname==='/')return Response.redirect(u.origin+'/catalogo',302);
-if(u.pathname==='/acesso'||u.pathname==='/acesso/')return new Response(STAFF_HUB,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow'}});
+if(u.pathname==='/acesso'||u.pathname==='/acesso/'){
+ if(unifiedStaffEnabled(env)&&env.MB_STORE_KEY==='her'){const target=new URL('https://atelier-loja-mw96xrv3.savoryaccordion3.chatgpt.site/acesso');const mode=u.searchParams.get('modo');if(mode==='dono'||mode==='vendedor')target.searchParams.set('modo',mode);target.searchParams.set('loja','her');return Response.redirect(target.href,302)}
+ return new Response(STAFF_HUB,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow'}});
+}
 if(env.MB_INITIAL_VENDOR_EMAIL&&(u.pathname==='/vendedor'||u.pathname.startsWith('/api/account/')||u.pathname==='/api/vendor-access'||u.pathname.startsWith('/api/staff-access/')))await bootstrapVendorAccess(env);
 if(u.pathname==='/acesso/continuar'||u.pathname.startsWith('/api/staff-access/'))return handleUnifiedStaff(req,env);
 if(u.pathname==='/conta/acao')return new Response(ACCOUNT_ACTION,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Referrer-Policy':'no-referrer','X-Robots-Tag':'noindex, nofollow'}});
@@ -43,7 +47,7 @@ if(u.pathname==='/vendor/zxing-browser.min.js')return new Response(ZXING_SOURCE,
 if(u.pathname==='/vendor/qz-tray.js')return new Response(QZ_SOURCE,{headers:{'Content-Type':'text/javascript; charset=utf-8','Cache-Control':'private, max-age=3600'}});
 if(u.pathname.startsWith('/brand-assets/'))return serveBrandAsset(req,BRAND_ASSETS[u.pathname.slice('/brand-assets/'.length)]);
 if(u.pathname==='/dono'&&unifiedStaffEnabled(env)&&env.MB_STORE_KEY==='her')return Response.redirect('https://atelier-loja-mw96xrv3.savoryaccordion3.chatgpt.site/dono?loja=her',302);
-if(u.pathname==='/dono')return new Response(OWNER_LOGIN,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow'}});
+if(u.pathname==='/dono'){const access=await env.DB.prepare("SELECT email FROM store_owner_access WHERE id='primary'").first();return new Response(staffLoginHTML(OWNER_LOGIN,access?.email||'mbdryfit78@gmail.com'),{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow'}})}
 if(u.pathname==='/catalogo'||u.pathname==='/catalogo/')return new Response(STOREFRONT,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}});
 if(u.pathname==='/api/catalog/products'){
 if(req.method!=='GET')return json({error:'Método não permitido.'},405);
@@ -55,7 +59,7 @@ if(!u.pathname.startsWith('/api/')){
 const identity=await staffRequestIdentity(req,env),user=identity.uid,email=identity.email;
 if(!unifiedStaffEnabled(env))await bootstrapStoreOwner(env,identity);
 if(user&&email){const person=await env.DB.prepare('SELECT * FROM members WHERE id=?').bind(user).first(),invite=person?null:await env.DB.prepare('SELECT role,shared_seller FROM invitations WHERE email=?').bind(email).first();const effective=await resolveOwnerAccess(req,env,identity,person||{id:user,email,role:invite?.role||'customer',shared_seller:invite?.shared_seller||0});if(u.pathname==='/vendedor'&&effective.role==='owner'&&unifiedStaffEnabled(env))return Response.redirect('https://atelier-loja-mw96xrv3.savoryaccordion3.chatgpt.site/acesso?modo=vendedor&loja='+env.MB_STORE_KEY,302);if(effective.role==='owner'||effective.role==='seller'&&u.pathname!=='/gestao')return new Response(HTML,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}});if(u.pathname==='/gestao')return Response.redirect(u.origin+'/dono',302)}
-if(u.pathname==='/vendedor')return new Response(VENDOR_LOGIN,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}});
+if(u.pathname==='/vendedor'){const access=await env.DB.prepare("SELECT email FROM vendor_access WHERE id='shared'").first();return new Response(staffLoginHTML(VENDOR_LOGIN,access?.email||(env.MB_STORE_KEY==='her'?'mbdryfit79@gmail.com':'mbdryfit78@gmail.com')),{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}})}
 if(u.pathname==='/gestao')return new Response(TEAM_LOGIN,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}});return Response.redirect(u.origin+'/catalogo',302);}
 
 // Public catalog is read-only. Management requests require platform identity and server-side roles.

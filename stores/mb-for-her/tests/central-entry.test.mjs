@@ -1,0 +1,8 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {setup} from './erp.test.mjs';import worker,{staffLoginHTML} from '../worker/api.js';import {readFileSync} from 'node:fs';import {parseHTML} from 'linkedom';
+test('For Her staff entry points to the central MB Dryfit store chooser and preserves the access mode',async()=>{
+ const db=setup();Object.assign(db.env,{MB_UNIFIED_STAFF:'1',MB_STORE_KEY:'her'});try{const r=await worker.fetch(new Request('https://mb-for-her.savoryaccordion3.chatgpt.site/acesso?modo=vendedor'),db.env);assert.equal(r.status,302);assert.equal(r.headers.get('Location'),'https://atelier-loja-mw96xrv3.savoryaccordion3.chatgpt.site/acesso?modo=vendedor&loja=her');const publicCatalog=await worker.fetch(new Request('https://mb-for-her.savoryaccordion3.chatgpt.site/'),db.env);assert.equal(publicCatalog.headers.get('Location'),'https://mb-for-her.savoryaccordion3.chatgpt.site/catalogo')}finally{db.sql.close()}
+});
+test('login fills the configured email safely and never fills a password',()=>{
+ for(const email of ['mbdryfit78@gmail.com','mbdryfit79@gmail.com','other+store@example.test']){const rendered=staffLoginHTML(readFileSync('worker/vendor-login.html','utf8'),email),{document}=parseHTML(rendered);assert.equal(document.querySelector('#email').value,email);assert.equal(document.querySelector('input[type=password]').getAttribute('value'),null)}
+ const {document}=parseHTML(staffLoginHTML('<input id="email" value="__STAFF_LOGIN_EMAIL__">','\"><img src=x onerror=alert(1)>'));assert.equal(document.querySelectorAll('img').length,0);assert.equal(document.querySelector('#email').value,'\"><img src=x onerror=alert(1)>');
+});

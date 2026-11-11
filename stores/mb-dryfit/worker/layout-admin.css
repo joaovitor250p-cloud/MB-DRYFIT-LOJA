@@ -1,0 +1,89 @@
+/* Shared staff layout. Screen-only: physical label dimensions remain in print CSS. */
+@media screen {
+.staff-workspace{--radius:16px;--shadow:0 8px 28px #17223808;font-size:14px;line-height:1.5}
+.staff-workspace *{box-sizing:border-box}
+.staff-workspace .shell{grid-template-columns:260px minmax(0,1fr);min-height:100svh}
+.staff-workspace .shell>aside{padding:30px 18px 22px;border-color:var(--line);box-shadow:none}
+.staff-workspace .brand{font-size:36px;padding:0 14px 26px;border:0}
+.staff-workspace .store-switch{padding:18px;border-radius:14px;margin:0 0 24px;border-color:var(--line)}
+.staff-workspace .sidebar-store-name{font-size:18px;letter-spacing:-.4px}
+.staff-workspace .store-switch>a{width:100%;text-align:center;border-radius:8px;min-height:40px}
+.staff-workspace .nav{gap:5px;margin:0}
+.staff-workspace .nav button{min-height:46px;border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.4}
+.staff-workspace .nav button.on{background:color-mix(in srgb,var(--orange) 13%,transparent);color:var(--orange);box-shadow:none;border:1px solid color-mix(in srgb,var(--orange) 18%,transparent)}
+.staff-workspace .nav button:not(.on):hover{background:var(--bg);color:var(--ink)}
+.staff-workspace .topbar{position:sticky;top:0;z-index:40;min-height:84px;height:auto;padding:18px clamp(20px,3vw,44px);gap:18px;background:var(--panel,#fff)}
+.staff-workspace #breadcrumb{font-size:16px;letter-spacing:-.35px}
+.staff-workspace .profile{gap:14px;min-width:0}
+.staff-workspace #identity{font-size:12px!important;max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.staff-workspace #role{font-size:10px;display:block;margin-top:2px}
+.staff-workspace .avatar{border-radius:12px;width:40px;height:40px;background:var(--bg);color:var(--orange)}
+.staff-workspace .workspace{max-width:1520px;padding:36px clamp(20px,3vw,44px) 24px;margin:auto}
+.staff-workspace .heading{gap:20px;align-items:center;margin-bottom:24px;flex-wrap:wrap}
+.staff-workspace .heading h2{font-size:clamp(22px,2.1vw,30px);line-height:1.2;letter-spacing:-.8px;margin:6px 0}
+.staff-workspace .sub{line-height:1.8;max-width:72ch}
+.staff-workspace .eyebrow{font-size:9px;letter-spacing:1.7px}
+.staff-workspace .panel{padding:26px;border-radius:var(--radius);border:1px solid var(--line);box-shadow:var(--shadow);margin-bottom:22px;min-width:0}
+.staff-workspace .primary,.staff-workspace .secondary{min-height:42px;border-radius:9px;padding:11px 17px;font-size:12px;line-height:1.4;display:inline-flex;align-items:center;justify-content:center;gap:8px;max-width:100%;white-space:normal}
+.staff-workspace .primary{background:var(--orange);color:#11151a;box-shadow:0 4px 12px color-mix(in srgb,var(--orange) 14%,transparent)}
+.staff-workspace .secondary{border:1px solid var(--line);box-shadow:none}
+.staff-workspace button{transition:background .16s ease,transform .16s ease,box-shadow .16s ease}
+.staff-workspace button:not(:disabled):active{transform:translateY(1px)}
+.staff-workspace label{font-size:12px;line-height:1.6}
+.staff-workspace input,.staff-workspace select,.staff-workspace textarea{min-height:44px;border-radius:9px;padding:11px 13px;border:1px solid var(--line);min-width:0;max-width:100%;font-size:14px;color:var(--ink)}
+.staff-workspace input:focus,.staff-workspace select:focus,.staff-workspace textarea:focus{outline:2px solid color-mix(in srgb,var(--orange) 35%,transparent);outline-offset:2px;border-color:var(--orange)}
+.staff-workspace input[type=checkbox]{min-height:18px;width:18px;accent-color:var(--orange)}
+.staff-workspace input[type=file]{height:auto;white-space:normal;padding:10px}
+.staff-workspace .toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:20px 0}
+.staff-workspace .search{flex:1 1 250px;width:auto;max-width:100%}
+.staff-workspace .chips,.staff-workspace .catalog-areas{display:flex;gap:8px;flex-wrap:wrap}
+.staff-workspace .chips button{border-radius:8px;min-height:38px;font-size:11px}
+.staff-workspace .grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:20px}
+.staff-workspace .card{border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);min-width:0}
+.staff-workspace .card .photo{aspect-ratio:4/3;height:auto;min-height:180px;background:var(--bg)}
+.staff-workspace .card .photo img{width:100%;height:100%;object-fit:contain}
+.staff-workspace .card .body{padding:20px}
+.staff-workspace .card h3{font-size:14px;line-height:1.6;overflow-wrap:anywhere}
+.staff-workspace .card-actions{display:flex;flex-wrap:wrap;gap:8px}
+.staff-workspace .card-actions>button{flex:1 1 auto;font-size:11px;min-height:38px}
+.staff-workspace .stats,.staff-workspace .sales-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.staff-workspace .stat,.staff-workspace .sales-stat{padding:24px;border-radius:16px;min-width:0;border:1px solid var(--line);box-shadow:var(--shadow)}
+.staff-workspace .stat strong,.staff-workspace .sales-stat>strong{font-size:clamp(23px,2.2vw,36px);overflow-wrap:anywhere;letter-spacing:-1px}
+.staff-workspace .stat small{line-height:1.6}
+.staff-workspace .dashboard-title h1{font-size:clamp(28px,3vw,39px);letter-spacing:-1.3px;line-height:1.2;max-width:760px}
+.staff-workspace .dashboard-date{border:1px solid var(--line);border-radius:30px;padding:9px 14px;font-size:10px;white-space:nowrap}
+.staff-workspace .command-hero{border-radius:20px;padding:38px;min-height:300px;overflow:hidden;background:linear-gradient(115deg,#11171d,#25303a)}
+.staff-workspace .command-hero h2{font-size:clamp(38px,4vw,62px);line-height:1;letter-spacing:-1px}
+.staff-workspace .command-hero p{font-size:13px;line-height:1.8;color:#c8cdd1}
+.staff-workspace .workflow-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.staff-workspace .workflow-card{padding:22px 18px;border:1px solid var(--line);border-radius:14px;min-width:0;box-shadow:var(--shadow)}
+.staff-workspace .workflow-card h3{font-size:13px;line-height:1.5}.staff-workspace .workflow-card p{font-size:11px;line-height:1.7}
+.staff-workspace .table-wrap{max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain;border-radius:10px;scrollbar-width:thin}
+.staff-workspace table{width:100%;border-collapse:collapse;font-size:12px}
+.staff-workspace table th{font-size:10px;letter-spacing:.3px;padding:14px 12px;white-space:nowrap}
+.staff-workspace table td{padding:16px 12px;vertical-align:middle;line-height:1.6}
+.staff-workspace .table-wrap table{min-width:600px}
+.staff-workspace .table-wrap:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+.staff-workspace .pos-layout{grid-template-columns:minmax(0,1.25fr) minmax(310px,.85fr);gap:24px;align-items:start}
+.staff-workspace .pos-cart{position:sticky;top:106px}
+.staff-workspace .scan{font-size:clamp(20px,2.4vw,31px);padding:17px;min-height:70px;letter-spacing:-.5px;color:var(--ink)}
+.staff-workspace .scan-piece{gap:20px;align-items:center}.staff-workspace .scan-piece>img{border-radius:12px;object-fit:contain;background:var(--bg)}
+.staff-workspace .sale-line{gap:12px;padding:16px 0}.staff-workspace .pos-total{padding:22px 0;margin:12px 0;border-top:1px solid var(--line)}
+.staff-workspace .sales-period-form{grid-template-columns:repeat(2,minmax(0,1fr)) minmax(160px,1fr) minmax(160px,1fr) auto;gap:12px}
+.staff-workspace .sales-results-grid,.staff-workspace .dashboard-bottom{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px}
+.staff-workspace .seller-card{border-radius:16px;padding:24px}.staff-workspace .sales-agent-cards{gap:20px}
+.staff-workspace dialog{border:1px solid var(--line);border-radius:18px;padding:28px;width:min(840px,calc(100vw - 40px));max-height:calc(100dvh - 48px);overflow-y:auto;color:var(--ink);box-shadow:0 24px 90px #0004}
+.staff-workspace dialog::backdrop{background:#111b2966;backdrop-filter:blur(4px)}
+.staff-workspace .modal-head{gap:20px;align-items:center;margin-bottom:24px}
+.staff-workspace .modal-head h2{font-size:24px;line-height:1.25;letter-spacing:-.6px}
+.staff-workspace .form-grid{gap:20px}.staff-workspace .help{font-size:11px;line-height:1.8}
+.staff-workspace .color-builder{padding:20px;border-radius:12px}.staff-workspace .size-cell{border-radius:9px;padding:12px;min-width:0}
+.staff-workspace .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.staff-workspace .footer{padding:28px 0 0;font-size:10px;gap:14px;line-height:1.7}
+@media(min-width:1500px){.staff-workspace .workspace{padding-top:44px}.staff-workspace .grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:1200px){.staff-workspace .stats,.staff-workspace .sales-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.staff-workspace .workflow-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.staff-workspace .sales-period-form{grid-template-columns:repeat(2,minmax(0,1fr))}.staff-workspace .sales-period-form>button{grid-column:1/-1}.staff-workspace .pos-layout{grid-template-columns:1fr}.staff-workspace .pos-cart{position:static}}
+@media(max-width:900px){.staff-workspace .shell{display:block}.staff-workspace .shell>aside{padding:28px 18px;z-index:1200}.staff-workspace .workspace{padding:26px 20px}.staff-workspace .topbar{padding:14px 20px;min-height:76px}.staff-workspace .dashboard-bottom,.staff-workspace .sales-results-grid{grid-template-columns:1fr}.staff-workspace .command-hero{padding:30px}.staff-workspace .hero-art{opacity:.3}}
+@media(max-width:600px){.staff-workspace .workspace{padding:22px 14px}.staff-workspace .topbar{padding:12px 14px;gap:10px;min-height:72px}.staff-workspace #breadcrumb{font-size:12px}.staff-workspace .topbar .eyebrow{font-size:7px;letter-spacing:1px}.staff-workspace #identity{font-size:10px!important;max-width:115px}.staff-workspace #role{font-size:8px;max-width:120px}.staff-workspace .profile{gap:8px}.staff-workspace #vendorLogout{padding:9px;min-height:38px;font-size:9px}.staff-workspace .panel{padding:20px 16px;border-radius:14px;margin-bottom:16px}.staff-workspace .heading{gap:14px;margin-bottom:20px}.staff-workspace .heading h2{font-size:24px}.staff-workspace .heading>div{min-width:0}.staff-workspace .sub{font-size:12px}.staff-workspace .toolbar{align-items:stretch}.staff-workspace .search{flex-basis:100%}.staff-workspace .toolbar>.primary,.staff-workspace .toolbar>.secondary{flex:1}.staff-workspace .grid{grid-template-columns:1fr;gap:16px}.staff-workspace .card .photo{aspect-ratio:4/3;min-height:0}.staff-workspace .stats,.staff-workspace .sales-summary{gap:10px}.staff-workspace .stat,.staff-workspace .sales-stat{padding:18px 14px;border-radius:13px}.staff-workspace .stat strong,.staff-workspace .sales-stat>strong{font-size:25px}.staff-workspace .stat>span,.staff-workspace .sales-stat>span{font-size:10px}.staff-workspace .dashboard-date{display:none}.staff-workspace .dashboard-title h1{font-size:29px}.staff-workspace .command-hero{padding:28px 22px;min-height:280px;border-radius:16px}.staff-workspace .command-hero h2{font-size:42px}.staff-workspace .hero-copy{max-width:100%}.staff-workspace .hero-copy p{max-width:34ch}.staff-workspace .hero-art{opacity:.12}.staff-workspace .hero-actions{gap:14px}.staff-workspace .workflow-grid{gap:10px}.staff-workspace .workflow-card{padding:18px 14px;min-height:150px}.staff-workspace .workflow-card h3{font-size:12px}.staff-workspace .workflow-card p{font-size:10px}.staff-workspace .workflow-number{font-size:20px}.staff-workspace .section-line{gap:14px;flex-wrap:wrap}.staff-workspace .section-line h2{font-size:21px}.staff-workspace input,.staff-workspace select,.staff-workspace textarea{font-size:16px}.staff-workspace .scan{font-size:24px;min-height:68px}.staff-workspace .pos-layout{gap:0}.staff-workspace .scan-piece{grid-template-columns:1fr}.staff-workspace .scan-piece>img{width:100%;max-height:280px}.staff-workspace .sale-line{flex-wrap:wrap}.staff-workspace .sales-period-form{gap:12px}.staff-workspace .sales-presets{gap:8px}.staff-workspace .sales-presets button{flex:1 1 42%;font-size:11px}.staff-workspace .table-wrap table{min-width:560px}.staff-workspace table th{font-size:9px}.staff-workspace table td{font-size:11px;padding:13px 10px}.staff-workspace dialog{padding:22px 16px;width:calc(100vw - 20px);max-height:calc(100dvh - 24px);border-radius:15px}.staff-workspace .modal-head h2{font-size:23px}.staff-workspace .form-grid{grid-template-columns:1fr;gap:17px}.staff-workspace .form-grid .wide{grid-column:auto}.staff-workspace .color-builder{padding:16px 12px}.staff-workspace .color-builder-head{flex-wrap:wrap;gap:12px}.staff-workspace .size-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.staff-workspace .actions>.primary,.staff-workspace .actions>.secondary{flex:1}.staff-workspace .footer{flex-direction:column;align-items:flex-start}.staff-workspace .store-switch{display:block}.staff-workspace .store-switch small{text-align:left;display:block;margin-top:8px}}
+@media(max-width:360px){.staff-workspace .topbar #role{display:none}.staff-workspace #identity{max-width:86px}.staff-workspace .stats,.staff-workspace .sales-summary{grid-template-columns:1fr}.staff-workspace .workflow-grid{grid-template-columns:1fr}.staff-workspace .sales-period-form{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.staff-workspace button{transition:none}}
+}
