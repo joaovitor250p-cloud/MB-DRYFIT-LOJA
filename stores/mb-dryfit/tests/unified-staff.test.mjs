@@ -56,7 +56,8 @@ test('sales in seller mode require a real local seller name and record that name
   const agent=await(await call(db,'/api/sales-agents',{method:'POST',cookie:owner.cookie,body:{name:'Pessoa da equipe',phone:'11988887777',whatsapp_enabled:true}})).json();
   assert.equal((await call(db,'/api/products',{method:'POST',cookie:owner.cookie,body:{name:'Modelo teste',price:5000,stock:2,color:'Preto',size:'M'}})).status,201);
   const [product]=await(await call(db,'/api/products',{cookie:owner.cookie})).json();
-  const response=await call(db,'/api/staff-access/seller-login',{method:'POST',body:{},cookie:owner.base}),seller=owner.base+'; '+cookies(response),payload={request_id:'unified-vendor-sale-001',items:[{barcode:product.barcode,quantity:1}]};
+  assert.equal((await call(db,'/api/retail/cash/open',{method:'POST',cookie:owner.cookie,body:{request_id:'strict-pos-cash-0001',opening_balance:0}})).status,201);
+  const response=await call(db,'/api/staff-access/seller-login',{method:'POST',body:{},cookie:owner.base}),seller=owner.base+'; '+cookies(response),payload={request_id:'unified-vendor-sale-001',payment_method:'pix',sale_channel:'physical',discount_percent:0,items:[{barcode:product.barcode,quantity:1}]};
   assert.equal((await call(db,'/api/sale-batches',{method:'POST',cookie:seller,body:payload})).status,400);
   assert.equal((await call(db,'/api/sale-batches',{method:'POST',cookie:seller,body:{...payload,agent_id:agent.id}})).status,201);
   assert.equal(db.sql.prepare('SELECT agent_name FROM sales').get().agent_name,'Pessoa da equipe');

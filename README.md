@@ -24,6 +24,14 @@ O e-mail do ChatGPT não libera os modos de negócio. O dono não precisa inform
 
 O repositório privado guarda o código e é acessível com a conta GitHub autorizada. Para visualizar a loja funcionando, use os links dos catálogos acima. GitHub Pages não executa o Worker, D1 e R2 deste projeto. O GitHub Actions testa e compila o código, mas não publica automaticamente nos sites.
 
+## Vendas e controle da loja
+
+Antes de vender, abra **Caixa** com o fundo inicial em dinheiro. No PDV, escolha o vendedor, o pagamento recebido, o canal física/online e o desconto percentual. A lista mostra foto, cor, tamanho, quantidade e disponibilidade da variação; o detalhe da leitura exibe a grade do modelo.
+
+**Devoluções** permite localizar a venda por código, escolher as peças e a forma do reembolso e decidir se voltam ao estoque. **Produtividade** acompanha metas mensais de valor e peças definidas pelo dono. Vendas e reembolsos são idempotentes e vinculados ao caixa, com guardas de estoque e conferência de fechamento.
+
+As lojas mantêm caixas, metas e movimentos separados. O catálogo público permanece sem alterações. Registros antigos sem canal/pagamento continuam identificados como não classificados. Veja `docs/operacoes-loja.md` em cada unidade para os detalhes.
+
 ## Organização
 
 ```text

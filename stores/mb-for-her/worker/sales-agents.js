@@ -1,11 +1,12 @@
+import {buildRetailReport} from './retail-operations.js';
 const salesDirectoryDefaults=[];
 const agentReply=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
 // Authorized initial contacts live outside migrations. The durable marker keeps
 // later owner edits/deactivations from being overwritten by a deployment or GET.
 export async function ensureSalesDirectory(env){
- if(await env.DB.prepare('SELECT id FROM sales_directory_bootstrap WHERE id=?').bind('mb-for-her-initial-team').first())return;
- const now=new Date().toISOString(),statements=salesDirectoryDefaults.map(([id,name,phone])=>env.DB.prepare('INSERT INTO sales_agents (id,name,phone,created_at,updated_at) SELECT ?,?,?,?,? WHERE NOT EXISTS (SELECT 1 FROM sales_directory_bootstrap WHERE id=?) ON CONFLICT(id) DO NOTHING').bind('agent-'+id,name,phone,now,now,'mb-for-her-initial-team'));
- statements.push(env.DB.prepare('INSERT INTO sales_directory_bootstrap (id,created_at) VALUES (?,?) ON CONFLICT(id) DO NOTHING').bind('mb-for-her-initial-team',now));await env.DB.batch(statements);
+ if(await env.DB.prepare('SELECT id FROM sales_directory_bootstrap WHERE id=?').bind('mb-initial-team').first())return;
+ const now=new Date().toISOString(),statements=salesDirectoryDefaults.map(([id,name,phone])=>env.DB.prepare('INSERT INTO sales_agents (id,name,phone,created_at,updated_at) SELECT ?,?,?,?,? WHERE NOT EXISTS (SELECT 1 FROM sales_directory_bootstrap WHERE id=?) ON CONFLICT(id) DO NOTHING').bind('agent-'+id,name,phone,now,now,'mb-initial-team'));
+ statements.push(env.DB.prepare('INSERT INTO sales_directory_bootstrap (id,created_at) VALUES (?,?) ON CONFLICT(id) DO NOTHING').bind('mb-initial-team',now));await env.DB.batch(statements);
 }
 export async function publicSalesAgents(env){await ensureSalesDirectory(env);const {results}=await env.DB.prepare("SELECT id,name,phone FROM sales_agents WHERE active=1 AND whatsapp_enabled=1 AND phone!='' ORDER BY name COLLATE NOCASE").all();return results}
 function agentInput(input,previous={}){
@@ -47,21 +48,14 @@ function salesQuery(req,member,legacy=false){
  const params=new URL(req.url).searchParams,scope=salesScope(member),start=params.get('start'),end=params.get('end'),agent=params.get('agent_id');
  if(!legacy||start||end){salesDate(start);salesDate(end);if(start>end||Number(new Date(end+'T00:00:00Z'))-Number(new Date(start+'T00:00:00Z'))>3660*86400000)throw Error('Informe um período de até dez anos, com início antes do fim.');scope.where.push('s.created_at>=? AND s.created_at<?');scope.values.push(new Date(start+'T00:00:00-03:00').toISOString(),new Date(new Date(end+'T00:00:00-03:00').getTime()+86400000).toISOString())}
  if(agent){if(!/^[a-zA-Z0-9-]{1,100}$/.test(agent))throw Error('Informe um vendedor válido.');scope.where.push('s.agent_id=?');scope.values.push(agent)}
+ const channel=params.get('channel');if(channel){if(!['physical','online','not_recorded'].includes(channel))throw Error('Informe um canal válido.');scope.where.push("COALESCE((SELECT sale_channel FROM sale_batches WHERE id=s.batch_id),'not_recorded')=?");scope.values.push(channel)}
  return {...scope,clause:scope.where.length?' WHERE '+scope.where.join(' AND '):'',start,end,agent};
 }
 export async function listSalesHistory(req,env,member,legacy=false){
  const scope=salesQuery(req,member,legacy),params=new URL(req.url).searchParams,offset=Number(params.get('offset')||0),limit=legacy?300:50;
  if(!Number.isInteger(offset)||offset<0||offset>1000000)throw Error('Informe uma página válida.');
- const {results}=await env.DB.prepare('SELECT s.*,COALESCE(s.product_name,p.name) AS name,COALESCE(s.product_color,p.color) AS color,COALESCE(s.product_size,p.size) AS size,COALESCE(s.product_photo,p.photo,p.main_photo) AS photo,COALESCE(s.agent_name,m.email) AS seller_name,m.email AS seller_email FROM sales s LEFT JOIN products p ON p.id=s.product_id LEFT JOIN members m ON m.id=s.seller_id'+scope.clause+' ORDER BY s.created_at DESC,s.id DESC LIMIT ? OFFSET ?').bind(...scope.values,limit+Number(!legacy),offset).all();
+ const {results}=await env.DB.prepare('SELECT s.*,COALESCE((SELECT payment_method FROM sale_batches WHERE id=s.batch_id),\'not_recorded\') AS payment_method,COALESCE((SELECT sale_channel FROM sale_batches WHERE id=s.batch_id),\'not_recorded\') AS sale_channel,COALESCE((SELECT SUM(quantity) FROM sale_return_items WHERE sale_id=s.id),0) AS returned_quantity,COALESCE(s.product_name,p.name) AS name,COALESCE(s.product_color,p.color) AS color,COALESCE(s.product_size,p.size) AS size,COALESCE(s.product_photo,p.photo,p.main_photo) AS photo,COALESCE(s.agent_name,m.email) AS seller_name,m.email AS seller_email FROM sales s LEFT JOIN products p ON p.id=s.product_id LEFT JOIN members m ON m.id=s.seller_id'+scope.clause+' ORDER BY s.created_at DESC,s.id DESC LIMIT ? OFFSET ?').bind(...scope.values,limit+Number(!legacy),offset).all();
  if(member.role==='customer')for(const row of results){delete row.agent_member_email;delete row.seller_email}
  return legacy?results:{items:results.slice(0,limit),has_more:results.length>limit,offset:offset+Math.min(results.length,limit)};
 }
-export async function salesReport(req,env,member){
- if(!['owner','seller'].includes(member.role))return agentReply({error:'Acesso restrito à equipe.'},403);
- try{const scope=salesQuery(req,member),totals=await env.DB.prepare('SELECT COALESCE(SUM(s.unit_price*s.quantity),0) AS gross,COALESCE(SUM(s.discount_amount),0) AS discount,COALESCE(SUM(s.unit_price*s.quantity-s.discount_amount),0) AS total,COALESCE(SUM(s.quantity),0) AS units,COUNT(DISTINCT COALESCE(s.batch_id,s.id)) AS transactions FROM sales s'+scope.clause).bind(...scope.values).first();
- const {results:agents}=await env.DB.prepare("SELECT COALESCE(s.agent_id,'account-'||s.seller_id) AS agent_key,COALESCE(MAX(a.name),MAX(s.agent_name),MAX(m.email),'Conta da equipe') AS name,COALESCE(SUM(s.unit_price*s.quantity-s.discount_amount),0) AS total,SUM(s.quantity) AS units,COUNT(DISTINCT COALESCE(s.batch_id,s.id)) AS transactions FROM sales s LEFT JOIN members m ON m.id=s.seller_id LEFT JOIN sales_agents a ON a.id=s.agent_id"+scope.clause+' GROUP BY agent_key ORDER BY total DESC,name').bind(...scope.values).all();
- const {results:monthly}=await env.DB.prepare("SELECT strftime('%Y-%m',datetime(s.created_at,'-3 hours')) AS month,COALESCE(s.agent_id,'account-'||s.seller_id) AS agent_key,COALESCE(MAX(a.name),MAX(s.agent_name),MAX(m.email),'Conta da equipe') AS name,SUM(s.unit_price*s.quantity-s.discount_amount) AS total,SUM(s.quantity) AS units,COUNT(DISTINCT COALESCE(s.batch_id,s.id)) AS transactions FROM sales s LEFT JOIN members m ON m.id=s.seller_id LEFT JOIN sales_agents a ON a.id=s.agent_id"+scope.clause+' GROUP BY month,agent_key ORDER BY month DESC,total DESC').bind(...scope.values).all();
- if(member.role==='owner'){await ensureSalesDirectory(env);const {results:directory}=await env.DB.prepare('SELECT id,name,active FROM sales_agents ORDER BY name').all();for(const a of directory){if(scope.agent&&scope.agent!==a.id)continue;const row=agents.find(row=>row.agent_key===a.id);if(row)row.active=!!a.active;else agents.push({agent_key:a.id,name:a.name,active:!!a.active,total:0,units:0,transactions:0})}agents.sort((a,b)=>b.total-a.total||a.name.localeCompare(b.name,'pt-BR'))}
- return agentReply({start:scope.start,end:scope.end,timezone:'America/Sao_Paulo',totals,agents,monthly});
- }catch(error){return agentReply({error:/^Informe/.test(error.message)?error.message:'Não foi possível consultar as vendas.'},400)}
-}
+export async function salesReport(req,env,member){if(!['owner','seller'].includes(member.role))return agentReply({error:'Acesso restrito à equipe.'},403);try{await ensureSalesDirectory(env);return agentReply(await buildRetailReport(req,env,member))}catch(error){return agentReply({error:/^(Informe|Escolha)/.test(error.message)?error.message:'Não foi possível consultar as vendas.'},400)}}
