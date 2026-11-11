@@ -115,3 +115,66 @@
 
 @media screen {html[data-theme=dark] .retail-error,html[data-theme=dark] #cashError,html[data-theme=dark] #returnError,html[data-theme=dark] #returnSearchError,html[data-theme=dark] #goalError{color:#f3ac94}html[data-theme=dark] .cash-state.open{color:#8edcb1}html[data-theme=dark] .cash-state.closed{color:#f3ac94}html[data-theme=dark] .stock-count{color:#8edcb1}}
 @media screen and (min-width:1201px){.staff-workspace .sales-period-form:has(#salesAgentFilter){grid-template-columns:repeat(5,minmax(100px,1fr)) auto}}
+
+/* Operations workspace. Kept screen-only to preserve thermal label output. */
+@media screen {
+.staff-workspace{--radius:12px;background:#f5f6f8}
+.staff-workspace .shell{grid-template-columns:244px minmax(0,1fr)}
+.staff-workspace .shell>aside{padding:22px 14px 14px;overflow-y:auto;overscroll-behavior:contain}
+.staff-workspace .brand{font-size:32px;padding:0 12px 20px}
+.staff-workspace .store-switch{padding:13px;margin-bottom:14px;border-radius:10px}
+.staff-workspace .store-switch .secondary{padding:8px 10px;width:100%;font-size:11px}
+.staff-workspace .nav{gap:3px;margin-top:0}
+.staff-workspace .nav button{padding:9px 12px;border-radius:7px;font-size:12px;min-height:39px;gap:10px}
+.staff-workspace .nav .nav-icon{width:18px;height:18px;flex-shrink:0}
+.staff-workspace .aside-bottom{padding:16px 10px 4px;margin-top:22px;font-size:9px}
+.staff-workspace .topbar{height:76px;padding:12px 26px;gap:16px;position:sticky;top:0;z-index:15}
+.staff-workspace .workspace{padding:26px;max-width:1640px}
+.workspace-search-trigger{margin-left:auto;display:flex;align-items:center;gap:9px;font-size:12px}
+.operations-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:0 0 24px}
+.operations-heading h1{font-size:clamp(23px,2.5vw,32px);line-height:1.2;letter-spacing:-1px;margin:9px 0}
+.operations-heading p{margin:7px 0 0}
+.operations-heading>.secondary{flex-shrink:0;font-size:12px}
+.operations-shortcuts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:24px}
+.operations-shortcuts>button{display:grid;grid-template-columns:34px 1fr;align-items:center;column-gap:10px;row-gap:3px;text-align:left;border:1px solid var(--line);border-radius:10px;background:#fff;padding:15px 12px;color:var(--ink);transition:border-color .15s,transform .15s}
+.operations-shortcuts>button:hover{border-color:var(--orange);transform:translateY(-2px)}
+.shortcut-icon{display:grid;place-items:center;border-radius:8px;background:color-mix(in srgb,var(--orange) 12%,transparent);color:var(--orange);width:34px;height:38px;grid-row:1/3}
+.shortcut-icon svg{width:20px;height:20px}
+.operations-shortcuts b{font-size:12px}
+.operations-shortcuts small{font-size:10px;color:var(--muted);line-height:1.4}
+.operations-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;margin-bottom:24px}
+.operations-metric{background:#fff;padding:17px 18px;border:1px solid var(--line);border-radius:10px;min-width:0}
+.operations-metric>span{display:block;font-size:11px;color:var(--muted)}
+.operations-metric>strong{display:block;font-size:clamp(22px,2vw,28px);line-height:1.25;margin:11px 0 8px;letter-spacing:-.8px;overflow-wrap:anywhere}
+.operations-metric>small{font-size:10px;color:var(--muted);line-height:1.5;display:block}
+.operations-columns{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.operations-columns>.panel{min-width:0;margin:0}
+.operations-columns h2{font-size:18px}
+.operations-list-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.operations-list-row:last-child{border-bottom:0}
+.operations-list-row>.sale-photo{width:42px;height:54px;flex-shrink:0}
+.operations-list-row>div{flex:1;min-width:0}
+.operations-list-row b{font-size:12px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.operations-list-row small{display:block;font-size:10px;color:var(--muted);margin-top:4px}
+.operations-list-row>strong{font-size:12px;white-space:nowrap}
+.registration-start{max-width:700px;padding:30px!important}
+.registration-start>.shortcut-icon{margin-bottom:22px;width:46px;height:46px}
+.registration-start .secondary{margin:12px 0 0 10px}
+#globalProductSearch{width:min(740px,96vw);max-height:90svh;padding:24px}
+#globalProductQuery{display:block;width:100%;margin-top:10px;font-size:16px}
+#globalProductSearchForm label{font-size:12px}
+.global-product-row{display:flex;gap:14px;border-bottom:1px solid var(--line);padding:18px 0}
+.global-product-row>.sale-photo{width:64px;height:84px;flex-shrink:0}
+.global-product-row>div{min-width:0;flex:1}
+.global-product-row b{font-size:13px}
+.global-product-row p{font-size:12px;margin:7px 0}
+.global-product-row small{font-size:11px;color:var(--muted);overflow-wrap:anywhere;display:block}
+.global-product-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.global-product-actions .secondary{font-size:11px;padding:8px 12px}
+html[data-theme=dark] .staff-workspace{background:var(--bg)}
+html[data-theme=dark] .operations-metric,html[data-theme=dark] .operations-shortcuts>button{background:#202225}
+@media(min-width:1440px){.operations-metrics{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media(max-width:1100px){.staff-workspace .shell{grid-template-columns:216px minmax(0,1fr)}.staff-workspace .topbar{padding:12px 18px}.staff-workspace .workspace{padding:22px 18px}.operations-columns{grid-template-columns:1fr}.workspace-search-trigger span{display:none}}
+@media(max-width:800px){.staff-workspace .shell{grid-template-columns:minmax(0,1fr)}.staff-workspace .topbar{height:auto;min-height:72px;gap:10px}.operations-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}.operations-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.operations-heading{align-items:flex-start;flex-direction:column;gap:12px}.operations-heading h1{font-size:25px}.staff-workspace .workspace{padding:22px 14px}.operations-shortcuts>button{padding:13px 10px}.operations-shortcuts small{font-size:9px}.staff-workspace .profile{gap:6px}.staff-workspace .profile .avatar{display:none}.operations-metric{padding:16px 13px}.operations-metric>strong{font-size:23px}.staff-workspace .workspace-search-trigger{padding:10px;min-width:38px}.staff-workspace #vendorLogout{font-size:11px;padding:9px}.registration-start .secondary{margin-left:0;width:100%}.registration-start .primary{width:100%}}
+@media(prefers-reduced-motion:reduce){.operations-shortcuts>button{transition:none}.operations-shortcuts>button:hover{transform:none}}
+}

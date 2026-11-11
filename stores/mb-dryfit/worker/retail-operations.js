@@ -36,6 +36,23 @@ function returnAmount(sale,already,quantity){const net=BigInt(sale.quantity*sale
 async function returnRows(env,id){return (await env.DB.prepare('SELECT ri.*,COALESCE(s.product_name,p.name) AS name,COALESCE(s.product_color,p.color) AS color,COALESCE(s.product_size,p.size) AS size,COALESCE(s.product_photo,p.photo,p.main_photo) AS photo FROM sale_return_items ri JOIN sales s ON s.id=ri.sale_id LEFT JOIN products p ON p.id=s.product_id WHERE ri.return_id=?').bind(id).all()).results}
 export async function handleRetail(req,env,member){
  const u=new URL(req.url),path=u.pathname;try{if(!['owner','seller'].includes(member.role))return retailReply({error:'Acesso restrito à equipe.'},403);
+ if(path==='/api/retail/overview'&&req.method==='GET'){
+  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()),part=k=>parts.find(p=>p.type===k).value;
+  const day=retailDate(u.searchParams.get('date')||part('year')+'-'+part('month')+'-'+part('day')),from=new Date(day.slice(0,7)+'-01T00:00:00-03:00').toISOString(),dayFrom=new Date(day+'T00:00:00-03:00').toISOString(),dayUntil=new Date(Date.parse(dayFrom)+86400000).toISOString(),next=new Date(day.slice(0,7)+'-01T12:00:00Z');next.setUTCMonth(next.getUTCMonth()+1);const until=next.toISOString().slice(0,10)+'T03:00:00.000Z';
+  const scope=member.role==='owner'?'':' AND (a.seller_id=? OR a.agent_member_email=?)',args=member.role==='owner'?[]:[member.id,member.email];
+  const [totals,inventory,cash,orders]=await Promise.all([
+   env.DB.prepare(retailActivity+` SELECT COALESCE(SUM(CASE WHEN a.activity_at>=? AND a.activity_at<? THEN a.sales_total-a.refunds ELSE 0 END),0) AS today_total,COALESCE(SUM(a.sales_total-a.refunds),0) AS month_total,COALESCE(SUM(a.sold_units-a.returned_units),0) AS month_units,COUNT(DISTINCT CASE WHEN a.sold_units>0 THEN COALESCE(a.batch_id,a.sale_id) END) AS month_transactions FROM activity a WHERE a.activity_at>=? AND a.activity_at<?`+scope).bind(dayFrom,dayUntil,from,until,...args).first(),
+   env.DB.prepare("SELECT COUNT(*) AS variants,COUNT(DISTINCT COALESCE(NULLIF(model_id,''),name)) AS models,COALESCE(SUM(MAX(0,stock-reserved_stock)),0) AS available_units,COALESCE(SUM(CASE WHEN stock-reserved_stock BETWEEN 1 AND 4 THEN 1 ELSE 0 END),0) AS low_stock,COALESCE(SUM(CASE WHEN stock-reserved_stock<=0 THEN 1 ELSE 0 END),0) AS sold_out FROM products WHERE active=1").first(),
+   env.DB.prepare("SELECT id,opened_at FROM cash_sessions WHERE status='open'").first(),
+   member.role==='owner'?env.DB.prepare("SELECT COALESCE(SUM(CASE WHEN status='requested' THEN 1 ELSE 0 END),0) AS new_orders,COALESCE(SUM(CASE WHEN status='confirmed' AND NOT EXISTS(SELECT 1 FROM shop_order_sales s WHERE s.order_id=shop_orders.id) THEN 1 ELSE 0 END),0) AS awaiting_sale FROM shop_orders").first():Promise.resolve(null)
+  ]);return retailReply({date:day,timezone:'America/Sao_Paulo',scope:member.role==='owner'?'store':'account',totals,inventory,cash,orders});
+ }
+ if(path==='/api/retail/clients'&&req.method==='GET'){
+  if(member.role!=='owner')throw retailError('Acesso restrito ao dono.',403);
+  const offset=Number(u.searchParams.get('offset')||0);if(!Number.isInteger(offset)||offset<0||offset>1000000)throw retailError('Página inválida.');
+  const rows=(await env.DB.prepare("SELECT customer_whatsapp AS whatsapp,MAX(customer_name) AS name,COUNT(*) AS orders,MAX(created_at) AS last_order FROM shop_orders WHERE customer_whatsapp!='' GROUP BY customer_whatsapp ORDER BY last_order DESC,customer_whatsapp LIMIT 51 OFFSET ?").bind(offset).all()).results;
+  return retailReply({items:rows.slice(0,50),has_more:rows.length>50,next_offset:offset+50});
+ }
  if(path==='/api/retail/cash'&&req.method==='GET'){
   const current=await env.DB.prepare("SELECT * FROM cash_sessions WHERE status='open'").first();let history=[];if(member.role==='owner'){const p=retailPeriod(req);history=(await env.DB.prepare('SELECT * FROM cash_sessions WHERE opened_at>=? AND opened_at<? ORDER BY opened_at DESC LIMIT 100').bind(p.from,p.until).all()).results}return retailReply({current:await cashSnapshot(env,current),history});
  }
