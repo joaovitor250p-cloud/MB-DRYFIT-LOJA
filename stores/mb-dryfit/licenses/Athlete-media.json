@@ -1,0 +1,52 @@
+[
+  {
+    "brand": "Puma",
+    "name": "NEYMAR JR.",
+    "file": "neymar-puma-back",
+    "cls": "puma-story",
+    "alt": "Detalhe das costas do moletom branco da coleção Neymar Jr. x Puma, com texto e símbolos da coleção",
+    "source": "https://about.puma.com/de/newsroom/news/special-meaning-behind-neymar-jrs-new-lifestyle-collection-puma",
+    "credit": "PUMA / Neymar Jr. Lifestyle, 2021",
+    "caption": "DETALHE / NEYMAR JR. × PUMA"
+  },
+  {
+    "brand": "Nike",
+    "name": "CRISTIANO<br>RONALDO",
+    "file": "ronaldo-nike-motion",
+    "cls": "nike-story",
+    "alt": "Cristiano Ronaldo com uniforme Nike na campanha Pro Genius, com fundo escuro e efeitos coloridos",
+    "source": "https://www.campaignlive.co.uk/article/nike-football-pro-genius-akqa/1399818",
+    "credit": "Nike / AKQA — Pro Genius, 2016",
+    "caption": "CAMPANHA / NIKE FOOTBALL"
+  },
+  {
+    "brand": "Adidas",
+    "name": "LIONEL MESSI",
+    "file": "messi-adidas-back",
+    "cls": "adidas-story",
+    "alt": "Lionel Messi de costas usando o uniforme rosa adidas do Inter Miami, com nome e número 10 em destaque",
+    "source": "https://marcadegol.com/2024/01/camiseta-adidas-del-inter-miami-2024-25/",
+    "credit": "adidas / Inter Miami, 2024",
+    "caption": "ADIDAS / INTER MIAMI"
+  },
+  {
+    "brand": "Jordan",
+    "name": "MICHAEL JORDAN",
+    "file": "jordan-23-archive",
+    "cls": "jordan-story",
+    "alt": "Imagem histórica de Michael Jordan de costas com a camisa número 23 do Chicago Bulls",
+    "source": "https://1tv.ge/news/36-wlis-win-nba-shi-maikl-jordanis-debiuti-shedga-video/",
+    "credit": "Arquivo Michael Jordan / 1TV",
+    "caption": "ARQUIVO / A HISTÓRIA DO NÚMERO 23"
+  },
+  {
+    "brand": "On",
+    "name": "ROGER FEDERER",
+    "file": "federer-on-campaign",
+    "cls": "on-story",
+    "alt": "Roger Federer e Zendaya na campanha Air Tennis diante da loja e do símbolo da On",
+    "source": "https://www.goodmorningamerica.com/style/story/zendaya-rodger-federer-tennis-on-110783379",
+    "credit": "On — Air Tennis, 2024 / GMA",
+    "caption": "ON / AIR TENNIS"
+  }
+]

@@ -1,0 +1,12 @@
+node_modules/
+**/node_modules
+**/dist/
+**/work/
+**/*.tar.gz
+**/.env
+**/.env.*
+!**/.env.example
+**/*.sqlite
+**/*.db
+**/*.log
+.DS_Store

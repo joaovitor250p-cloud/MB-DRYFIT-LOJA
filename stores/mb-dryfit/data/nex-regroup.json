@@ -1,0 +1,1820 @@
+{
+  "id": "nex-model-regroup-v1",
+  "groups": [
+    {
+      "id": "nex-regroup-v1-nex-a02bd5a6-9df9-5a80-9499-573fc3a901dc",
+      "name": "BERMUDA TACTEL ADIDAS MAU BIC",
+      "target": "nex-a02bd5a6-9df9-5a80-9499-573fc3a901dc",
+      "models": [
+        "nex-a02bd5a6-9df9-5a80-9499-573fc3a901dc",
+        "nex-e82e0de2-0549-51d8-9508-f97840ae4285"
+      ],
+      "members": [
+        {
+          "id": "nex-1d11ff47-c3e4-505e-b547-a23b994277f4",
+          "name": "BERMUDA TACTEL ADIDAS MAU BIC",
+          "category": "Bermuda",
+          "brand": "Adidas",
+          "color": "Chumbo",
+          "size": "GG",
+          "model_id": "nex-a02bd5a6-9df9-5a80-9499-573fc3a901dc",
+          "photo": "/api/photos/nex-4643505a593fa6529e78b31ebdabcf47",
+          "new_photo": "/api/photos/nex-4643505a593fa6529e78b31ebdabcf47"
+        },
+        {
+          "id": "nex-55dd2d05-ce97-5d11-96f0-72830a0befbf",
+          "name": "BERMUDA TACTEL ADIDAS MAU BIC",
+          "category": "Bermuda",
+          "brand": "Adidas",
+          "color": "Branco",
+          "size": "G",
+          "model_id": "nex-a02bd5a6-9df9-5a80-9499-573fc3a901dc",
+          "photo": "/api/photos/nex-3f668db9a8760d6450afc1214333e5fc",
+          "new_photo": "/api/photos/nex-3f668db9a8760d6450afc1214333e5fc"
+        },
+        {
+          "id": "nex-7cd577e1-d802-5601-9b9f-21b6b06755c7",
+          "name": "BERMUDA TACTEL ADIDAS MAU BIC",
+          "category": "Bermuda",
+          "brand": "Adidas",
+          "color": "Azul acinzentado",
+          "size": "M",
+          "model_id": "nex-e82e0de2-0549-51d8-9508-f97840ae4285",
+          "photo": "/api/photos/nex-cfed26a9aeb16757cf812150f10f0130",
+          "new_photo": "/api/photos/nex-cfed26a9aeb16757cf812150f10f0130"
+        },
+        {
+          "id": "nex-7db44eb5-91db-535e-8146-d645eb178580",
+          "name": "BERMUDA TACTEL ADIDAS MAU BIC",
+          "category": "Bermuda",
+          "brand": "Adidas",
+          "color": "Azul acinzentado",
+          "size": "GG",
+          "model_id": "nex-a02bd5a6-9df9-5a80-9499-573fc3a901dc",
+          "photo": "/api/photos/nex-cfed26a9aeb16757cf812150f10f0130",
+          "new_photo": "/api/photos/nex-cfed26a9aeb16757cf812150f10f0130"
+        },
+        {
+          "id": "nex-81a7150c-3c66-5bf0-9776-0f47bd475275",
+          "name": "BERMUDA TACTEL ADIDAS MAU BIC",
+          "category": "Bermuda",
+          "brand": "Adidas",
+          "color": "Azul acinzentado",
+          "size": "G",
+          "model_id": "nex-a02bd5a6-9df9-5a80-9499-573fc3a901dc",
+          "photo": "/api/photos/nex-cfed26a9aeb16757cf812150f10f0130",
+          "new_photo": "/api/photos/nex-cfed26a9aeb16757cf812150f10f0130"
+        },
+        {
+          "id": "nex-830ffccc-c2ad-5b7e-badf-ed7f188b5643",
+          "name": "BERMUDA TACTEL ADIDAS MAU BIC",
+          "category": "Bermuda",
+          "brand": "Adidas",
+          "color": "Branco",
+          "size": "GG",
+          "model_id": "nex-a02bd5a6-9df9-5a80-9499-573fc3a901dc",
+          "photo": "/api/photos/nex-3f668db9a8760d6450afc1214333e5fc",
+          "new_photo": "/api/photos/nex-3f668db9a8760d6450afc1214333e5fc"
+        },
+        {
+          "id": "nex-a1467dbc-20c4-5e42-9ad6-5ea873b7e3da",
+          "name": "BERMUDA TACTEL ADIDAS MAU BIC",
+          "category": "Bermuda",
+          "brand": "Adidas",
+          "color": "Preto",
+          "size": "GG",
+          "model_id": "nex-a02bd5a6-9df9-5a80-9499-573fc3a901dc",
+          "photo": "/api/photos/nex-587ab4e9f9d437521c64328e7f7757ee",
+          "new_photo": "/api/photos/nex-587ab4e9f9d437521c64328e7f7757ee"
+        },
+        {
+          "id": "nex-aaa27951-394a-54c2-b898-092cc2a61967",
+          "name": "BERMUDA TACTEL ADIDAS MAU BIC",
+          "category": "Bermuda",
+          "brand": "Adidas",
+          "color": "Preto",
+          "size": "M",
+          "model_id": "nex-a02bd5a6-9df9-5a80-9499-573fc3a901dc",
+          "photo": "/api/photos/nex-587ab4e9f9d437521c64328e7f7757ee",
+          "new_photo": "/api/photos/nex-587ab4e9f9d437521c64328e7f7757ee"
+        },
+        {
+          "id": "nex-d135170f-0d52-5569-b617-8f70c81e9e6e",
+          "name": "BERMUDA TACTEL ADIDAS MAU BIC",
+          "category": "Bermuda",
+          "brand": "Adidas",
+          "color": "Preto",
+          "size": "G",
+          "model_id": "nex-a02bd5a6-9df9-5a80-9499-573fc3a901dc",
+          "photo": "/api/photos/nex-587ab4e9f9d437521c64328e7f7757ee",
+          "new_photo": "/api/photos/nex-587ab4e9f9d437521c64328e7f7757ee"
+        },
+        {
+          "id": "nex-f7a0d91a-c36b-5dbf-83b1-2652c341daf3",
+          "name": "BERMUDA TACTEL ADIDAS MAU BIC",
+          "category": "Bermuda",
+          "brand": "Adidas",
+          "color": "Branco",
+          "size": "M",
+          "model_id": "nex-a02bd5a6-9df9-5a80-9499-573fc3a901dc",
+          "photo": "/api/photos/nex-3f668db9a8760d6450afc1214333e5fc",
+          "new_photo": "/api/photos/nex-3f668db9a8760d6450afc1214333e5fc"
+        }
+      ]
+    },
+    {
+      "id": "nex-regroup-v1-nex-80d6f50e-336f-57af-b4f9-5c694c022dd7",
+      "name": "BERMUDA TACTEL ADIDAS SIMB BAS C/ LIS LAT",
+      "target": "nex-80d6f50e-336f-57af-b4f9-5c694c022dd7",
+      "models": [
+        "nex-3a45076c-ef24-59b5-94cb-7965848478fc",
+        "nex-80d6f50e-336f-57af-b4f9-5c694c022dd7"
+      ],
+      "members": [
+        {
+          "id": "nex-79a6784c-600c-5d58-96cd-7003f5997640",
+          "name": "BERMUDA TACTEL ADIDAS SIMB BAS C/ LIS LAT",
+          "category": "Bermuda",
+          "brand": "Adidas",
+          "color": "Verde",
+          "size": "GG",
+          "model_id": "nex-80d6f50e-336f-57af-b4f9-5c694c022dd7",
+          "photo": "/api/photos/nex-f16d9aed6276b4c4e97e46a7faa033ef",
+          "new_photo": "/api/photos/nex-f16d9aed6276b4c4e97e46a7faa033ef"
+        },
+        {
+          "id": "nex-8f8d285b-ccc0-50b1-93af-496038a80ba0",
+          "name": "BERMUDA TACTEL ADIDAS SIMB BAS C/ LIS LAT",
+          "category": "Bermuda",
+          "brand": "Adidas",
+          "color": "Laranja",
+          "size": "M",
+          "model_id": "nex-80d6f50e-336f-57af-b4f9-5c694c022dd7",
+          "photo": "/api/photos/nex-d8a069fb2b9629fdacceade5ece3cac7",
+          "new_photo": "/api/photos/nex-d8a069fb2b9629fdacceade5ece3cac7"
+        },
+        {
+          "id": "nex-a2b14b36-7a34-5fd8-acb6-ae0a0df0ab4d",
+          "name": "BERMUDA TACTEL ADIDAS SIMB BAS C/ LIS LAT",
+          "category": "Bermuda",
+          "brand": "Adidas",
+          "color": "Chumbo",
+          "size": "P",
+          "model_id": "nex-80d6f50e-336f-57af-b4f9-5c694c022dd7",
+          "photo": "/api/photos/nex-f9f429f296e83831e3de80d02c315036",
+          "new_photo": "/api/photos/nex-f9f429f296e83831e3de80d02c315036"
+        },
+        {
+          "id": "nex-ac5cbe66-7823-53e7-978f-269b15796ccf",
+          "name": "BERMUDA TACTEL ADIDAS SIMB BAS C/ LIS LAT",
+          "category": "Bermuda",
+          "brand": "Adidas",
+          "color": "Chumbo",
+          "size": "GG",
+          "model_id": "nex-80d6f50e-336f-57af-b4f9-5c694c022dd7",
+          "photo": "/api/photos/nex-f9f429f296e83831e3de80d02c315036",
+          "new_photo": "/api/photos/nex-f9f429f296e83831e3de80d02c315036"
+        },
+        {
+          "id": "nex-f30b2a0c-30d4-51d8-bd5e-e65b0b62c68c",
+          "name": "BERMUDA TACTEL ADIDAS SIMB BAS C/ LIS LAT",
+          "category": "Bermuda",
+          "brand": "Adidas",
+          "color": "Laranja",
+          "size": "G",
+          "model_id": "nex-80d6f50e-336f-57af-b4f9-5c694c022dd7",
+          "photo": "/api/photos/nex-d8a069fb2b9629fdacceade5ece3cac7",
+          "new_photo": "/api/photos/nex-d8a069fb2b9629fdacceade5ece3cac7"
+        },
+        {
+          "id": "nex-ff3f721b-49a8-5e47-a633-40303d326a48",
+          "name": "BERMUDA TACTEL ADIDAS SIMB BAS C/ LIS LAT",
+          "category": "Bermuda",
+          "brand": "Adidas",
+          "color": "Laranja",
+          "size": "P",
+          "model_id": "nex-3a45076c-ef24-59b5-94cb-7965848478fc",
+          "photo": "/api/photos/nex-d8a069fb2b9629fdacceade5ece3cac7",
+          "new_photo": "/api/photos/nex-d8a069fb2b9629fdacceade5ece3cac7"
+        }
+      ]
+    },
+    {
+      "id": "nex-regroup-v1-nex-60df76aa-fea4-52f6-b183-bf73f71b4376",
+      "name": "BERMUDA DRY NIKE SIMB BAS R.L",
+      "target": "nex-60df76aa-fea4-52f6-b183-bf73f71b4376",
+      "models": [
+        "nex-60df76aa-fea4-52f6-b183-bf73f71b4376",
+        "nex-721bcb0b-a001-558f-ba26-d1710d0587d9"
+      ],
+      "members": [
+        {
+          "id": "nex-112b37aa-d12e-5785-b951-4dc57b8d59f0",
+          "name": "BERMUDA DRY NIKE SIMB BAS R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Bege",
+          "size": "M",
+          "model_id": "nex-60df76aa-fea4-52f6-b183-bf73f71b4376",
+          "photo": "/api/photos/nex-51b5a4e9f6cb642630738f65ad8e3b9f",
+          "new_photo": "/api/photos/nex-51b5a4e9f6cb642630738f65ad8e3b9f"
+        },
+        {
+          "id": "nex-28ed18e4-d8e9-5efc-b401-e04822bd11e4",
+          "name": "BERMUDA DRY NIKE SIMB BAS R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Bege",
+          "size": "GG",
+          "model_id": "nex-60df76aa-fea4-52f6-b183-bf73f71b4376",
+          "photo": "/api/photos/nex-51b5a4e9f6cb642630738f65ad8e3b9f",
+          "new_photo": "/api/photos/nex-51b5a4e9f6cb642630738f65ad8e3b9f"
+        },
+        {
+          "id": "nex-3366976e-3153-5ffa-8001-bd3d4808941b",
+          "name": "BERMUDA DRY NIKE SIMB BAS R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "GG",
+          "model_id": "nex-60df76aa-fea4-52f6-b183-bf73f71b4376",
+          "photo": "/api/photos/nex-77c18dd1b07e004791c7739ff13e1395",
+          "new_photo": "/api/photos/nex-77c18dd1b07e004791c7739ff13e1395"
+        },
+        {
+          "id": "nex-604098b5-e75d-5b45-8ffb-7e4648119a64",
+          "name": "BERMUDA DRY NIKE SIMB BAS R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "G",
+          "model_id": "nex-60df76aa-fea4-52f6-b183-bf73f71b4376",
+          "photo": "/api/photos/nex-77c18dd1b07e004791c7739ff13e1395",
+          "new_photo": "/api/photos/nex-77c18dd1b07e004791c7739ff13e1395"
+        },
+        {
+          "id": "nex-772ef68b-67ce-5ee6-a8f4-73159597348b",
+          "name": "BERMUDA DRY NIKE SIMB BAS R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Azul marinho",
+          "size": "GG",
+          "model_id": "nex-60df76aa-fea4-52f6-b183-bf73f71b4376",
+          "photo": "/api/photos/nex-5a42efd4c1d0f34c891b88bd9a7f093e",
+          "new_photo": "/api/photos/nex-5a42efd4c1d0f34c891b88bd9a7f093e"
+        },
+        {
+          "id": "nex-8e4ce09c-9dc5-5942-8d38-1cb030cc102c",
+          "name": "BERMUDA DRY NIKE SIMB BAS R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Azul marinho",
+          "size": "G",
+          "model_id": "nex-60df76aa-fea4-52f6-b183-bf73f71b4376",
+          "photo": "/api/photos/nex-5a42efd4c1d0f34c891b88bd9a7f093e",
+          "new_photo": "/api/photos/nex-5a42efd4c1d0f34c891b88bd9a7f093e"
+        },
+        {
+          "id": "nex-bd83981a-0749-5343-8a3b-4812f355271f",
+          "name": "BERMUDA DRY NIKE SIMB BAS R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Bege",
+          "size": "G",
+          "model_id": "nex-60df76aa-fea4-52f6-b183-bf73f71b4376",
+          "photo": "/api/photos/nex-51b5a4e9f6cb642630738f65ad8e3b9f",
+          "new_photo": "/api/photos/nex-51b5a4e9f6cb642630738f65ad8e3b9f"
+        },
+        {
+          "id": "nex-e06b1841-836c-5d55-8fb8-1a9a14d98a84",
+          "name": "BERMUDA DRY NIKE SIMB BAS R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Azul marinho",
+          "size": "M",
+          "model_id": "nex-721bcb0b-a001-558f-ba26-d1710d0587d9",
+          "photo": "/api/photos/nex-5a42efd4c1d0f34c891b88bd9a7f093e",
+          "new_photo": "/api/photos/nex-5a42efd4c1d0f34c891b88bd9a7f093e"
+        },
+        {
+          "id": "nex-e4ba62a2-3597-5dfe-88cf-cbca4b618627",
+          "name": "BERMUDA DRY NIKE SIMB BAS R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "M",
+          "model_id": "nex-60df76aa-fea4-52f6-b183-bf73f71b4376",
+          "photo": "/api/photos/nex-77c18dd1b07e004791c7739ff13e1395",
+          "new_photo": "/api/photos/nex-77c18dd1b07e004791c7739ff13e1395"
+        }
+      ]
+    },
+    {
+      "id": "nex-regroup-v1-nex-946aa245-6b46-5bb7-84db-4e232c26090f",
+      "name": "BERMUDA POLIE/ELAS NIKE SIMB BAS",
+      "target": "nex-946aa245-6b46-5bb7-84db-4e232c26090f",
+      "models": [
+        "nex-7beef10c-5526-5483-8847-43255bc40683",
+        "nex-946aa245-6b46-5bb7-84db-4e232c26090f"
+      ],
+      "members": [
+        {
+          "id": "nex-393c049e-8fd8-5770-a901-91f95bce3f3a",
+          "name": "BERMUDA POLIE/ELAS NIKE SIMB BAS",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "G",
+          "model_id": "nex-946aa245-6b46-5bb7-84db-4e232c26090f",
+          "photo": "/api/photos/nex-6d95030e94135f561c746374f64398de",
+          "new_photo": "/api/photos/nex-6d95030e94135f561c746374f64398de"
+        },
+        {
+          "id": "nex-862a8ed3-662d-5b34-9e61-673581775ff9",
+          "name": "BERMUDA POLIE/ELAS NIKE SIMB BAS",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "P",
+          "model_id": "nex-7beef10c-5526-5483-8847-43255bc40683",
+          "photo": "/api/photos/nex-cd803f20eb14207d35a6b39e9c23cf3c",
+          "new_photo": "/api/photos/nex-6d95030e94135f561c746374f64398de"
+        }
+      ]
+    },
+    {
+      "id": "nex-regroup-v1-nex-e865a09f-a2d2-595a-84b9-1dcdec20dac5",
+      "name": "BERMUDA TACTEL NIKE BIC C/ DRY LAT R.L",
+      "target": "nex-e865a09f-a2d2-595a-84b9-1dcdec20dac5",
+      "models": [
+        "nex-e0129a52-99bb-5ba4-b0fd-de500352fe45",
+        "nex-e865a09f-a2d2-595a-84b9-1dcdec20dac5"
+      ],
+      "members": [
+        {
+          "id": "nex-05e78d1a-d9dd-54c0-bfd0-7e012018b77f",
+          "name": "BERMUDA TACTEL NIKE BIC C/ DRY LAT R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Branco",
+          "size": "M",
+          "model_id": "nex-e865a09f-a2d2-595a-84b9-1dcdec20dac5",
+          "photo": "/api/photos/nex-4a0bbb080fddb568bb95a2cab4842aed",
+          "new_photo": "/api/photos/nex-4a0bbb080fddb568bb95a2cab4842aed"
+        },
+        {
+          "id": "nex-143ef274-42d1-5974-bf38-3981d53cadd0",
+          "name": "BERMUDA TACTEL NIKE BIC C/ DRY LAT R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Azul acinzentado",
+          "size": "GG",
+          "model_id": "nex-e865a09f-a2d2-595a-84b9-1dcdec20dac5",
+          "photo": "/api/photos/nex-ec31b5b82992734110d82426993d0a72",
+          "new_photo": "/api/photos/nex-ec31b5b82992734110d82426993d0a72"
+        },
+        {
+          "id": "nex-2557869a-7543-526e-b21a-9cca719a4d8b",
+          "name": "BERMUDA TACTEL NIKE BIC C/ DRY LAT R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Branco",
+          "size": "G",
+          "model_id": "nex-e865a09f-a2d2-595a-84b9-1dcdec20dac5",
+          "photo": "/api/photos/nex-4a0bbb080fddb568bb95a2cab4842aed",
+          "new_photo": "/api/photos/nex-4a0bbb080fddb568bb95a2cab4842aed"
+        },
+        {
+          "id": "nex-27586cdb-cbcc-5c78-8cb6-f0180761e5ea",
+          "name": "BERMUDA TACTEL NIKE BIC C/ DRY LAT R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "G",
+          "model_id": "nex-e865a09f-a2d2-595a-84b9-1dcdec20dac5",
+          "photo": "/api/photos/nex-9f272d05583bfe579b8e1a871d4f2960",
+          "new_photo": "/api/photos/nex-9f272d05583bfe579b8e1a871d4f2960"
+        },
+        {
+          "id": "nex-2dae9356-3fa3-5a86-969e-6911df610351",
+          "name": "BERMUDA TACTEL NIKE BIC C/ DRY LAT R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Azul royal",
+          "size": "GG",
+          "model_id": "nex-e865a09f-a2d2-595a-84b9-1dcdec20dac5",
+          "photo": "/api/photos/nex-89236910351f4a8ddc70530d288fcfca",
+          "new_photo": "/api/photos/nex-89236910351f4a8ddc70530d288fcfca"
+        },
+        {
+          "id": "nex-4b2a32fc-6b2f-57aa-be40-db0c693c8a4f",
+          "name": "BERMUDA TACTEL NIKE BIC C/ DRY LAT R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Azul acinzentado",
+          "size": "M",
+          "model_id": "nex-e865a09f-a2d2-595a-84b9-1dcdec20dac5",
+          "photo": "/api/photos/nex-ec31b5b82992734110d82426993d0a72",
+          "new_photo": "/api/photos/nex-ec31b5b82992734110d82426993d0a72"
+        },
+        {
+          "id": "nex-572aa179-753f-5f06-bafb-4db7fcf62f67",
+          "name": "BERMUDA TACTEL NIKE BIC C/ DRY LAT R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Azul acinzentado",
+          "size": "G",
+          "model_id": "nex-e865a09f-a2d2-595a-84b9-1dcdec20dac5",
+          "photo": "/api/photos/nex-ec31b5b82992734110d82426993d0a72",
+          "new_photo": "/api/photos/nex-ec31b5b82992734110d82426993d0a72"
+        },
+        {
+          "id": "nex-603065fa-6c8d-5153-a120-636cdc94ba3e",
+          "name": "BERMUDA TACTEL NIKE BIC C/ DRY LAT R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Chumbo",
+          "size": "M",
+          "model_id": "nex-e865a09f-a2d2-595a-84b9-1dcdec20dac5",
+          "photo": "/api/photos/nex-c478124f0d165518bfd2c467b4d50731",
+          "new_photo": "/api/photos/nex-c478124f0d165518bfd2c467b4d50731"
+        },
+        {
+          "id": "nex-62c5c6b8-6efa-5190-80fe-a9dcebe86613",
+          "name": "BERMUDA TACTEL NIKE BIC C/ DRY LAT R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Chumbo",
+          "size": "GG",
+          "model_id": "nex-e0129a52-99bb-5ba4-b0fd-de500352fe45",
+          "photo": "/api/photos/nex-c478124f0d165518bfd2c467b4d50731",
+          "new_photo": "/api/photos/nex-c478124f0d165518bfd2c467b4d50731"
+        },
+        {
+          "id": "nex-891c051c-9b5d-5b21-97e8-0cb766c60291",
+          "name": "BERMUDA TACTEL NIKE BIC C/ DRY LAT R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Branco",
+          "size": "GG",
+          "model_id": "nex-e865a09f-a2d2-595a-84b9-1dcdec20dac5",
+          "photo": "/api/photos/nex-4a0bbb080fddb568bb95a2cab4842aed",
+          "new_photo": "/api/photos/nex-4a0bbb080fddb568bb95a2cab4842aed"
+        },
+        {
+          "id": "nex-d7718062-a4ab-5d15-9796-213395a61e3c",
+          "name": "BERMUDA TACTEL NIKE BIC C/ DRY LAT R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "M",
+          "model_id": "nex-e865a09f-a2d2-595a-84b9-1dcdec20dac5",
+          "photo": "/api/photos/nex-9f272d05583bfe579b8e1a871d4f2960",
+          "new_photo": "/api/photos/nex-9f272d05583bfe579b8e1a871d4f2960"
+        },
+        {
+          "id": "nex-d9d9d342-2f48-5ce6-b65a-9fbd26f68a52",
+          "name": "BERMUDA TACTEL NIKE BIC C/ DRY LAT R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "GG",
+          "model_id": "nex-e865a09f-a2d2-595a-84b9-1dcdec20dac5",
+          "photo": "/api/photos/nex-9f272d05583bfe579b8e1a871d4f2960",
+          "new_photo": "/api/photos/nex-9f272d05583bfe579b8e1a871d4f2960"
+        },
+        {
+          "id": "nex-eecf0a58-d973-5564-b1de-f52145ef0b3c",
+          "name": "BERMUDA TACTEL NIKE BIC C/ DRY LAT R.L",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Chumbo",
+          "size": "G",
+          "model_id": "nex-e865a09f-a2d2-595a-84b9-1dcdec20dac5",
+          "photo": "/api/photos/nex-c478124f0d165518bfd2c467b4d50731",
+          "new_photo": "/api/photos/nex-c478124f0d165518bfd2c467b4d50731"
+        }
+      ]
+    },
+    {
+      "id": "nex-regroup-v1-nex-6bff11d7-9fe3-5962-81ea-654e50da5425",
+      "name": "BERMUDA TACTEL NIKE TRANSP/FR-",
+      "target": "nex-6bff11d7-9fe3-5962-81ea-654e50da5425",
+      "models": [
+        "nex-12ecd2b5-9760-5b52-b372-b394a414154a",
+        "nex-6bff11d7-9fe3-5962-81ea-654e50da5425"
+      ],
+      "members": [
+        {
+          "id": "nex-07f42050-34a8-55e3-a791-2a6f70274ec4",
+          "name": "BERMUDA TACTEL NIKE TRANSP/FR-",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Vermelho",
+          "size": "G",
+          "model_id": "nex-6bff11d7-9fe3-5962-81ea-654e50da5425",
+          "photo": "/api/photos/nex-5f0e0c1d4f87837be224d207d1291197",
+          "new_photo": "/api/photos/nex-5f0e0c1d4f87837be224d207d1291197"
+        },
+        {
+          "id": "nex-5725bbe8-60e1-5c6b-b4ae-aa99c4f71d41",
+          "name": "BERMUDA TACTEL NIKE TRANSP/FR-",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Vermelho",
+          "size": "GG",
+          "model_id": "nex-6bff11d7-9fe3-5962-81ea-654e50da5425",
+          "photo": "/api/photos/nex-5f0e0c1d4f87837be224d207d1291197",
+          "new_photo": "/api/photos/nex-5f0e0c1d4f87837be224d207d1291197"
+        },
+        {
+          "id": "nex-594e2c1b-2ae7-56ef-a983-4a4276b3d3d6",
+          "name": "BERMUDA TACTEL NIKE TRANSP/FR-",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "GG",
+          "model_id": "nex-6bff11d7-9fe3-5962-81ea-654e50da5425",
+          "photo": "/api/photos/nex-a656f431af763598b4efec47fe27b34d",
+          "new_photo": "/api/photos/nex-a656f431af763598b4efec47fe27b34d"
+        },
+        {
+          "id": "nex-5aaa137a-1c64-5f4c-aad2-4c1045609eb8",
+          "name": "BERMUDA TACTEL NIKE TRANSP/FR-",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Azul acinzentado",
+          "size": "M",
+          "model_id": "nex-6bff11d7-9fe3-5962-81ea-654e50da5425",
+          "photo": "/api/photos/nex-3d8794b40757b61798b793c84de412b8",
+          "new_photo": "/api/photos/nex-3d8794b40757b61798b793c84de412b8"
+        },
+        {
+          "id": "nex-961d5f0a-4836-54ca-984a-9a61dc158dd0",
+          "name": "BERMUDA TACTEL NIKE TRANSP/FR-",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Azul petróleo",
+          "size": "G",
+          "model_id": "nex-6bff11d7-9fe3-5962-81ea-654e50da5425",
+          "photo": "/api/photos/nex-c67954ce7554f943d6d91a0f33f895e4",
+          "new_photo": "/api/photos/nex-c67954ce7554f943d6d91a0f33f895e4"
+        },
+        {
+          "id": "nex-b21cc2fc-0192-53e3-90b4-7153310fa4d6",
+          "name": "BERMUDA TACTEL NIKE TRANSP/FR-",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Azul petróleo",
+          "size": "M",
+          "model_id": "nex-6bff11d7-9fe3-5962-81ea-654e50da5425",
+          "photo": "/api/photos/nex-c67954ce7554f943d6d91a0f33f895e4",
+          "new_photo": "/api/photos/nex-c67954ce7554f943d6d91a0f33f895e4"
+        },
+        {
+          "id": "nex-bc6d75ac-6651-520d-9bed-c667cf632119",
+          "name": "BERMUDA TACTEL NIKE TRANSP/FR-",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "M",
+          "model_id": "nex-12ecd2b5-9760-5b52-b372-b394a414154a",
+          "photo": "/api/photos/nex-f11567bfe22f988af686fae42ddeb049",
+          "new_photo": "/api/photos/nex-a656f431af763598b4efec47fe27b34d"
+        },
+        {
+          "id": "nex-d13bf5ae-7d4a-5db7-a3c0-5747cdfd7b70",
+          "name": "BERMUDA TACTEL NIKE TRANSP/FR-",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Azul petróleo",
+          "size": "GG",
+          "model_id": "nex-6bff11d7-9fe3-5962-81ea-654e50da5425",
+          "photo": "/api/photos/nex-c67954ce7554f943d6d91a0f33f895e4",
+          "new_photo": "/api/photos/nex-c67954ce7554f943d6d91a0f33f895e4"
+        },
+        {
+          "id": "nex-e9fd8ff0-f4f7-5be6-a219-953b087de1a6",
+          "name": "BERMUDA TACTEL NIKE TRANSP/FR-",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "G",
+          "model_id": "nex-6bff11d7-9fe3-5962-81ea-654e50da5425",
+          "photo": "/api/photos/nex-a656f431af763598b4efec47fe27b34d",
+          "new_photo": "/api/photos/nex-a656f431af763598b4efec47fe27b34d"
+        },
+        {
+          "id": "nex-ee490aa0-b661-55d1-a227-c9a2a5c1cf9e",
+          "name": "BERMUDA TACTEL NIKE TRANSP/FR-",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Azul acinzentado",
+          "size": "GG",
+          "model_id": "nex-6bff11d7-9fe3-5962-81ea-654e50da5425",
+          "photo": "/api/photos/nex-3d8794b40757b61798b793c84de412b8",
+          "new_photo": "/api/photos/nex-3d8794b40757b61798b793c84de412b8"
+        },
+        {
+          "id": "nex-f1b57bda-48ea-5685-b0f3-ccd56b7a8511",
+          "name": "BERMUDA TACTEL NIKE TRANSP/FR-",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Vermelho",
+          "size": "M",
+          "model_id": "nex-6bff11d7-9fe3-5962-81ea-654e50da5425",
+          "photo": "/api/photos/nex-5f0e0c1d4f87837be224d207d1291197",
+          "new_photo": "/api/photos/nex-5f0e0c1d4f87837be224d207d1291197"
+        },
+        {
+          "id": "nex-f8a4bd51-9b5c-51f4-bb6c-0c100941a2eb",
+          "name": "BERMUDA TACTEL NIKE TRANSP/FR-",
+          "category": "Bermuda",
+          "brand": "Nike",
+          "color": "Azul acinzentado",
+          "size": "G",
+          "model_id": "nex-6bff11d7-9fe3-5962-81ea-654e50da5425",
+          "photo": "/api/photos/nex-3d8794b40757b61798b793c84de412b8",
+          "new_photo": "/api/photos/nex-3d8794b40757b61798b793c84de412b8"
+        }
+      ]
+    },
+    {
+      "id": "nex-regroup-v1-nex-6c517b44-1527-53aa-a06e-be9698c5b7e8",
+      "name": "BERMUDA POLIA/ELAS ON",
+      "target": "nex-6c517b44-1527-53aa-a06e-be9698c5b7e8",
+      "models": [
+        "nex-6c517b44-1527-53aa-a06e-be9698c5b7e8",
+        "nex-a2a002f3-c6e4-56b1-aeb3-5a77f82b4e6a"
+      ],
+      "members": [
+        {
+          "id": "nex-0bea2f5d-b7c2-5738-b9e3-baa0e1ad916c",
+          "name": "BERMUDA POLIA/ELAS ON",
+          "category": "Bermuda",
+          "brand": "On",
+          "color": "Preto",
+          "size": "G",
+          "model_id": "nex-6c517b44-1527-53aa-a06e-be9698c5b7e8",
+          "photo": "/api/photos/nex-0b7ee14e0b8568b88a9a1a755a7c368e",
+          "new_photo": "/api/photos/nex-0b7ee14e0b8568b88a9a1a755a7c368e"
+        },
+        {
+          "id": "nex-15af5d8b-4814-52fd-801a-64e284407cad",
+          "name": "BERMUDA POLIA/ELAS ON",
+          "category": "Bermuda",
+          "brand": "On",
+          "color": "Preto",
+          "size": "P",
+          "model_id": "nex-a2a002f3-c6e4-56b1-aeb3-5a77f82b4e6a",
+          "photo": "/api/photos/nex-90ddb6d07875374ee1cbee9b568f2fda",
+          "new_photo": "/api/photos/nex-0b7ee14e0b8568b88a9a1a755a7c368e"
+        },
+        {
+          "id": "nex-ba93fad1-ea55-51a6-afd8-1219b82e9482",
+          "name": "BERMUDA POLIA/ELAS ON",
+          "category": "Bermuda",
+          "brand": "On",
+          "color": "Preto",
+          "size": "M",
+          "model_id": "nex-6c517b44-1527-53aa-a06e-be9698c5b7e8",
+          "photo": "/api/photos/nex-0b7ee14e0b8568b88a9a1a755a7c368e",
+          "new_photo": "/api/photos/nex-0b7ee14e0b8568b88a9a1a755a7c368e"
+        }
+      ]
+    },
+    {
+      "id": "nex-regroup-v1-nex-be7e26dd-77ca-5035-a2ed-455ed226515a",
+      "name": "BERMUDA POLIAMIDA ON 2 SIMB",
+      "target": "nex-be7e26dd-77ca-5035-a2ed-455ed226515a",
+      "models": [
+        "nex-96be093c-0e5d-589a-8fdb-1556a642db0d",
+        "nex-be7e26dd-77ca-5035-a2ed-455ed226515a"
+      ],
+      "members": [
+        {
+          "id": "nex-00ec717a-8913-53af-89b7-5af11f0e330c",
+          "name": "BERMUDA POLIAMIDA ON 2 SIMB",
+          "category": "Bermuda",
+          "brand": "On",
+          "color": "Cinza",
+          "size": "G",
+          "model_id": "nex-96be093c-0e5d-589a-8fdb-1556a642db0d",
+          "photo": "/api/photos/nex-e764b27e99726523ceb5f63a05b19005",
+          "new_photo": "/api/photos/nex-129bae9bb775f69309e0b5cf8d285379"
+        },
+        {
+          "id": "nex-02ac046a-9b7b-56b5-a90e-9fbc5c7f0d97",
+          "name": "BERMUDA POLIAMIDA ON 2 SIMB",
+          "category": "Bermuda",
+          "brand": "On",
+          "color": "Preto",
+          "size": "G",
+          "model_id": "nex-be7e26dd-77ca-5035-a2ed-455ed226515a",
+          "photo": "/api/photos/nex-ec0857be842e2dca0397870723c129f6",
+          "new_photo": "/api/photos/nex-ec0857be842e2dca0397870723c129f6"
+        },
+        {
+          "id": "nex-0450956c-6c86-5a0c-8c0a-0049bf8c8262",
+          "name": "BERMUDA POLIAMIDA ON 2 SIMB",
+          "category": "Bermuda",
+          "brand": "On",
+          "color": "Preto",
+          "size": "M",
+          "model_id": "nex-be7e26dd-77ca-5035-a2ed-455ed226515a",
+          "photo": "/api/photos/nex-ec0857be842e2dca0397870723c129f6",
+          "new_photo": "/api/photos/nex-ec0857be842e2dca0397870723c129f6"
+        },
+        {
+          "id": "nex-1a5799b6-49a1-50d7-9033-16b5599c65ca",
+          "name": "BERMUDA POLIAMIDA ON 2 SIMB",
+          "category": "Bermuda",
+          "brand": "On",
+          "color": "Cinza",
+          "size": "M",
+          "model_id": "nex-be7e26dd-77ca-5035-a2ed-455ed226515a",
+          "photo": "/api/photos/nex-129bae9bb775f69309e0b5cf8d285379",
+          "new_photo": "/api/photos/nex-129bae9bb775f69309e0b5cf8d285379"
+        },
+        {
+          "id": "nex-24b1e585-9d8e-563f-bebe-4a3157ef71be",
+          "name": "BERMUDA POLIAMIDA ON 2 SIMB",
+          "category": "Bermuda",
+          "brand": "On",
+          "color": "Verde militar",
+          "size": "P",
+          "model_id": "nex-be7e26dd-77ca-5035-a2ed-455ed226515a",
+          "photo": "/api/photos/nex-e6b5ac5aa1b0708ace2ab0c1c6146c55",
+          "new_photo": "/api/photos/nex-e6b5ac5aa1b0708ace2ab0c1c6146c55"
+        },
+        {
+          "id": "nex-298435e6-8fd7-5bac-8a4f-82ea78a8a224",
+          "name": "BERMUDA POLIAMIDA ON 2 SIMB",
+          "category": "Bermuda",
+          "brand": "On",
+          "color": "Verde militar",
+          "size": "G",
+          "model_id": "nex-be7e26dd-77ca-5035-a2ed-455ed226515a",
+          "photo": "/api/photos/nex-e6b5ac5aa1b0708ace2ab0c1c6146c55",
+          "new_photo": "/api/photos/nex-e6b5ac5aa1b0708ace2ab0c1c6146c55"
+        },
+        {
+          "id": "nex-421585a9-310d-5bd6-bebd-b98012625f89",
+          "name": "BERMUDA POLIAMIDA ON 2 SIMB",
+          "category": "Bermuda",
+          "brand": "On",
+          "color": "Cinza",
+          "size": "P",
+          "model_id": "nex-be7e26dd-77ca-5035-a2ed-455ed226515a",
+          "photo": "/api/photos/nex-129bae9bb775f69309e0b5cf8d285379",
+          "new_photo": "/api/photos/nex-129bae9bb775f69309e0b5cf8d285379"
+        },
+        {
+          "id": "nex-6afbe7b4-ada3-5536-989f-57757c2abc26",
+          "name": "BERMUDA POLIAMIDA ON 2 SIMB",
+          "category": "Bermuda",
+          "brand": "On",
+          "color": "Chumbo",
+          "size": "G",
+          "model_id": "nex-be7e26dd-77ca-5035-a2ed-455ed226515a",
+          "photo": "/api/photos/nex-71219234c9076a2a5b6c08882a206d13",
+          "new_photo": "/api/photos/nex-71219234c9076a2a5b6c08882a206d13"
+        },
+        {
+          "id": "nex-a861e4ed-7dc8-5e96-a8fe-b2ca8b244ce7",
+          "name": "BERMUDA POLIAMIDA ON 2 SIMB",
+          "category": "Bermuda",
+          "brand": "On",
+          "color": "Preto",
+          "size": "GG",
+          "model_id": "nex-be7e26dd-77ca-5035-a2ed-455ed226515a",
+          "photo": "/api/photos/nex-ec0857be842e2dca0397870723c129f6",
+          "new_photo": "/api/photos/nex-ec0857be842e2dca0397870723c129f6"
+        },
+        {
+          "id": "nex-ba0cf7b3-1023-5d84-a25f-7ddae1979d94",
+          "name": "BERMUDA POLIAMIDA ON 2 SIMB",
+          "category": "Bermuda",
+          "brand": "On",
+          "color": "Cinza",
+          "size": "GG",
+          "model_id": "nex-be7e26dd-77ca-5035-a2ed-455ed226515a",
+          "photo": "/api/photos/nex-129bae9bb775f69309e0b5cf8d285379",
+          "new_photo": "/api/photos/nex-129bae9bb775f69309e0b5cf8d285379"
+        },
+        {
+          "id": "nex-cbcbb8fb-6e4c-59fe-b0e5-d99ab0642a2b",
+          "name": "BERMUDA POLIAMIDA ON 2 SIMB",
+          "category": "Bermuda",
+          "brand": "On",
+          "color": "Preto",
+          "size": "P",
+          "model_id": "nex-be7e26dd-77ca-5035-a2ed-455ed226515a",
+          "photo": "/api/photos/nex-ec0857be842e2dca0397870723c129f6",
+          "new_photo": "/api/photos/nex-ec0857be842e2dca0397870723c129f6"
+        },
+        {
+          "id": "nex-d79b0bc4-0c36-5eca-af26-ca5d4b4f9055",
+          "name": "BERMUDA POLIAMIDA ON 2 SIMB",
+          "category": "Bermuda",
+          "brand": "On",
+          "color": "Chumbo",
+          "size": "P",
+          "model_id": "nex-be7e26dd-77ca-5035-a2ed-455ed226515a",
+          "photo": "/api/photos/nex-71219234c9076a2a5b6c08882a206d13",
+          "new_photo": "/api/photos/nex-71219234c9076a2a5b6c08882a206d13"
+        },
+        {
+          "id": "nex-db8ab018-324e-58da-8265-aad4073e9d21",
+          "name": "BERMUDA POLIAMIDA ON 2 SIMB",
+          "category": "Bermuda",
+          "brand": "On",
+          "color": "Chumbo",
+          "size": "GG",
+          "model_id": "nex-be7e26dd-77ca-5035-a2ed-455ed226515a",
+          "photo": "/api/photos/nex-71219234c9076a2a5b6c08882a206d13",
+          "new_photo": "/api/photos/nex-71219234c9076a2a5b6c08882a206d13"
+        },
+        {
+          "id": "nex-e5977b9a-d45f-509e-81e3-861a7a2d0b89",
+          "name": "BERMUDA POLIAMIDA ON 2 SIMB",
+          "category": "Bermuda",
+          "brand": "On",
+          "color": "Verde militar",
+          "size": "GG",
+          "model_id": "nex-be7e26dd-77ca-5035-a2ed-455ed226515a",
+          "photo": "/api/photos/nex-e6b5ac5aa1b0708ace2ab0c1c6146c55",
+          "new_photo": "/api/photos/nex-e6b5ac5aa1b0708ace2ab0c1c6146c55"
+        },
+        {
+          "id": "nex-eb15d18b-bb99-586f-beff-d248762c4552",
+          "name": "BERMUDA POLIAMIDA ON 2 SIMB",
+          "category": "Bermuda",
+          "brand": "On",
+          "color": "Chumbo",
+          "size": "M",
+          "model_id": "nex-be7e26dd-77ca-5035-a2ed-455ed226515a",
+          "photo": "/api/photos/nex-71219234c9076a2a5b6c08882a206d13",
+          "new_photo": "/api/photos/nex-71219234c9076a2a5b6c08882a206d13"
+        },
+        {
+          "id": "nex-fa0dd134-bd5b-5291-a636-647a47f8f3af",
+          "name": "BERMUDA POLIAMIDA ON 2 SIMB",
+          "category": "Bermuda",
+          "brand": "On",
+          "color": "Verde militar",
+          "size": "M",
+          "model_id": "nex-be7e26dd-77ca-5035-a2ed-455ed226515a",
+          "photo": "/api/photos/nex-e6b5ac5aa1b0708ace2ab0c1c6146c55",
+          "new_photo": "/api/photos/nex-e6b5ac5aa1b0708ace2ab0c1c6146c55"
+        }
+      ]
+    },
+    {
+      "id": "nex-regroup-v1-nex-dc076ffa-b89a-5698-a0e7-367d2db09f63",
+      "name": "REGATA DRY G.A ADIDAS C/ FAIXAS LAT",
+      "target": "nex-dc076ffa-b89a-5698-a0e7-367d2db09f63",
+      "models": [
+        "nex-3f0a15a9-5235-5266-98c1-c8d0f0e591e8",
+        "nex-dc076ffa-b89a-5698-a0e7-367d2db09f63"
+      ],
+      "members": [
+        {
+          "id": "nex-3bd24e6d-1fa9-552d-b20a-64c77734888f",
+          "name": "REGATA DRY G.A ADIDAS C/ FAIXAS LAT",
+          "category": "Camisa",
+          "brand": "Adidas",
+          "color": "Cinza",
+          "size": "P",
+          "model_id": "nex-3f0a15a9-5235-5266-98c1-c8d0f0e591e8",
+          "photo": "/api/photos/nex-d86ffea5177688db6d98fd24bcb094cb",
+          "new_photo": "/api/photos/nex-d86ffea5177688db6d98fd24bcb094cb"
+        },
+        {
+          "id": "nex-45edc69b-ab4f-5d02-8a7b-c68e1c1996e3",
+          "name": "REGATA DRY G.A ADIDAS C/ FAIXAS LAT",
+          "category": "Camisa",
+          "brand": "Adidas",
+          "color": "Verde água",
+          "size": "G",
+          "model_id": "nex-dc076ffa-b89a-5698-a0e7-367d2db09f63",
+          "photo": "/api/photos/nex-f5c99844e648afa45c8cf40b680ca3e8",
+          "new_photo": "/api/photos/nex-f5c99844e648afa45c8cf40b680ca3e8"
+        },
+        {
+          "id": "nex-5de21c72-05bd-5c43-ae5a-258ae18401a9",
+          "name": "REGATA DRY G.A ADIDAS C/ FAIXAS LAT",
+          "category": "Camisa",
+          "brand": "Adidas",
+          "color": "Verde água",
+          "size": "P",
+          "model_id": "nex-dc076ffa-b89a-5698-a0e7-367d2db09f63",
+          "photo": "/api/photos/nex-f5c99844e648afa45c8cf40b680ca3e8",
+          "new_photo": "/api/photos/nex-f5c99844e648afa45c8cf40b680ca3e8"
+        },
+        {
+          "id": "nex-b0b0cc50-c588-5311-a7be-d3146b6bb653",
+          "name": "REGATA DRY G.A ADIDAS C/ FAIXAS LAT",
+          "category": "Camisa",
+          "brand": "Adidas",
+          "color": "Preto",
+          "size": "P",
+          "model_id": "nex-dc076ffa-b89a-5698-a0e7-367d2db09f63",
+          "photo": "/api/photos/nex-9d02442f50808ff758aeaaae7cf674bc",
+          "new_photo": "/api/photos/nex-9d02442f50808ff758aeaaae7cf674bc"
+        },
+        {
+          "id": "nex-c41b7fcf-ff8a-5329-aa04-b83801f36d06",
+          "name": "REGATA DRY G.A ADIDAS C/ FAIXAS LAT",
+          "category": "Camisa",
+          "brand": "Adidas",
+          "color": "Azul",
+          "size": "P",
+          "model_id": "nex-dc076ffa-b89a-5698-a0e7-367d2db09f63",
+          "photo": "/api/photos/nex-fc99cedde4a90070d24093b2709de586",
+          "new_photo": "/api/photos/nex-fc99cedde4a90070d24093b2709de586"
+        },
+        {
+          "id": "nex-e6aa8ccb-0520-5d84-bae5-acdd227a5de2",
+          "name": "REGATA DRY G.A ADIDAS C/ FAIXAS LAT",
+          "category": "Camisa",
+          "brand": "Adidas",
+          "color": "Azul",
+          "size": "M",
+          "model_id": "nex-dc076ffa-b89a-5698-a0e7-367d2db09f63",
+          "photo": "/api/photos/nex-fc99cedde4a90070d24093b2709de586",
+          "new_photo": "/api/photos/nex-fc99cedde4a90070d24093b2709de586"
+        }
+      ]
+    },
+    {
+      "id": "nex-regroup-v1-nex-a4518a90-a291-5419-acca-263b48568d94",
+      "name": "CAMISA DRY NIKE SIMB CEN VAZ C/ TRAN",
+      "target": "nex-a4518a90-a291-5419-acca-263b48568d94",
+      "models": [
+        "nex-8dc0f17c-4b8c-5fdb-8c18-f56bbceacc5e",
+        "nex-a4518a90-a291-5419-acca-263b48568d94"
+      ],
+      "members": [
+        {
+          "id": "nex-221ef98a-4b1e-5b16-862c-e162025c8f8b",
+          "name": "CAMISA DRY NIKE SIMB CEN VAZ C/ TRAN",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Chumbo",
+          "size": "GG",
+          "model_id": "nex-a4518a90-a291-5419-acca-263b48568d94",
+          "photo": "/api/photos/nex-20557397f307862c5ed28e6312b0dd88",
+          "new_photo": "/api/photos/nex-20557397f307862c5ed28e6312b0dd88"
+        },
+        {
+          "id": "nex-2bac6f39-e9c7-58f6-9cfb-0275081f7ab6",
+          "name": "CAMISA DRY NIKE SIMB CEN VAZ C/ TRAN",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Branco",
+          "size": "GG",
+          "model_id": "nex-a4518a90-a291-5419-acca-263b48568d94",
+          "photo": "/api/photos/nex-448107f7e6b16c5d2eba250fd9c104d8",
+          "new_photo": "/api/photos/nex-448107f7e6b16c5d2eba250fd9c104d8"
+        },
+        {
+          "id": "nex-35553e65-7559-5a7b-8219-32c7346bfd62",
+          "name": "CAMISA DRY NIKE SIMB CEN VAZ C/ TRAN",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Branco",
+          "size": "P",
+          "model_id": "nex-a4518a90-a291-5419-acca-263b48568d94",
+          "photo": "/api/photos/nex-448107f7e6b16c5d2eba250fd9c104d8",
+          "new_photo": "/api/photos/nex-448107f7e6b16c5d2eba250fd9c104d8"
+        },
+        {
+          "id": "nex-4cd50745-5baa-5efc-adac-034a349af7c0",
+          "name": "CAMISA DRY NIKE SIMB CEN VAZ C/ TRAN",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "M",
+          "model_id": "nex-a4518a90-a291-5419-acca-263b48568d94",
+          "photo": "/api/photos/nex-a231ebb698d89fbc6b76f3d09462ff62",
+          "new_photo": "/api/photos/nex-a231ebb698d89fbc6b76f3d09462ff62"
+        },
+        {
+          "id": "nex-56bbdf95-c05b-5e7d-acaa-894f93b63b7a",
+          "name": "CAMISA DRY NIKE SIMB CEN VAZ C/ TRAN",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "GG",
+          "model_id": "nex-a4518a90-a291-5419-acca-263b48568d94",
+          "photo": "/api/photos/nex-a231ebb698d89fbc6b76f3d09462ff62",
+          "new_photo": "/api/photos/nex-a231ebb698d89fbc6b76f3d09462ff62"
+        },
+        {
+          "id": "nex-5a1d1645-9876-5e05-b297-f27a04d20e49",
+          "name": "CAMISA DRY NIKE SIMB CEN VAZ C/ TRAN",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Azul marinho",
+          "size": "M",
+          "model_id": "nex-a4518a90-a291-5419-acca-263b48568d94",
+          "photo": "/api/photos/nex-bed5f0fff70dc08925a75d3a2bd2608c",
+          "new_photo": "/api/photos/nex-bed5f0fff70dc08925a75d3a2bd2608c"
+        },
+        {
+          "id": "nex-6133e7f0-530b-545a-8a40-ad8b2aaebc53",
+          "name": "CAMISA DRY NIKE SIMB CEN VAZ C/ TRAN",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "G",
+          "model_id": "nex-a4518a90-a291-5419-acca-263b48568d94",
+          "photo": "/api/photos/nex-a231ebb698d89fbc6b76f3d09462ff62",
+          "new_photo": "/api/photos/nex-a231ebb698d89fbc6b76f3d09462ff62"
+        },
+        {
+          "id": "nex-6a4d0ce0-e674-5d85-9d9d-5a9442a41d2b",
+          "name": "CAMISA DRY NIKE SIMB CEN VAZ C/ TRAN",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Chumbo",
+          "size": "G",
+          "model_id": "nex-a4518a90-a291-5419-acca-263b48568d94",
+          "photo": "/api/photos/nex-20557397f307862c5ed28e6312b0dd88",
+          "new_photo": "/api/photos/nex-20557397f307862c5ed28e6312b0dd88"
+        },
+        {
+          "id": "nex-74069cf4-f7c2-5d1a-bd67-ae8d888a8cfb",
+          "name": "CAMISA DRY NIKE SIMB CEN VAZ C/ TRAN",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Chumbo",
+          "size": "P",
+          "model_id": "nex-a4518a90-a291-5419-acca-263b48568d94",
+          "photo": "/api/photos/nex-20557397f307862c5ed28e6312b0dd88",
+          "new_photo": "/api/photos/nex-20557397f307862c5ed28e6312b0dd88"
+        },
+        {
+          "id": "nex-96f4fbc6-8cf7-5d3d-90e3-ba34dc3d9182",
+          "name": "CAMISA DRY NIKE SIMB CEN VAZ C/ TRAN",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Branco",
+          "size": "M",
+          "model_id": "nex-a4518a90-a291-5419-acca-263b48568d94",
+          "photo": "/api/photos/nex-448107f7e6b16c5d2eba250fd9c104d8",
+          "new_photo": "/api/photos/nex-448107f7e6b16c5d2eba250fd9c104d8"
+        },
+        {
+          "id": "nex-b3ddb269-4ec0-58af-b98a-cfcb1ef3eff9",
+          "name": "CAMISA DRY NIKE SIMB CEN VAZ C/ TRAN",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Branco",
+          "size": "G",
+          "model_id": "nex-a4518a90-a291-5419-acca-263b48568d94",
+          "photo": "/api/photos/nex-448107f7e6b16c5d2eba250fd9c104d8",
+          "new_photo": "/api/photos/nex-448107f7e6b16c5d2eba250fd9c104d8"
+        },
+        {
+          "id": "nex-b6690f7a-bec8-5a2a-aa5f-23bc2135f4a4",
+          "name": "CAMISA DRY NIKE SIMB CEN VAZ C/ TRAN",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Azul marinho",
+          "size": "G",
+          "model_id": "nex-8dc0f17c-4b8c-5fdb-8c18-f56bbceacc5e",
+          "photo": "/api/photos/nex-bed5f0fff70dc08925a75d3a2bd2608c",
+          "new_photo": "/api/photos/nex-bed5f0fff70dc08925a75d3a2bd2608c"
+        },
+        {
+          "id": "nex-bc76837b-be36-52e4-af29-559b80d93916",
+          "name": "CAMISA DRY NIKE SIMB CEN VAZ C/ TRAN",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Chumbo",
+          "size": "M",
+          "model_id": "nex-a4518a90-a291-5419-acca-263b48568d94",
+          "photo": "/api/photos/nex-20557397f307862c5ed28e6312b0dd88",
+          "new_photo": "/api/photos/nex-20557397f307862c5ed28e6312b0dd88"
+        },
+        {
+          "id": "nex-c16ff6cd-d63a-53a3-a6f7-d9f5507b6f14",
+          "name": "CAMISA DRY NIKE SIMB CEN VAZ C/ TRAN",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Azul marinho",
+          "size": "GG",
+          "model_id": "nex-a4518a90-a291-5419-acca-263b48568d94",
+          "photo": "/api/photos/nex-bed5f0fff70dc08925a75d3a2bd2608c",
+          "new_photo": "/api/photos/nex-bed5f0fff70dc08925a75d3a2bd2608c"
+        },
+        {
+          "id": "nex-e35d1f69-1093-5fed-b5d7-ccdb1804b1c5",
+          "name": "CAMISA DRY NIKE SIMB CEN VAZ C/ TRAN",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Azul marinho",
+          "size": "P",
+          "model_id": "nex-a4518a90-a291-5419-acca-263b48568d94",
+          "photo": "/api/photos/nex-bed5f0fff70dc08925a75d3a2bd2608c",
+          "new_photo": "/api/photos/nex-bed5f0fff70dc08925a75d3a2bd2608c"
+        },
+        {
+          "id": "nex-f48c5f75-c292-5ccd-b642-fe21456d4192",
+          "name": "CAMISA DRY NIKE SIMB CEN VAZ C/ TRAN",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "P",
+          "model_id": "nex-a4518a90-a291-5419-acca-263b48568d94",
+          "photo": "/api/photos/nex-a231ebb698d89fbc6b76f3d09462ff62",
+          "new_photo": "/api/photos/nex-a231ebb698d89fbc6b76f3d09462ff62"
+        }
+      ]
+    },
+    {
+      "id": "nex-regroup-v1-nex-172663f8-9348-5ab7-9e7f-f7408f25b767",
+      "name": "CAMISA DRY NIKE SIMB. BAS C/ T.P.F.C",
+      "target": "nex-172663f8-9348-5ab7-9e7f-f7408f25b767",
+      "models": [
+        "nex-172663f8-9348-5ab7-9e7f-f7408f25b767",
+        "nex-b364a35a-ecd8-51a8-9af1-a6ad5ccfdf79"
+      ],
+      "members": [
+        {
+          "id": "nex-031439d1-ce4f-5436-9c7f-bd78eeea765a",
+          "name": "CAMISA DRY NIKE SIMB. BAS C/ T.P.F.C",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "M",
+          "model_id": "nex-b364a35a-ecd8-51a8-9af1-a6ad5ccfdf79",
+          "photo": "/api/photos/nex-55de75f179eb4c2a407e5f24b8486bd5",
+          "new_photo": "/api/photos/nex-55de75f179eb4c2a407e5f24b8486bd5"
+        },
+        {
+          "id": "nex-0972cedd-6e09-5c93-bfe2-2149f6b4ba91",
+          "name": "CAMISA DRY NIKE SIMB. BAS C/ T.P.F.C",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Cinza",
+          "size": "P",
+          "model_id": "nex-172663f8-9348-5ab7-9e7f-f7408f25b767",
+          "photo": "/api/photos/nex-f635e25885a17e47068e04dab90ace92",
+          "new_photo": "/api/photos/nex-f635e25885a17e47068e04dab90ace92"
+        },
+        {
+          "id": "nex-111d784b-ba4a-554c-a6c8-91a83481ba00",
+          "name": "CAMISA DRY NIKE SIMB. BAS C/ T.P.F.C",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Branco",
+          "size": "M",
+          "model_id": "nex-172663f8-9348-5ab7-9e7f-f7408f25b767",
+          "photo": "/api/photos/nex-d616b024f78c8abad6f87f01523fcf51",
+          "new_photo": "/api/photos/nex-d616b024f78c8abad6f87f01523fcf51"
+        },
+        {
+          "id": "nex-1b7be95d-7774-57c4-bcf6-5c03e6693099",
+          "name": "CAMISA DRY NIKE SIMB. BAS C/ T.P.F.C",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Azul marinho",
+          "size": "GG",
+          "model_id": "nex-172663f8-9348-5ab7-9e7f-f7408f25b767",
+          "photo": "/api/photos/nex-3dfdabd57a2d91c89baeb45da7d1a996",
+          "new_photo": "/api/photos/nex-3dfdabd57a2d91c89baeb45da7d1a996"
+        },
+        {
+          "id": "nex-22dbf293-b616-589e-ac08-00d199322716",
+          "name": "CAMISA DRY NIKE SIMB. BAS C/ T.P.F.C",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Branco",
+          "size": "P",
+          "model_id": "nex-172663f8-9348-5ab7-9e7f-f7408f25b767",
+          "photo": "/api/photos/nex-d616b024f78c8abad6f87f01523fcf51",
+          "new_photo": "/api/photos/nex-d616b024f78c8abad6f87f01523fcf51"
+        },
+        {
+          "id": "nex-252ddc77-d99c-5d63-9afb-7f6ace9c08a0",
+          "name": "CAMISA DRY NIKE SIMB. BAS C/ T.P.F.C",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "GG",
+          "model_id": "nex-172663f8-9348-5ab7-9e7f-f7408f25b767",
+          "photo": "/api/photos/nex-55de75f179eb4c2a407e5f24b8486bd5",
+          "new_photo": "/api/photos/nex-55de75f179eb4c2a407e5f24b8486bd5"
+        },
+        {
+          "id": "nex-51869a83-819a-570d-945c-6ec216816e31",
+          "name": "CAMISA DRY NIKE SIMB. BAS C/ T.P.F.C",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Cinza",
+          "size": "M",
+          "model_id": "nex-172663f8-9348-5ab7-9e7f-f7408f25b767",
+          "photo": "/api/photos/nex-f635e25885a17e47068e04dab90ace92",
+          "new_photo": "/api/photos/nex-f635e25885a17e47068e04dab90ace92"
+        },
+        {
+          "id": "nex-54405f71-687e-53d7-973e-d7d9721ab006",
+          "name": "CAMISA DRY NIKE SIMB. BAS C/ T.P.F.C",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Cinza",
+          "size": "GG",
+          "model_id": "nex-172663f8-9348-5ab7-9e7f-f7408f25b767",
+          "photo": "/api/photos/nex-f635e25885a17e47068e04dab90ace92",
+          "new_photo": "/api/photos/nex-f635e25885a17e47068e04dab90ace92"
+        },
+        {
+          "id": "nex-585bbb8e-1e71-5c4d-ac05-06b3e3ee0d98",
+          "name": "CAMISA DRY NIKE SIMB. BAS C/ T.P.F.C",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Branco",
+          "size": "G",
+          "model_id": "nex-172663f8-9348-5ab7-9e7f-f7408f25b767",
+          "photo": "/api/photos/nex-d616b024f78c8abad6f87f01523fcf51",
+          "new_photo": "/api/photos/nex-d616b024f78c8abad6f87f01523fcf51"
+        },
+        {
+          "id": "nex-80a542e1-9e91-53c2-aeb1-4328f1d72ffd",
+          "name": "CAMISA DRY NIKE SIMB. BAS C/ T.P.F.C",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Branco",
+          "size": "GG",
+          "model_id": "nex-172663f8-9348-5ab7-9e7f-f7408f25b767",
+          "photo": "/api/photos/nex-d616b024f78c8abad6f87f01523fcf51",
+          "new_photo": "/api/photos/nex-d616b024f78c8abad6f87f01523fcf51"
+        },
+        {
+          "id": "nex-87833cd5-5eaa-55f7-9994-9442fac45521",
+          "name": "CAMISA DRY NIKE SIMB. BAS C/ T.P.F.C",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Azul marinho",
+          "size": "P",
+          "model_id": "nex-172663f8-9348-5ab7-9e7f-f7408f25b767",
+          "photo": "/api/photos/nex-3dfdabd57a2d91c89baeb45da7d1a996",
+          "new_photo": "/api/photos/nex-3dfdabd57a2d91c89baeb45da7d1a996"
+        },
+        {
+          "id": "nex-b4119b91-fdbd-5d4f-8000-142ea099e314",
+          "name": "CAMISA DRY NIKE SIMB. BAS C/ T.P.F.C",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "P",
+          "model_id": "nex-172663f8-9348-5ab7-9e7f-f7408f25b767",
+          "photo": "/api/photos/nex-55de75f179eb4c2a407e5f24b8486bd5",
+          "new_photo": "/api/photos/nex-55de75f179eb4c2a407e5f24b8486bd5"
+        },
+        {
+          "id": "nex-bae0237b-ed7a-5298-b1ac-01e1d3db0c3a",
+          "name": "CAMISA DRY NIKE SIMB. BAS C/ T.P.F.C",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Cinza",
+          "size": "G",
+          "model_id": "nex-172663f8-9348-5ab7-9e7f-f7408f25b767",
+          "photo": "/api/photos/nex-f635e25885a17e47068e04dab90ace92",
+          "new_photo": "/api/photos/nex-f635e25885a17e47068e04dab90ace92"
+        },
+        {
+          "id": "nex-d6045395-4665-5ed2-b4ae-3c088513ecc5",
+          "name": "CAMISA DRY NIKE SIMB. BAS C/ T.P.F.C",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Azul marinho",
+          "size": "G",
+          "model_id": "nex-172663f8-9348-5ab7-9e7f-f7408f25b767",
+          "photo": "/api/photos/nex-3dfdabd57a2d91c89baeb45da7d1a996",
+          "new_photo": "/api/photos/nex-3dfdabd57a2d91c89baeb45da7d1a996"
+        },
+        {
+          "id": "nex-e53604b8-3660-5126-bdd4-79966b4a10cb",
+          "name": "CAMISA DRY NIKE SIMB. BAS C/ T.P.F.C",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Azul marinho",
+          "size": "M",
+          "model_id": "nex-172663f8-9348-5ab7-9e7f-f7408f25b767",
+          "photo": "/api/photos/nex-3dfdabd57a2d91c89baeb45da7d1a996",
+          "new_photo": "/api/photos/nex-3dfdabd57a2d91c89baeb45da7d1a996"
+        },
+        {
+          "id": "nex-f16763cc-5267-50a9-8ce8-22aa188831d5",
+          "name": "CAMISA DRY NIKE SIMB. BAS C/ T.P.F.C",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "G",
+          "model_id": "nex-172663f8-9348-5ab7-9e7f-f7408f25b767",
+          "photo": "/api/photos/nex-55de75f179eb4c2a407e5f24b8486bd5",
+          "new_photo": "/api/photos/nex-55de75f179eb4c2a407e5f24b8486bd5"
+        }
+      ]
+    },
+    {
+      "id": "nex-regroup-v1-nex-b258bac7-bd32-5250-b8e0-3f2f3c5acf38",
+      "name": "CAMISA UV M.LON NIKE SIMB BAS C/ T.F.L",
+      "target": "nex-b258bac7-bd32-5250-b8e0-3f2f3c5acf38",
+      "models": [
+        "nex-b258bac7-bd32-5250-b8e0-3f2f3c5acf38",
+        "nex-c853d690-00a7-534a-84e7-432b88afe9fb"
+      ],
+      "members": [
+        {
+          "id": "nex-8e25231e-6d72-5c96-9fea-340da32550b7",
+          "name": "CAMISA UV M.LON NIKE SIMB BAS C/ T.F.L",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Azul marinho",
+          "size": "GG",
+          "model_id": "nex-c853d690-00a7-534a-84e7-432b88afe9fb",
+          "photo": "/api/photos/nex-b2dfb1e5007ef4a277940f6ebf5b41f7",
+          "new_photo": "/api/photos/nex-b2dfb1e5007ef4a277940f6ebf5b41f7"
+        },
+        {
+          "id": "nex-9a28f47d-1eb3-57fb-907f-a910cc5716ea",
+          "name": "CAMISA UV M.LON NIKE SIMB BAS C/ T.F.L",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Branco",
+          "size": "M",
+          "model_id": "nex-b258bac7-bd32-5250-b8e0-3f2f3c5acf38",
+          "photo": "/api/photos/nex-1f93a8279c53378bfec068dcdf04b945",
+          "new_photo": "/api/photos/nex-1f93a8279c53378bfec068dcdf04b945"
+        },
+        {
+          "id": "nex-b214be70-371f-5fe9-aac1-e43e31cfd992",
+          "name": "CAMISA UV M.LON NIKE SIMB BAS C/ T.F.L",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Branco",
+          "size": "P",
+          "model_id": "nex-b258bac7-bd32-5250-b8e0-3f2f3c5acf38",
+          "photo": "/api/photos/nex-1f93a8279c53378bfec068dcdf04b945",
+          "new_photo": "/api/photos/nex-1f93a8279c53378bfec068dcdf04b945"
+        },
+        {
+          "id": "nex-b5e13c9a-f41e-57d7-a598-951043ece275",
+          "name": "CAMISA UV M.LON NIKE SIMB BAS C/ T.F.L",
+          "category": "Camisa",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "P",
+          "model_id": "nex-b258bac7-bd32-5250-b8e0-3f2f3c5acf38",
+          "photo": "/api/photos/nex-0191ffa8384587b5426e396e06404411",
+          "new_photo": "/api/photos/nex-0191ffa8384587b5426e396e06404411"
+        }
+      ]
+    },
+    {
+      "id": "nex-regroup-v1-nex-7d3f1fc8-7e63-5820-b342-fe390eb2249d",
+      "name": "CAMISA NAIL/ELAS ON SIMB CEN LAT",
+      "target": "nex-7d3f1fc8-7e63-5820-b342-fe390eb2249d",
+      "models": [
+        "nex-58013793-5e2a-57f2-959d-46d4f91712c1",
+        "nex-7d3f1fc8-7e63-5820-b342-fe390eb2249d"
+      ],
+      "members": [
+        {
+          "id": "nex-0b162413-d763-55ec-ba79-71ddcdf922f4",
+          "name": "CAMISA NAIL/ELAS ON SIMB CEN LAT",
+          "category": "Camisa",
+          "brand": "On",
+          "color": "Preto",
+          "size": "M",
+          "model_id": "nex-7d3f1fc8-7e63-5820-b342-fe390eb2249d",
+          "photo": "/api/photos/nex-26f020ad7a2233c65e67bb51620b2e02",
+          "new_photo": "/api/photos/nex-26f020ad7a2233c65e67bb51620b2e02"
+        },
+        {
+          "id": "nex-13699365-b814-5410-bb24-d4940c1e7b4d",
+          "name": "CAMISA NAIL/ELAS ON SIMB CEN LAT",
+          "category": "Camisa",
+          "brand": "On",
+          "color": "Chumbo",
+          "size": "M",
+          "model_id": "nex-7d3f1fc8-7e63-5820-b342-fe390eb2249d",
+          "photo": "/api/photos/nex-42e8658b5c6139d6ffa71b4ed83d8287",
+          "new_photo": "/api/photos/nex-42e8658b5c6139d6ffa71b4ed83d8287"
+        },
+        {
+          "id": "nex-18ce4737-4091-523d-8dad-8303e9898d16",
+          "name": "CAMISA NAIL/ELAS ON SIMB CEN LAT",
+          "category": "Camisa",
+          "brand": "On",
+          "color": "Chumbo",
+          "size": "G",
+          "model_id": "nex-7d3f1fc8-7e63-5820-b342-fe390eb2249d",
+          "photo": "/api/photos/nex-42e8658b5c6139d6ffa71b4ed83d8287",
+          "new_photo": "/api/photos/nex-42e8658b5c6139d6ffa71b4ed83d8287"
+        },
+        {
+          "id": "nex-1e05cbf3-f3f3-5e58-8b46-a151026f1c88",
+          "name": "CAMISA NAIL/ELAS ON SIMB CEN LAT",
+          "category": "Camisa",
+          "brand": "On",
+          "color": "Preto",
+          "size": "G",
+          "model_id": "nex-58013793-5e2a-57f2-959d-46d4f91712c1",
+          "photo": null,
+          "new_photo": "/api/photos/nex-26f020ad7a2233c65e67bb51620b2e02"
+        },
+        {
+          "id": "nex-61d856ce-4a6b-5532-ba8a-f6d7e0439485",
+          "name": "CAMISA NAIL/ELAS ON SIMB CEN LAT",
+          "category": "Camisa",
+          "brand": "On",
+          "color": "Branco",
+          "size": "M",
+          "model_id": "nex-7d3f1fc8-7e63-5820-b342-fe390eb2249d",
+          "photo": "/api/photos/nex-7a789a64a4a3a9259fb9a3c212b0c7c6",
+          "new_photo": "/api/photos/nex-7a789a64a4a3a9259fb9a3c212b0c7c6"
+        },
+        {
+          "id": "nex-73969bf7-4413-5611-9c80-6f24ca65a243",
+          "name": "CAMISA NAIL/ELAS ON SIMB CEN LAT",
+          "category": "Camisa",
+          "brand": "On",
+          "color": "Verde militar",
+          "size": "GG",
+          "model_id": "nex-7d3f1fc8-7e63-5820-b342-fe390eb2249d",
+          "photo": "/api/photos/nex-5cf3c4a9f2637e5cc8563a88d0678a5c",
+          "new_photo": "/api/photos/nex-5cf3c4a9f2637e5cc8563a88d0678a5c"
+        },
+        {
+          "id": "nex-8203ba54-7693-599b-9afa-480044c9db75",
+          "name": "CAMISA NAIL/ELAS ON SIMB CEN LAT",
+          "category": "Camisa",
+          "brand": "On",
+          "color": "Branco",
+          "size": "GG",
+          "model_id": "nex-7d3f1fc8-7e63-5820-b342-fe390eb2249d",
+          "photo": "/api/photos/nex-7a789a64a4a3a9259fb9a3c212b0c7c6",
+          "new_photo": "/api/photos/nex-7a789a64a4a3a9259fb9a3c212b0c7c6"
+        },
+        {
+          "id": "nex-97382efb-0f9e-580a-82e1-e982d469d742",
+          "name": "CAMISA NAIL/ELAS ON SIMB CEN LAT",
+          "category": "Camisa",
+          "brand": "On",
+          "color": "Verde militar",
+          "size": "M",
+          "model_id": "nex-7d3f1fc8-7e63-5820-b342-fe390eb2249d",
+          "photo": "/api/photos/nex-5cf3c4a9f2637e5cc8563a88d0678a5c",
+          "new_photo": "/api/photos/nex-5cf3c4a9f2637e5cc8563a88d0678a5c"
+        },
+        {
+          "id": "nex-9b4f9457-195b-5bff-88b0-3c7c396e6d07",
+          "name": "CAMISA NAIL/ELAS ON SIMB CEN LAT",
+          "category": "Camisa",
+          "brand": "On",
+          "color": "Preto",
+          "size": "P",
+          "model_id": "nex-7d3f1fc8-7e63-5820-b342-fe390eb2249d",
+          "photo": "/api/photos/nex-26f020ad7a2233c65e67bb51620b2e02",
+          "new_photo": "/api/photos/nex-26f020ad7a2233c65e67bb51620b2e02"
+        },
+        {
+          "id": "nex-afaec010-ff52-512b-ae42-50d033a090a3",
+          "name": "CAMISA NAIL/ELAS ON SIMB CEN LAT",
+          "category": "Camisa",
+          "brand": "On",
+          "color": "Branco",
+          "size": "G",
+          "model_id": "nex-58013793-5e2a-57f2-959d-46d4f91712c1",
+          "photo": "/api/photos/nex-7a789a64a4a3a9259fb9a3c212b0c7c6",
+          "new_photo": "/api/photos/nex-7a789a64a4a3a9259fb9a3c212b0c7c6"
+        },
+        {
+          "id": "nex-b6455dd6-7fa4-5e6a-b0db-d6021f55d36f",
+          "name": "CAMISA NAIL/ELAS ON SIMB CEN LAT",
+          "category": "Camisa",
+          "brand": "On",
+          "color": "Preto",
+          "size": "GG",
+          "model_id": "nex-7d3f1fc8-7e63-5820-b342-fe390eb2249d",
+          "photo": "/api/photos/nex-26f020ad7a2233c65e67bb51620b2e02",
+          "new_photo": "/api/photos/nex-26f020ad7a2233c65e67bb51620b2e02"
+        },
+        {
+          "id": "nex-e2824ebd-f5d2-531b-b085-1a63570c697d",
+          "name": "CAMISA NAIL/ELAS ON SIMB CEN LAT",
+          "category": "Camisa",
+          "brand": "On",
+          "color": "Branco",
+          "size": "P",
+          "model_id": "nex-7d3f1fc8-7e63-5820-b342-fe390eb2249d",
+          "photo": "/api/photos/nex-7a789a64a4a3a9259fb9a3c212b0c7c6",
+          "new_photo": "/api/photos/nex-7a789a64a4a3a9259fb9a3c212b0c7c6"
+        }
+      ]
+    },
+    {
+      "id": "nex-regroup-v1-nex-f4c2941f-599f-5c63-ad84-5bc25631d24e",
+      "name": "CONJUNTO DRY G.A NIKE MOD.BAS C+B",
+      "target": "nex-f4c2941f-599f-5c63-ad84-5bc25631d24e",
+      "models": [
+        "nex-43b30643-71ad-5c29-a315-6336fde58370",
+        "nex-f4c2941f-599f-5c63-ad84-5bc25631d24e"
+      ],
+      "members": [
+        {
+          "id": "nex-6f67ec94-afa7-556c-aaac-a5646b252f42",
+          "name": "CONJUNTO DRY G.A NIKE MOD.BAS C+B",
+          "category": "Conjunto",
+          "brand": "Nike",
+          "color": "Vermelho",
+          "size": "G",
+          "model_id": "nex-43b30643-71ad-5c29-a315-6336fde58370",
+          "photo": "/api/photos/nex-dcd7e91687a219a444db32c1d5d83ef1",
+          "new_photo": "/api/photos/nex-dcd7e91687a219a444db32c1d5d83ef1"
+        },
+        {
+          "id": "nex-a7ceaa46-d4fc-5762-86ce-90842b3401c2",
+          "name": "CONJUNTO DRY G.A NIKE MOD.BAS C+B",
+          "category": "Conjunto",
+          "brand": "Nike",
+          "color": "Vermelho",
+          "size": "M",
+          "model_id": "nex-f4c2941f-599f-5c63-ad84-5bc25631d24e",
+          "photo": "/api/photos/nex-dcd7e91687a219a444db32c1d5d83ef1",
+          "new_photo": "/api/photos/nex-dcd7e91687a219a444db32c1d5d83ef1"
+        }
+      ]
+    },
+    {
+      "id": "nex-regroup-v1-nex-2565951b-4318-5415-9fec-1efe42e48194",
+      "name": "CONJUNTO NAILON/ELAS BIC NIKE",
+      "target": "nex-2565951b-4318-5415-9fec-1efe42e48194",
+      "models": [
+        "nex-2565951b-4318-5415-9fec-1efe42e48194",
+        "nex-c74cad9a-295d-5616-8987-246780e256ec"
+      ],
+      "members": [
+        {
+          "id": "nex-3c7e2463-83d4-5636-a5a0-b3278a332dc6",
+          "name": "CONJUNTO NAILON/ELAS BIC NIKE",
+          "category": "Conjunto",
+          "brand": "Nike",
+          "color": "Verde",
+          "size": "P",
+          "model_id": "nex-2565951b-4318-5415-9fec-1efe42e48194",
+          "photo": "/api/photos/nex-2627f95169f57afceacb515de9d2182c",
+          "new_photo": "/api/photos/nex-2627f95169f57afceacb515de9d2182c"
+        },
+        {
+          "id": "nex-4690ee51-2e74-56a5-970b-40dc8fc8c178",
+          "name": "CONJUNTO NAILON/ELAS BIC NIKE",
+          "category": "Conjunto",
+          "brand": "Nike",
+          "color": "Verde",
+          "size": "M",
+          "model_id": "nex-c74cad9a-295d-5616-8987-246780e256ec",
+          "photo": "/api/photos/nex-2627f95169f57afceacb515de9d2182c",
+          "new_photo": "/api/photos/nex-2627f95169f57afceacb515de9d2182c"
+        },
+        {
+          "id": "nex-787e9459-ea42-50b9-8b4c-a09d0b3da7f9",
+          "name": "CONJUNTO NAILON/ELAS BIC NIKE",
+          "category": "Conjunto",
+          "brand": "Nike",
+          "color": "Cinza",
+          "size": "P",
+          "model_id": "nex-2565951b-4318-5415-9fec-1efe42e48194",
+          "photo": "/api/photos/nex-b48131d2802ea48fc355e2a9402dcd52",
+          "new_photo": "/api/photos/nex-b48131d2802ea48fc355e2a9402dcd52"
+        }
+      ]
+    },
+    {
+      "id": "nex-regroup-v1-nex-2bba15a7-3096-53b7-b574-a7977a1cc0c0",
+      "name": "CONJUNTO NEOPREME NIKE ESCR BORD B+C",
+      "target": "nex-2bba15a7-3096-53b7-b574-a7977a1cc0c0",
+      "models": [
+        "nex-2bba15a7-3096-53b7-b574-a7977a1cc0c0",
+        "nex-6cdd8270-81f4-5e7d-8368-0e07aed58679"
+      ],
+      "members": [
+        {
+          "id": "nex-10b0508d-4920-5fd9-a0e2-36e912153732",
+          "name": "CONJUNTO NEOPREME NIKE ESCR BORD B+C",
+          "category": "Conjunto",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "M",
+          "model_id": "nex-2bba15a7-3096-53b7-b574-a7977a1cc0c0",
+          "photo": "/api/photos/nex-9c808b20e58775e8e843253591e2ab02",
+          "new_photo": "/api/photos/nex-9c808b20e58775e8e843253591e2ab02"
+        },
+        {
+          "id": "nex-264d84cd-1fb9-5f1e-a650-1229ea3d57f6",
+          "name": "CONJUNTO NEOPREME NIKE ESCR BORD B+C",
+          "category": "Conjunto",
+          "brand": "Nike",
+          "color": "Branco",
+          "size": "P",
+          "model_id": "nex-2bba15a7-3096-53b7-b574-a7977a1cc0c0",
+          "photo": "/api/photos/nex-bf492e7bfa2f96f79392175942d72e24",
+          "new_photo": "/api/photos/nex-bf492e7bfa2f96f79392175942d72e24"
+        },
+        {
+          "id": "nex-3884852c-35c0-54cf-8ea1-396f2efe2900",
+          "name": "CONJUNTO NEOPREME NIKE ESCR BORD B+C",
+          "category": "Conjunto",
+          "brand": "Nike",
+          "color": "Amarelo",
+          "size": "P",
+          "model_id": "nex-2bba15a7-3096-53b7-b574-a7977a1cc0c0",
+          "photo": "/api/photos/nex-f53222034ad88d2449e4c7d6891152a6",
+          "new_photo": "/api/photos/nex-f53222034ad88d2449e4c7d6891152a6"
+        },
+        {
+          "id": "nex-44ac9453-10d2-56ec-bf40-2cc3fa333d36",
+          "name": "CONJUNTO NEOPREME NIKE ESCR BORD B+C",
+          "category": "Conjunto",
+          "brand": "Nike",
+          "color": "Verde militar",
+          "size": "G",
+          "model_id": "nex-2bba15a7-3096-53b7-b574-a7977a1cc0c0",
+          "photo": "/api/photos/nex-23a1036afb079cf8f21b38963c1d0d5b",
+          "new_photo": "/api/photos/nex-23a1036afb079cf8f21b38963c1d0d5b"
+        },
+        {
+          "id": "nex-55a54a24-8f77-57c0-a71c-3e65615f9b80",
+          "name": "CONJUNTO NEOPREME NIKE ESCR BORD B+C",
+          "category": "Conjunto",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "P",
+          "model_id": "nex-2bba15a7-3096-53b7-b574-a7977a1cc0c0",
+          "photo": "/api/photos/nex-9c808b20e58775e8e843253591e2ab02",
+          "new_photo": "/api/photos/nex-9c808b20e58775e8e843253591e2ab02"
+        },
+        {
+          "id": "nex-5992d901-6215-59b0-8412-eb9230957aae",
+          "name": "CONJUNTO NEOPREME NIKE ESCR BORD B+C",
+          "category": "Conjunto",
+          "brand": "Nike",
+          "color": "Vermelho",
+          "size": "P",
+          "model_id": "nex-2bba15a7-3096-53b7-b574-a7977a1cc0c0",
+          "photo": "/api/photos/nex-f6715e8d7d5b28b1eba7df77bd487f52",
+          "new_photo": "/api/photos/nex-f6715e8d7d5b28b1eba7df77bd487f52"
+        },
+        {
+          "id": "nex-6a275928-d67e-5110-a703-e70b7bb31305",
+          "name": "CONJUNTO NEOPREME NIKE ESCR BORD B+C",
+          "category": "Conjunto",
+          "brand": "Nike",
+          "color": "Branco",
+          "size": "M",
+          "model_id": "nex-2bba15a7-3096-53b7-b574-a7977a1cc0c0",
+          "photo": "/api/photos/nex-bf492e7bfa2f96f79392175942d72e24",
+          "new_photo": "/api/photos/nex-bf492e7bfa2f96f79392175942d72e24"
+        },
+        {
+          "id": "nex-7be9d6d1-eb4e-560f-9a70-a9155124f257",
+          "name": "CONJUNTO NEOPREME NIKE ESCR BORD B+C",
+          "category": "Conjunto",
+          "brand": "Nike",
+          "color": "Vermelho",
+          "size": "M",
+          "model_id": "nex-2bba15a7-3096-53b7-b574-a7977a1cc0c0",
+          "photo": "/api/photos/nex-f6715e8d7d5b28b1eba7df77bd487f52",
+          "new_photo": "/api/photos/nex-f6715e8d7d5b28b1eba7df77bd487f52"
+        },
+        {
+          "id": "nex-9c33a1f9-5184-5fd7-b686-951040e9ee76",
+          "name": "CONJUNTO NEOPREME NIKE ESCR BORD B+C",
+          "category": "Conjunto",
+          "brand": "Nike",
+          "color": "Amarelo",
+          "size": "M",
+          "model_id": "nex-2bba15a7-3096-53b7-b574-a7977a1cc0c0",
+          "photo": "/api/photos/nex-f53222034ad88d2449e4c7d6891152a6",
+          "new_photo": "/api/photos/nex-f53222034ad88d2449e4c7d6891152a6"
+        },
+        {
+          "id": "nex-a52fd48b-c2e0-5f24-b851-a5e062fa7eb9",
+          "name": "CONJUNTO NEOPREME NIKE ESCR BORD B+C",
+          "category": "Conjunto",
+          "brand": "Nike",
+          "color": "Verde militar",
+          "size": "M",
+          "model_id": "nex-2bba15a7-3096-53b7-b574-a7977a1cc0c0",
+          "photo": "/api/photos/nex-23a1036afb079cf8f21b38963c1d0d5b",
+          "new_photo": "/api/photos/nex-23a1036afb079cf8f21b38963c1d0d5b"
+        },
+        {
+          "id": "nex-cbac77e3-e539-5396-aee6-5f27cf538876",
+          "name": "CONJUNTO NEOPREME NIKE ESCR BORD B+C",
+          "category": "Conjunto",
+          "brand": "Nike",
+          "color": "Preto",
+          "size": "G",
+          "model_id": "nex-6cdd8270-81f4-5e7d-8368-0e07aed58679",
+          "photo": "/api/photos/nex-5d6e6881fcdfb7ca83ca91f81457a7f2",
+          "new_photo": "/api/photos/nex-9c808b20e58775e8e843253591e2ab02"
+        }
+      ]
+    },
+    {
+      "id": "nex-regroup-v1-nex-ee35d0d3-21f6-5e8d-bfcb-d5459fda9b93",
+      "name": "CONJUNTO NAILON/ELAS SIMB BAS",
+      "target": "nex-ee35d0d3-21f6-5e8d-bfcb-d5459fda9b93",
+      "models": [
+        "nex-bde234bf-2873-50d7-b295-59408849372c",
+        "nex-ee35d0d3-21f6-5e8d-bfcb-d5459fda9b93"
+      ],
+      "members": [
+        {
+          "id": "nex-17d4922c-bbdb-5c86-a15e-c98e977a1cd2",
+          "name": "CONJUNTO NAILON/ELAS SIMB BAS",
+          "category": "Conjunto",
+          "brand": "",
+          "color": "Chumbo",
+          "size": "M",
+          "model_id": "nex-ee35d0d3-21f6-5e8d-bfcb-d5459fda9b93",
+          "photo": "/api/photos/nex-eb05a3bfc4feeac526f76a2a8f9f814a",
+          "new_photo": "/api/photos/nex-eb05a3bfc4feeac526f76a2a8f9f814a"
+        },
+        {
+          "id": "nex-2b61610b-072a-5bfd-9b0f-dbf13718620f",
+          "name": "CONJUNTO NAILON/ELAS SIMB BAS",
+          "category": "Conjunto",
+          "brand": "",
+          "color": "Preto",
+          "size": "M",
+          "model_id": "nex-bde234bf-2873-50d7-b295-59408849372c",
+          "photo": "/api/photos/nex-fcdd2a6005e6d745e2286abe2c70dcf6",
+          "new_photo": "/api/photos/nex-fcdd2a6005e6d745e2286abe2c70dcf6"
+        },
+        {
+          "id": "nex-2bf0cf81-7687-5bfb-a181-6a1b1d34497b",
+          "name": "CONJUNTO NAILON/ELAS SIMB BAS",
+          "category": "Conjunto",
+          "brand": "",
+          "color": "Preto",
+          "size": "P",
+          "model_id": "nex-ee35d0d3-21f6-5e8d-bfcb-d5459fda9b93",
+          "photo": "/api/photos/nex-fcdd2a6005e6d745e2286abe2c70dcf6",
+          "new_photo": "/api/photos/nex-fcdd2a6005e6d745e2286abe2c70dcf6"
+        },
+        {
+          "id": "nex-727810a6-3cba-52d3-bf56-0e4fcfe7e575",
+          "name": "CONJUNTO NAILON/ELAS SIMB BAS",
+          "category": "Conjunto",
+          "brand": "",
+          "color": "Chumbo",
+          "size": "P",
+          "model_id": "nex-ee35d0d3-21f6-5e8d-bfcb-d5459fda9b93",
+          "photo": "/api/photos/nex-eb05a3bfc4feeac526f76a2a8f9f814a",
+          "new_photo": "/api/photos/nex-eb05a3bfc4feeac526f76a2a8f9f814a"
+        },
+        {
+          "id": "nex-b47791bf-a638-5f6a-9536-ba863bd2b62c",
+          "name": "CONJUNTO NAILON/ELAS SIMB BAS",
+          "category": "Conjunto",
+          "brand": "",
+          "color": "Verde",
+          "size": "G",
+          "model_id": "nex-ee35d0d3-21f6-5e8d-bfcb-d5459fda9b93",
+          "photo": "/api/photos/nex-8ad8e68e94de8289eb673038b60951bc",
+          "new_photo": "/api/photos/nex-8ad8e68e94de8289eb673038b60951bc"
+        },
+        {
+          "id": "nex-d15c6086-c9ba-546e-ad20-e9aa1e8b532f",
+          "name": "CONJUNTO NAILON/ELAS SIMB BAS",
+          "category": "Conjunto",
+          "brand": "",
+          "color": "Verde",
+          "size": "P",
+          "model_id": "nex-ee35d0d3-21f6-5e8d-bfcb-d5459fda9b93",
+          "photo": "/api/photos/nex-8ad8e68e94de8289eb673038b60951bc",
+          "new_photo": "/api/photos/nex-8ad8e68e94de8289eb673038b60951bc"
+        },
+        {
+          "id": "nex-db71ac91-0f8e-5454-af42-1d1a9ea8189a",
+          "name": "CONJUNTO NAILON/ELAS SIMB BAS",
+          "category": "Conjunto",
+          "brand": "",
+          "color": "Verde",
+          "size": "M",
+          "model_id": "nex-ee35d0d3-21f6-5e8d-bfcb-d5459fda9b93",
+          "photo": "/api/photos/nex-8ad8e68e94de8289eb673038b60951bc",
+          "new_photo": "/api/photos/nex-8ad8e68e94de8289eb673038b60951bc"
+        }
+      ]
+    }
+  ]
+}

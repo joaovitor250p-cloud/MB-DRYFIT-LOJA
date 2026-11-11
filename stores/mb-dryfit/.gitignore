@@ -1,0 +1,5 @@
+dist/
+*.tar.gz
+scripts/push.py
+work/
+node_modules/

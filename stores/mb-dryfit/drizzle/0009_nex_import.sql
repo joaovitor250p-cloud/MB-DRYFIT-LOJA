@@ -1,0 +1,11 @@
+ALTER TABLE products ADD COLUMN reserved_stock INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE products ADD COLUMN source_code TEXT NOT NULL DEFAULT '';
+ALTER TABLE products ADD COLUMN source_gtin TEXT NOT NULL DEFAULT '';
+CREATE TABLE product_barcodes (barcode TEXT PRIMARY KEY, product_id TEXT NOT NULL REFERENCES products(id));
+CREATE INDEX product_barcodes_product ON product_barcodes(product_id);
+CREATE TABLE nex_import_runs (id TEXT PRIMARY KEY, source TEXT NOT NULL, total_rows INTEGER NOT NULL, total_assets INTEGER NOT NULL, next_offset INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL, completed_at TEXT);
+CREATE TABLE nex_import_assets (run_id TEXT NOT NULL, photo_key TEXT NOT NULL, source_url TEXT NOT NULL, status TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, error TEXT NOT NULL DEFAULT '', PRIMARY KEY(run_id,photo_key));
+CREATE TABLE nex_import_items (run_id TEXT NOT NULL, source_code TEXT NOT NULL, product_id TEXT NOT NULL, source_name TEXT NOT NULL, warnings TEXT NOT NULL, source_json TEXT NOT NULL, PRIMARY KEY(run_id,source_code));
+CREATE TABLE nex_import_batches (run_id TEXT NOT NULL, batch_offset INTEGER NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY(run_id,batch_offset));
+DROP TRIGGER reserve_stock;
+CREATE TRIGGER reserve_stock BEFORE INSERT ON sales BEGIN SELECT CASE WHEN (SELECT stock-reserved_stock FROM products WHERE id=NEW.product_id AND active=1) IS NULL OR (SELECT stock-reserved_stock FROM products WHERE id=NEW.product_id AND active=1)<NEW.quantity THEN RAISE(ABORT,'Estoque insuficiente') END; UPDATE products SET stock=stock-NEW.quantity WHERE id=NEW.product_id; END;

@@ -1,0 +1,23 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import vm from 'node:vm';import {parseHTML} from 'linkedom';
+function client(){
+ const {document}=parseHTML('<html><body><dialog id="customerAccount"></dialog></body></html>');const dialog=document.querySelector('dialog');dialog.close=()=>{dialog.open=false};dialog.open=true;
+ const calls=[],refreshes=[],user={email:'ana@example.test',emailVerified:false,async getIdToken(force=false){refreshes.push(force);return force?'fresh-verified-token':'cached-token'}};
+ const auth={currentUser:user};let observer;const sdk={async createUserWithEmailAndPassword(_auth,email,password){calls.push({type:'signup',email,password});return {user}},async signInWithEmailAndPassword(){return {user}},async sendEmailVerification(){calls.push({type:'verification-link'})},async sendPasswordResetEmail(_auth,email){calls.push({type:'reset-link',email})},async reload(){user.emailVerified=true},onIdTokenChanged(_auth,fn){observer=fn},async signOut(){auth.currentUser=null}};
+ class FormDataMock{constructor(form){this.entries=[...form.querySelectorAll('input[name]')].map(el=>[el.name,el.value])}[Symbol.iterator](){return this.entries[Symbol.iterator]()}}
+ const ctx={document,window:{addEventListener(){}},location:{href:'https://mb.test/catalogo'},FormData:FormDataMock,console,products:[],render(){},localStorage:{getItem(){return null},setItem(){}},catalogFavorites:new Set(),shopOrderReceipt:null,shopCustomer:{provider:'firebase',user:null,role:null},shopAccountReturnTeam:false,$:s=>document.querySelector(s),esc:s=>String(s??''),refreshAccountButtons(){},syncAccountFavorites:async()=>{},notifyShopper(){},loadCustomerAccount:async()=>{ctx.shopCustomer.user={first_name:'Ana'}},setInterval:()=>1,
+  shopAPI:async(path,method,data)=>{calls.push({type:'api',path,data});if(path==='account/firebase/session'&&data.id_token==='cached-token'&&!user.emailVerified)throw Object.assign(Error('Unverified token'),{status:403});return {ok:true}}};
+ vm.createContext(ctx);vm.runInContext(readFileSync('worker/storefront-firebase.js','utf8'),ctx);ctx.getShopFirebaseClient=async()=>({auth,sdk});return {ctx,document,dialog,calls,refreshes,user,getObserver:()=>observer};
+}
+const fill=(dialog,values)=>{for(const [name,value] of Object.entries(values))dialog.querySelector('[name="'+name+'"]').value=value};
+test('Firebase signup sends credentials to Firebase, stages only profile fields and uses a verification link',async()=>{
+ const {ctx,dialog,calls}=client();ctx.drawFirebaseAccountForm(dialog,'register');fill(dialog,{first_name:'Ana',last_name:'Silva',birth_date:'1995-04-17',email:'ana@example.test',password:'my-password-123'});const form=dialog.querySelector('form');await form.onsubmit({preventDefault(){},target:form});assert.equal(calls[0].type,'signup');assert.equal(calls[0].password,'my-password-123');const saved=calls.find(call=>call.path==='account/firebase/profile');assert.equal(saved.data.profile.first_name,'Ana');assert.equal(saved.data.profile.password,undefined);assert.ok(calls.some(call=>call.type==='verification-link'));assert.equal(dialog.dataset.accountMode,'verify');assert.equal(dialog.querySelector('[name="code"]'),null);assert.ok(dialog.querySelector('#firebaseCheckEmail'));assert.ok(!calls.some(call=>call.path==='account/firebase/session'));
+});
+test('confirming email reloads Firebase and forces a new token before opening the verified account',async()=>{
+ const {ctx,dialog,refreshes,calls}=client();ctx.drawFirebaseAccountForm(dialog,'verify','ana@example.test');await dialog.querySelector('#firebaseCheckEmail').onclick();assert.deepEqual(refreshes,[true]);assert.ok(calls.some(call=>call.path==='account/firebase/session'&&call.data.id_token==='fresh-verified-token'));assert.equal(dialog.open,false);
+});
+test('background Firebase token changes reuse the current token without forcing recursive refreshes',async()=>{
+ const {ctx,user,refreshes,calls,getObserver}=client();user.emailVerified=true;await ctx.initFirebaseCustomer();await getObserver()(user);assert.deepEqual(refreshes,[false]);assert.equal(calls.filter(call=>call.path==='account/firebase/session').length,1);
+});
+test('Firebase password recovery uses a link and never asks for a six-digit code',async()=>{
+ const {ctx,dialog,calls}=client();ctx.drawFirebaseAccountForm(dialog,'reset');fill(dialog,{email:'ana@example.test'});const form=dialog.querySelector('form');await form.onsubmit({preventDefault(){},target:form});assert.ok(calls.some(call=>call.type==='reset-link'));assert.equal(dialog.dataset.accountMode,'reset-sent');assert.equal(dialog.querySelector('[name="code"]'),null);assert.match(dialog.textContent,/link para redefinir/);
+});

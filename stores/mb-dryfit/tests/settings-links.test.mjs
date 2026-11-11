@@ -1,0 +1,9 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import vm from 'node:vm';import {parseHTML} from 'linkedom';
+test('settings show six separate owner, seller and customer links and let the owner copy each address',async()=>{
+ const source=readFileSync('worker/staff-sales.js','utf8').split('const mbAccessStores=')[1];const {document}=parseHTML('<html><body><main id="view"></main></body></html>');let copied='';
+ const ctx={document,console,$:s=>document.querySelector(s),navigator:{clipboard:{writeText:async value=>{copied=value}}},toast(){},api:async path=>path==='vendor-access'?{email:'equipe@example.test'}:{email:null,configured:false}};vm.createContext(ctx);vm.runInContext('const mbAccessStores='+source,ctx);await ctx.renderVendorAccess();
+ const links=[...document.querySelectorAll('[data-copy-access]')];assert.equal(links.length,6);const addresses=links.map(b=>b.dataset.copyAccess);assert.equal(new Set(addresses).size,6);
+ for(const base of ['https://atelier-loja-mw96xrv3.savoryaccordion3.chatgpt.site','https://mb-for-her.savoryaccordion3.chatgpt.site'])for(const path of ['/dono','/vendedor','/catalogo'])assert.ok(addresses.includes(base+path));
+ await links[4].onclick();assert.equal(copied,addresses[4]);assert.equal(document.querySelector('#ownerAccessEmail').value,'equipe@example.test');assert.equal(document.querySelector('#vendorSharedEmail').value,'equipe@example.test');assert.ok(document.querySelector('#ownerAccessPassword'));assert.ok(document.querySelector('#ownerAccessConfirm'));
+ document.querySelector('#ownerAccessPassword').value='senha-um';document.querySelector('#ownerAccessConfirm').value='senha-dois';await document.querySelector('#ownerAccessForm').onsubmit({preventDefault(){}});assert.match(document.querySelector('#ownerAccessError').textContent,/precisam ser iguais/);
+});

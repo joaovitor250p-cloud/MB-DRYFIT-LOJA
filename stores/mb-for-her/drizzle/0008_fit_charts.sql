@@ -1,0 +1,1 @@
+ALTER TABLE products ADD COLUMN fit_chart TEXT NOT NULL DEFAULT '[]';
