@@ -30,6 +30,8 @@ Antes de vender, abra **Caixa** com o fundo inicial em dinheiro. No PDV, escolha
 
 **Devoluções** permite localizar a venda por código, escolher as peças e a forma do reembolso e decidir se voltam ao estoque. **Produtividade** acompanha metas mensais de valor e peças definidas pelo dono. Vendas e reembolsos são idempotentes e vinculados ao caixa, com guardas de estoque e conferência de fechamento.
 
+**Gastos do dia** registra descrição, valor e pagamento no caixa aberto. Despesas em dinheiro reduzem o saldo físico; Pix, cartões e transferência ficam separados. Cada gasto tem identificação própria no histórico, sem ser confundido com sangria. **Todas as vendas** abre em **Hoje** a cada entrada na aba e permite consultar outros períodos.
+
 As lojas mantêm caixas, metas e movimentos separados. O catálogo público permanece sem alterações. Registros antigos sem canal/pagamento continuam identificados como não classificados. Veja `docs/operacoes-loja.md` em cada unidade para os detalhes.
 
 ## Organização
