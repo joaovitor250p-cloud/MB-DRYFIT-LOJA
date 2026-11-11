@@ -1,3 +1,4 @@
+import {firebaseConfiguration} from './firebase-auth.js';
 import {unifiedStaffEnabled,createStaffSession,clearUnifiedStaffSession,readUnifiedStaffSession} from "./staff-access.js";
 import {authDigest,hashCustomerPassword,verifyCustomerPassword,readShopJSON} from "./customer-auth.js";
 const ownerReply=(body,status=200,headers={})=>Response.json(body,{status,headers:{'Cache-Control':'no-store',...headers}});
@@ -17,6 +18,34 @@ export async function resolveOwnerAccess(req,env,identity,member){
 export async function handleOwnerAccess(req,env,identity,member){
  try{
   const path=new URL(req.url).pathname,config=await env.DB.prepare("SELECT email,password_hash,revision FROM store_owner_access WHERE id='primary'").first();
+  if(['/api/owner-access/reset-request','/api/owner-access/reset-confirm'].includes(path)){
+   if(req.method!=='POST'||!unifiedStaffEnabled(env)||env.MB_STORE_KEY!=='dryfit')return ownerReply({error:'Use a entrada única do dono na MB Dryfit.'},409);
+   const data=await readShopJSON(req,5000),now=new Date().toISOString(),confirm=path.endsWith('reset-confirm'),throttle=await authDigest('owner-reset:'+(confirm?'confirm:':'request:')+(req.headers.get('CF-Connecting-IP')||'unknown')),limit=confirm?10:3,expires=new Date(Date.now()+(confirm?900000:3600000)).toISOString();
+   await env.DB.prepare('INSERT INTO auth_throttles (id,attempts,expires_at) VALUES (?,1,?) ON CONFLICT(id) DO UPDATE SET attempts=CASE WHEN expires_at<=? THEN 1 ELSE attempts+1 END,expires_at=CASE WHEN expires_at<=? THEN excluded.expires_at ELSE expires_at END').bind(throttle,expires,now,now).run();
+   if((await env.DB.prepare('SELECT attempts FROM auth_throttles WHERE id=?').bind(throttle).first()).attempts>limit)return ownerReply({error:'Muitas solicitações. Aguarde antes de tentar novamente.'},429);
+   const firebase=firebaseConfiguration(env);if(!firebase)return ownerReply({error:'A recuperação está temporariamente indisponível.'},503);
+   if(!confirm){
+    const email=typeof data.email==='string'?data.email.trim().toLowerCase():'';if(email.length>254||!/^\S+@\S+\.\S+$/.test(email))return ownerReply({error:'Informe um e-mail válido.'},400);
+    if(!config||email!==config.email)return ownerReply({ok:true});
+    const token=[...crypto.getRandomValues(new Uint8Array(32))].map(v=>v.toString(16).padStart(2,'0')).join(''),tokenHash=await authDigest(token);
+    await env.DB.prepare('DELETE FROM owner_password_resets WHERE expires_at<=?').bind(now).run();
+    await env.DB.prepare('INSERT INTO owner_password_resets(token_hash,email,revision,expires_at) VALUES (?,?,?,?)').bind(tokenHash,email,config.revision,new Date(Date.now()+900000).toISOString()).run();
+    // The private reset nonce travels only in the recovery email's continue URL.
+    // Firebase sends the email; the API never returns the nonce or an action link.
+    const response=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key='+encodeURIComponent(firebase.apiKey),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({requestType:'PASSWORD_RESET',email,continueUrl:'https://atelier-loja-mw96xrv3.savoryaccordion3.chatgpt.site/conta/acao?owner_reset='+token}),signal:AbortSignal.timeout(15000)});
+    if(!response.ok){await env.DB.prepare('DELETE FROM owner_password_resets WHERE token_hash=?').bind(tokenHash).run();const error=await response.json().catch(()=>({}));if(error.error?.message==='EMAIL_NOT_FOUND')return ownerReply({ok:true});return ownerReply({error:'Não foi possível enviar o link agora. Tente novamente mais tarde.'},503)}
+    return ownerReply({ok:true});
+   }
+   if(typeof data.token!=='string'||!/^[a-f0-9]{64}$/.test(data.token)||typeof data.code!=='string'||data.code.length<16||data.code.length>2048||typeof data.password!=='string'||data.password.length<8||data.password.length>128)return ownerReply({error:'Confira o link e use uma senha com 8 a 128 caracteres.'},400);
+   const tokenHash=await authDigest(data.token),reset=await env.DB.prepare('SELECT * FROM owner_password_resets WHERE token_hash=? AND expires_at>?').bind(tokenHash,now).first();
+   if(!reset||!config||reset.email!==config.email||reset.revision!==config.revision)return ownerReply({error:'Este link expirou ou já foi usado. Solicite outro.'},410);
+   // Verify email possession using the Firebase action code, without changing
+   // the shared sellers' Firebase password. Our own nonce is consumed atomically.
+   const verified=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:resetPassword?key='+encodeURIComponent(firebase.apiKey),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({oobCode:data.code}),signal:AbortSignal.timeout(15000)}),proof=await verified.json();
+   if(!verified.ok||proof.email?.toLowerCase()!==config.email||proof.requestType!=='PASSWORD_RESET')return ownerReply({error:'Este link não é válido. Solicite outro.'},410);
+   const passwordHash=await hashCustomerPassword(data.password),results=await env.DB.batch([env.DB.prepare("UPDATE store_owner_access SET password_hash=?,revision=revision+1,updated_at=? WHERE id='primary' AND email=? AND revision=? AND EXISTS (SELECT 1 FROM owner_password_resets WHERE token_hash=? AND expires_at>?)").bind(passwordHash,now,config.email,config.revision,tokenHash,now),env.DB.prepare('DELETE FROM owner_password_resets WHERE token_hash=?').bind(tokenHash)]);
+   return results[0]?.meta?.changes===1?ownerReply({ok:true}):ownerReply({error:'Este link expirou ou já foi usado. Solicite outro.'},410);
+  }
   if(path==='/api/owner-access/login'&&req.method==='POST'){
    if(!unifiedStaffEnabled(env)||env.MB_STORE_KEY!=='dryfit')return ownerReply({error:'Use a entrada única do dono na MB Dryfit.'},409);
    const active=await readUnifiedStaffSession(req,env);if(active?.role==='seller')return ownerReply({error:'Saia do modo vendedor antes de entrar como dono.'},409);
