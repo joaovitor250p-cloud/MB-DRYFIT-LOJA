@@ -122,6 +122,7 @@ if(req.method!=='GET'&&!owner){
  const reason=await staffSessionDiagnostic(req,env);
  console.warn('MB product write denied',{store:env.MB_STORE_KEY||'unknown',reason});
  if(member.role==='seller')return json({error:'Somente o dono pode alterar ou excluir produtos.',code:'seller_forbidden'},403);
+ if(reason==='legacy'||(reason==='missing_staff_cookie'&&identity.account&&!identity.account.staff_session))return json({error:'Acesso restrito ao dono.',code:'non_owner_forbidden'},403);
  if(reason==='bridge_unavailable')return json({error:'Não foi possível validar a sessão entre as lojas. Tente novamente; nenhuma alteração foi gravada.',code:reason},503);
  return json({error:'A sessão do dono não está válida nesta loja. Entre novamente em /acesso no modo dono antes de salvar.',code:reason,reauthenticate:true},401);
 }
