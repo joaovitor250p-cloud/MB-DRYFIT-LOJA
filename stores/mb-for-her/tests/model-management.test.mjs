@@ -32,7 +32,7 @@ test('owner renames and edits a model and adds variants in one committed transac
  try{
   const rows=await create(d),ids=rows.map(p=>p.id),codes=rows.map(p=>p.barcode),stock=rows.map(p=>p.stock);
   const updated=await d.request('product-models/'+rows[0].model_id,'PUT',editBody(rows));
-  assert.equal(updated.status,200,await updated.text());
+  assert.equal(updated.status,200,await updated.clone().text());
   const info=await updated.json();assert.equal(info.created,1);assert.equal(info.reused,2);
   const after=await (await d.request('products')).json();
   assert.equal(after.length,3);
