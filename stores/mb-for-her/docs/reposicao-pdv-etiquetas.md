@@ -1,0 +1,11 @@
+# Reposição, PDV e etiquetas — revisão sem publicação
+
+Busca de reposição por nome, referência, código principal e códigos de origem expande todas as variações do modelo encontrado. Fotos do modelo e das cores acompanham a grade; campos mostram estoque atual, entrada e final. O botão Adicionar cores/tamanhos abre o editor existente do mesmo modelo, mantendo o rascunho da reposição. O endpoint de modelos continua responsável pelo reaproveitamento das variações e pela preservação dos códigos. Quantidades de variações existentes entram exclusivamente por recebimento, sem sobrescrever estoque. Criação de variação nova ainda usa o estoque inicial do cadastro, separado do histórico de recebimentos; unificar essa criação com a transação de recebimento continua pendente.
+
+O recebimento em lote permanece idempotente e pode preparar etiquetas somente nas quantidades recebidas. O PDV preserva seleção do vendedor responsável, fila contínua do scanner, fotos, quantidade, desconto, caixa e pagamentos. Esta entrega melhora sua apresentação e os controles de quantidade, sem substituir a transação de venda.
+
+A conferência de etiquetas mostra foto/cor/tamanho/código/referência junto à etiqueta renderizada. Os comandos QZ, dimensões físicas e códigos existentes não foram modificados. A conferência mostra até 30 variações, e a prévia nativa existente continua disponível. Nenhuma foto é acrescentada à impressão térmica pequena.
+
+Validação: suítes completas das duas unidades, builds e sintaxe dos cinco scripts compilados por unidade passaram. Teste adicional de DOM verifica busca de uma variação expandindo a grade completa, cálculo atual + entrada, estabilidade de códigos/estoque e abertura do editor do modelo. Testes existentes cobrem concorrência e idempotência de recebimentos, limites de estoque, caixa, vendas, etiquetas e autorização.
+
+Pendências: modo manual de código de fornecedor e tratamento de ambiguidade; expansão de variações integrada à mesma confirmação do recebimento; revisão visual real em computador/celular; impressão física e câmera. A prévia continua indisponível (preview relay unavailable), não há ferramenta de navegador nesta sessão e não foram produzidas capturas simuladas. Sem publicação, migração ou dados de produção alterados. Catálogo e autenticação preservados.
