@@ -55,7 +55,7 @@ test('owner transfers to Her, edits and deletes only Her models; owner revocatio
   const saved=await request(b,'/api/product-models/'+model.model_id,'PUT',otherCookie,edit);
   assert.equal(saved.status,200,await saved.clone().text());
   const herRow=b.sql.prepare('SELECT name,color,price,extra_code FROM products').get();
-  assert.deepEqual(herRow,{name:edit.name,color:'Azul',price:6500,extra_code:'REF.HER'});
+  assert.deepEqual({...herRow},{name:edit.name,color:'Azul',price:6500,extra_code:'REF.HER'});
   assert.equal(a.sql.prepare('SELECT name FROM products').get().name,'Dryfit-only');
   const removed=await request(b,'/api/product-models/'+model.model_id,'DELETE',otherCookie,{confirmed:true,expected_name:edit.name,expected_count:1});
   assert.equal(removed.status,200,await removed.clone().text());
