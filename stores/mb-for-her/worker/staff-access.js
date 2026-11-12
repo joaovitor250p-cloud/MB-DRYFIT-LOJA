@@ -42,6 +42,26 @@ export async function createStaffSession(env,{uid,email,role,owner_revision=0,pa
 export async function clearUnifiedStaffSession(req,env){
  const raw=staffToken(req);if(raw){const hash=await authDigest(raw),row=await env.DB.prepare('SELECT * FROM staff_access_sessions WHERE token_hash=?').bind(hash).first();if(row?.parent_hash)try{await rootAuthority(env,row.parent_hash,sessionRootStore(row,env),'logout')}catch{}await env.DB.prepare('DELETE FROM staff_access_sessions WHERE token_hash=?').bind(hash).run()}return staffClear;
 }
+
+export async function staffSessionDiagnostic(req,env){
+ if(!unifiedStaffEnabled(env))return 'legacy';
+ const raw=staffToken(req);
+ if(!raw)return 'missing_staff_cookie';
+ const hash=await authDigest(raw);
+ const row=await env.DB.prepare('SELECT * FROM staff_access_sessions WHERE token_hash=?').bind(hash).first();
+ if(!row)return 'revoked_staff_session';
+ if(row.expires_at<=new Date().toISOString())return 'expired_staff_session';
+ if(row.parent_hash){
+  const root=sessionRootStore(row,env);
+  if(row.role==='owner'&&root!=='dryfit')return 'invalid_owner_origin';
+  try{
+   const authority=await rootAuthority(env,row.parent_hash,root);
+   if(!authority?.active||authority.role!==row.role||authority.email!==row.email)return 'invalid_parent_session';
+  }catch{return 'bridge_unavailable'}
+ }else if(!await localRootSession(env,row.token_hash))return 'root_authority_changed';
+ return row.role==='owner'?'owner_verified':'seller_verified';
+}
+
 export async function handleUnifiedStaff(req,env){
  const u=new URL(req.url),store=staffStore(env);try{
   if(u.pathname==='/api/staff-access/authority'){
