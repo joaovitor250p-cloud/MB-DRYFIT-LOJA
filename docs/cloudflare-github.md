@@ -39,3 +39,7 @@ O workflow **Publicar lojas na conta Cloudflare** exige disparo manual e a frase
 ## Estado atual
 
 A preparação no GitHub não significa site publicado. Ainda faltam recursos/IDs da conta, conexão segura, consolidação da revisão, exportação/importação e restauração verificada dos dados, configuração dos acessos e validação dos novos endereços. Os sites originais não foram alterados.
+
+## Recursos D1 criados e confirmados
+
+Na conta confirmada `d7a2b42a954796ce0ba8c2b6cccf1265`, foram criados separadamente `mb-dryfit-db` (`4550e9b3-16af-47c9-99d8-b65594ad5553`) e `mb-for-her-db` (`9d35dce4-4f58-4a00-9578-574e23bb13f1`). O banco preexistente não foi modificado. Os novos bancos permanecem vazios; nenhuma migração, importação ou publicação foi feita nessa operação. Os IDs não são credenciais. R2 e Workers ainda precisam ser configurados.

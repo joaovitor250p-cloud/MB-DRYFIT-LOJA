@@ -4,14 +4,14 @@
     "worker": "mb-dryfit",
     "origin": "https://mb-dryfit.joaovitor250p.workers.dev",
     "database_name": "mb-dryfit-db",
-    "database_id": "PREENCHER_ID_D1_DRYFIT",
+    "database_id": "4550e9b3-16af-47c9-99d8-b65594ad5553",
     "bucket": "mb-dryfit-fotos"
   },
   "her": {
     "worker": "mb-for-her",
     "origin": "https://mb-for-her.joaovitor250p.workers.dev",
     "database_name": "mb-for-her-db",
-    "database_id": "PREENCHER_ID_D1_HER",
+    "database_id": "9d35dce4-4f58-4a00-9578-574e23bb13f1",
     "bucket": "mb-for-her-fotos"
   }
 }
