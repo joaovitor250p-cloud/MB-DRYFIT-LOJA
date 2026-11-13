@@ -5,7 +5,8 @@ export function validateAppearance(input){
  if(!['original','editorial','minimal'].includes(input.template))throw Error('Escolha um modelo de página.');out.template=input.template;
  if(!['default','image','video','none'].includes(input.media_type))throw Error('Escolha o tipo de mídia.');out.media_type=input.media_type;
  const safeURL=(value,relative=false)=>{if(!value)return '';if(relative&&/^\/(?!\/)[^\s\\]*$|^#[a-zA-Z0-9_-]+$/.test(value))return value;let url;try{url=new URL(value)}catch{throw Error('Use um link HTTPS válido.')}if(url.protocol!=='https:'||url.username||url.password||value.length>2000)throw Error('Use um link HTTPS válido.');return url.href};
- out.media_url=safeURL(String(input.media_url||''));out.button_url=safeURL(String(input.button_url||'#colecao'),true);if(['image','video'].includes(out.media_type)&&!out.media_url)throw Error('Informe o link direto da imagem, GIF ou vídeo.');
+ out.logo_url=safeURL(String(input.logo_url||''));out.about_image_url=safeURL(String(input.about_image_url||''));for(const [key,max] of Object.entries({collection_title:150,collection_description:350})){if(input[key]!==undefined&&(typeof input[key]!=='string'||input[key].length>max))throw Error('Confira os textos da coleção.');out[key]=String(input[key]||'').trim()}out.show_about=input.show_about!==false;out.show_brands=input.show_brands!==false;out.media_url=safeURL(String(input.media_url||''));out.button_url=safeURL(String(input.button_url||'#colecao'),true);if(['image','video'].includes(out.media_type)&&!out.media_url)throw Error('Informe o link direto da imagem, GIF ou vídeo.');
+ if((!out.show_about&&out.button_url==='#sobre')||(!out.show_brands&&out.button_url==='#marcas'))throw Error('O botão precisa apontar para uma seção visível.');
  if(!/^#[a-fA-F0-9]{6}$/.test(input.accent||''))throw Error('Escolha uma cor válida.');out.accent=input.accent;
  return out;
 }
