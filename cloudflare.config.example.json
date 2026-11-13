@@ -2,14 +2,14 @@
   "account_id": "d7a2b42a954796ce0ba8c2b6cccf1265",
   "dryfit": {
     "worker": "mb-dryfit",
-    "origin": "https://mb-dryfit.SEU-SUBDOMINIO.workers.dev",
+    "origin": "https://mb-dryfit.joaovitor250p.workers.dev",
     "database_name": "mb-dryfit-db",
     "database_id": "PREENCHER_ID_D1_DRYFIT",
     "bucket": "mb-dryfit-fotos"
   },
   "her": {
     "worker": "mb-for-her",
-    "origin": "https://mb-for-her.SEU-SUBDOMINIO.workers.dev",
+    "origin": "https://mb-for-her.joaovitor250p.workers.dev",
     "database_name": "mb-for-her-db",
     "database_id": "PREENCHER_ID_D1_HER",
     "bucket": "mb-for-her-fotos"
