@@ -1,0 +1,18 @@
+{
+  "account_id": "d7a2b42a954796ce0ba8c2b6cccf1265",
+  "dryfit": {
+    "worker": "mb-dryfit",
+    "origin": "https://mbdryfit.com.br",
+    "database_name": "mb-dryfit-db",
+    "database_id": "4550e9b3-16af-47c9-99d8-b65594ad5553",
+    "bucket": "mb-dryfit-fotos"
+  },
+  "her": {
+    "worker": "mb-for-her",
+    "origin": "https://forher.mbdryfit.com.br",
+    "database_name": "mb-for-her-db",
+    "database_id": "9d35dce4-4f58-4a00-9578-574e23bb13f1",
+    "bucket": "mb-for-her-fotos"
+  },
+  "photos_enabled": false
+}
