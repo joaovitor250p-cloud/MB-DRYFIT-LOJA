@@ -29,7 +29,7 @@ export async function prepare(config,{root=process.cwd(),output=resolve(root,'cl
   for(const migration of migrations){const number=migration.split('_')[0];if(numbers.has(number))throw Error('Migrações conflitantes: '+number);numbers.add(number)}
   await mkdir(resolve(dest,'migrations'),{recursive:true});await writeFile(resolve(dest,'worker.js'),worker);
   for(const migration of migrations)await copyFile(resolve(source,'drizzle',migration),resolve(dest,'migrations',migration));
-  const manifest={name:store.worker,account_id:config.account_id,main:'worker.js',compatibility_date:'2026-11-01',workers_dev:true,limits:{cpu_ms:10},vars:{MB_STORE_KEY:key,MB_UNIFIED_STAFF:'1',MB_PHOTOS_ENABLED:config.photos_enabled===false?'0':'1'},d1_databases:[{binding:'DB',database_name:store.database_name,database_id:store.database_id,migrations_dir:'migrations'}],...(config.photos_enabled===false?{}:{r2_buckets:[{binding:'BUCKET',bucket_name:store.bucket}]})};
+  const manifest={name:store.worker,account_id:config.account_id,main:'worker.js',compatibility_date:'2026-11-01',workers_dev:true,vars:{MB_STORE_KEY:key,MB_UNIFIED_STAFF:'1',MB_PHOTOS_ENABLED:config.photos_enabled===false?'0':'1'},d1_databases:[{binding:'DB',database_name:store.database_name,database_id:store.database_id,migrations_dir:'migrations'}],...(config.photos_enabled===false?{}:{r2_buckets:[{binding:'BUCKET',bucket_name:store.bucket}]})};
   await writeFile(resolve(dest,'wrangler.json'),JSON.stringify(manifest,null,2)+'\n');
  }
  return output;
