@@ -4,9 +4,11 @@ Código da **MB Dryfit** e da **MB For Her**, reunido em um repositório privado
 
 ## Acessos publicados
 
-- [Entrada da equipe: Modo dono e Modo vendedor](https://atelier-loja-mw96xrv3.savoryaccordion3.chatgpt.site/acesso)
-- [Catálogo MB Dryfit](https://atelier-loja-mw96xrv3.savoryaccordion3.chatgpt.site/catalogo)
-- [Catálogo MB For Her](https://mb-for-her.savoryaccordion3.chatgpt.site/catalogo)
+- [Entrada da equipe: Modo dono e Modo vendedor](https://mb-dryfit.joaovitor250p.workers.dev/acesso)
+- [Catálogo MB Dryfit](https://mb-dryfit.joaovitor250p.workers.dev/catalogo)
+- [Catálogo MB For Her](https://mb-for-her.joaovitor250p.workers.dev/catalogo)
+
+Os endereços antigos chatgpt.site foram preservados, mas não sincronizam operações com estes bancos novos. As fotos estão temporariamente desativadas; as peças exibem imagem substituta.
 
 ### Cliente
 

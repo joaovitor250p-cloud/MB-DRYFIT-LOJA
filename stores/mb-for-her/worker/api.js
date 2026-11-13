@@ -1,3 +1,4 @@
+import {unavailablePhoto} from './photo-storage.js';
 import {handleModelManagement} from './model-management.js';
 import {authorizationFailure} from './staff-diagnostics.js';
 import {handleRetail,prepareRetailSale,retailSaleSignature} from './retail-operations.js';
@@ -27,7 +28,6 @@ const HTML="__HTML__";
 const ZXING_SOURCE="__ZXING_SOURCE__";
 const QZ_SOURCE="__QZ_SOURCE__";
 const json=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store'}});
-function unavailablePhoto(){return new Response('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="750" viewBox="0 0 600 750"><rect width="600" height="750" fill="#f2f2f0"/><path d="M205 260h190v170H205z M205 400l65-70 50 45 30-30 45 55" fill="none" stroke="#999" stroke-width="5"/><text x="300" y="490" text-anchor="middle" fill="#666" font-family="Arial,sans-serif" font-size="20">Foto em breve</text></svg>',{headers:{'Content-Type':'image/svg+xml','X-Content-Type-Options':'nosniff','Cache-Control':'no-store'}})}
 
 export function validate(p){if(!p||typeof p.name!=='string'||!p.name.trim()||p.name.length>120)throw Error('Informe um nome de até 120 caracteres.');if(!Number.isInteger(p.price)||p.price<0||p.price>999999999)throw Error('Preço inválido.');if(!Number.isInteger(p.stock)||p.stock<0||p.stock>999999)throw Error('Estoque inválido.');if(p.barcode&&!/^[A-Z0-9 .$/+%\-]{1,48}$/.test(p.barcode))throw Error('Código inválido. Use letras maiúsculas e números.');if(p.brand&&!['Nike','Adidas','Jordan','Puma','On','Outra'].includes(p.brand))throw Error('Marca inválida.');return {brand:p.brand||'',size:String(p.size||'').trim().slice(0,30),color:String(p.color||'').trim().slice(0,50),name:p.name.trim(),description:String(p.description||'').slice(0,3000),category:String(p.category||'Geral').slice(0,60),price:p.price,stock:p.stock,barcode:String(p.barcode||'').trim().slice(0,48),extra_code:String(p.extra_code||'').slice(0,40),photo:p.photo||null,active:p.active===false?0:1};}
 export function staffLoginHTML(template,email){return template.replace('__STAFF_LOGIN_EMAIL__',String(email).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c])))}

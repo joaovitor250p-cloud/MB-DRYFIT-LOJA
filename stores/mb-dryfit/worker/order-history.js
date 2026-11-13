@@ -1,3 +1,4 @@
+import {unavailablePhoto} from './photo-storage.js';
 import {readShopJSON} from './customer-auth.js';
 const orderHistoryReply=(data,status=200,cookie)=>Response.json(data,{status,headers:{'Cache-Control':'no-store',...(cookie?{'Set-Cookie':cookie}:{})}});
 function orderScope(req,env){return env.MB_STORE_KEY||new URL(req.url).host}
@@ -24,7 +25,7 @@ export async function handleOrderHistory(req,env){const u=new URL(req.url),path=
   statements.push(env.DB.prepare('INSERT OR IGNORE INTO shop_order_access(viewer_id,order_id) SELECT ?,order_id FROM shop_order_recovery WHERE token_hash=? AND used_at IS NULL AND expires_at>?').bind(viewer.id,hash,now),env.DB.prepare('UPDATE shop_order_recovery SET used_at=? WHERE token_hash=? AND used_at IS NULL AND expires_at>?').bind(now,hash,now));const result=await env.DB.batch(statements);if(!result.at(-1).meta.changes)return orderHistoryReply({error:'Código inválido, expirado ou já utilizado.'},404);return orderHistoryReply({ok:true},200,viewer.cookie)
  }
  const photo=path.match(/^\/api\/shop\/order-photo\/([a-zA-Z0-9-]+)\/([a-zA-Z0-9-]+)$/);if(photo&&req.method==='GET'){
-  const viewer=await orderViewer(req,env);if(!viewer)return orderHistoryReply({error:'Não encontrado.'},404);const row=await env.DB.prepare('SELECT i.photo FROM shop_order_items i JOIN shop_order_access g ON g.order_id=i.order_id WHERE i.order_id=? AND i.product_id=? AND g.viewer_id=? LIMIT 1').bind(photo[1],photo[2],viewer.id).first(),key=row?.photo?.match(/^\/(?:api\/photos|catalogo\/fotos)\/([a-zA-Z0-9-]+)$/)?.[1];if(!key)return orderHistoryReply({error:'Não encontrado.'},404);const obj=await env.BUCKET.get('photos/'+key);if(!obj)return orderHistoryReply({error:'Não encontrado.'},404);return new Response(obj.body,{headers:{'Content-Type':obj.httpMetadata?.contentType||'image/jpeg','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}})
+  const viewer=await orderViewer(req,env);if(!viewer)return orderHistoryReply({error:'Não encontrado.'},404);const row=await env.DB.prepare('SELECT i.photo FROM shop_order_items i JOIN shop_order_access g ON g.order_id=i.order_id WHERE i.order_id=? AND i.product_id=? AND g.viewer_id=? LIMIT 1').bind(photo[1],photo[2],viewer.id).first(),key=row?.photo?.match(/^\/(?:api\/photos|catalogo\/fotos)\/([a-zA-Z0-9-]+)$/)?.[1];if(!key)return orderHistoryReply({error:'Não encontrado.'},404);if(!env.BUCKET||env.MB_PHOTOS_ENABLED==='0')return unavailablePhoto();const obj=await env.BUCKET.get('photos/'+key);if(!obj)return orderHistoryReply({error:'Não encontrado.'},404);return new Response(obj.body,{headers:{'Content-Type':obj.httpMetadata?.contentType||'image/jpeg','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}})
  }
  return null;
 }
