@@ -1,7 +1,7 @@
 /* Same renderer for the public catalog, saved preview and live editor iframe. */
 (async function(){
  try{
-  const query=new URLSearchParams(location.search),preview=query.get('preview')==='appearance';
+  const query=new URLSearchParams(location.search),preview=query.get('preview')==='appearance';document.documentElement.dataset.appearanceLive=String(preview&&query.get('live')==='1');
   const response=await fetch(preview?'/api/storefront-settings':'/api/shop/appearance',{cache:'no-store',credentials:'same-origin'});
   if(!response.ok)return;const saved=await response.json();
   const originals=new Map(),initialNodes=new Map();
