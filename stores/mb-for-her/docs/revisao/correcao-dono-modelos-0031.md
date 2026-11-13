@@ -18,8 +18,8 @@ Adiciona archived_at, índices, auditoria e gatilho que impede apagar produtos c
 Pendências anteriores continuam: Dryfit 0030 e 0031; For Her 0026 até 0031. Verificar estado atual de cada banco novamente antes de qualquer implantação.
 
 ## Evidências
-Dryfit: 353 testes da suíte + 1 teste de migração 0031, todos aprovados.
-For Her: 306 testes da suíte + 1 teste de migração 0031, todos aprovados.
+Dryfit: 354 testes da suíte, incluindo migração 0031, todos aprovados.
+For Her: 307 testes da suíte, incluindo migração 0031, todos aprovados.
 Builds das duas lojas aprovados; 10 scripts inline empacotados analisados sintaticamente.
 Testes de integração usam cookies emitidos pelo login real do worker em bancos isolados, não apenas identidade simulada: gravação e releitura do modelo, códigos/estoque preservados, variação nova, vendedor 403, expiração/revogação, troca assinada de loja, indisponibilidade da autoridade, exclusão/arquivamento e concorrência. Não foram usados cookies de produção nem feitas operações financeiras em dados reais.
 
@@ -29,3 +29,6 @@ Cópias recuperáveis de código anteriores permanecem em /workspace/recovery/du
 
 ## Arquivos principais
 worker/staff-access.js, owner-access.js, staff-diagnostics.js, staff-session-ui.js, staff-hub.html, owner-login.html, api.js, page.html, model-management.js, model-management-ui.js, staff-sales.js, layout-admin.css; scripts/build.mjs; drizzle/0031_model_management.sql. Testes de autorização, interface, modelos, migração e preservação de histórico foram adicionados/ajustados em tests/.
+
+## Consolidação pendente
+O remoto modernizacao/etapas-1-2 recebeu outras alterações de administração durante esta revisão, incluindo uma migração alternativa 0031_model_archive_guard.sql. Esta implementação foi preservada separadamente em revisao/correcao-dono-modelos-0031, sem sobrescrever a branch remota. Não aplicar as duas migrações 0031 juntas: ambas adicionam archived_at. Comparar e consolidar implementações e testes antes de liberar qualquer versão. Os resultados acima correspondem a esta branch isolada, não a uma combinação das duas revisões.
