@@ -102,3 +102,7 @@ Migrações já aplicadas são imutáveis: alterações de esquema entram em nov
 ## Dependências
 
 As dependências e suas versões estão nos arquivos de lock. Os arquivos de bibliotecas em `vendor/` preservam os avisos dos respectivos projetos. Não remover os avisos de terceiros ao redistribuir esses arquivos.
+
+## Hospedagem pela sua conta Cloudflare
+
+A preparação para GitHub + Workers + D1 + R2 está documentada em [Publicação Cloudflare](docs/cloudflare-github.md). Os workflows são manuais e não migram nem apagam dados. Preparar o código não publica os sites nem transfere os bancos atuais.

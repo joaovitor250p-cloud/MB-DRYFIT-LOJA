@@ -1,0 +1,41 @@
+name: Publicar lojas na conta Cloudflare
+on:
+  workflow_dispatch:
+    inputs:
+      confirmacao:
+        description: 'Digite PUBLICAR DUAS LOJAS após revisar migrações, dados e segredos'
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: publicar-cloudflare-mb
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: inputs.confirmacao == 'PUBLICAR DUAS LOJAS'
+    environment: cloudflare-producao
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MB_CLOUDFLARE_CONFIG_JSON: ${{ vars.MB_CLOUDFLARE_CONFIG_JSON }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run test:hosting
+      - run: npm run cloudflare:prepare
+      - run: npx --no-install wrangler deploy --dry-run --config cloudflare-dist/dryfit/wrangler.json
+      - run: npx --no-install wrangler deploy --dry-run --config cloudflare-dist/her/wrangler.json
+      - name: Conferir esquema existente da MB Dryfit (somente leitura)
+        run: npx --no-install wrangler d1 execute DB --remote --config cloudflare-dist/dryfit/wrangler.json --command "SELECT archived_at FROM products LIMIT 0; SELECT guard_count FROM model_change_events LIMIT 0; SELECT token_hash FROM staff_access_sessions LIMIT 0; SELECT viewer_id FROM shop_order_access LIMIT 0;"
+      - name: Conferir esquema existente da MB For Her (somente leitura)
+        run: npx --no-install wrangler d1 execute DB --remote --config cloudflare-dist/her/wrangler.json --command "SELECT archived_at FROM products LIMIT 0; SELECT guard_count FROM model_change_events LIMIT 0; SELECT token_hash FROM staff_access_sessions LIMIT 0; SELECT viewer_id FROM shop_order_access LIMIT 0;"
+      # Nenhuma migração ou criação de recursos automática neste workflow.
+      - run: npx --no-install wrangler deploy --config cloudflare-dist/dryfit/wrangler.json --keep-vars
+      - run: npx --no-install wrangler deploy --config cloudflare-dist/her/wrangler.json --keep-vars

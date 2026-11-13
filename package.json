@@ -2,7 +2,7 @@
   "name": "mb-dryfit-loja",
   "version": "1.0.0",
   "private": true,
-  "description": "C\u00f3digo da MB Dryfit e MB For Her, com cat\u00e1logo, gest\u00e3o e acesso unificado.",
+  "description": "Código da MB Dryfit e MB For Her, com catálogo, gestão e acesso unificado.",
   "workspaces": [
     "stores/mb-dryfit",
     "stores/mb-for-her"
@@ -10,9 +10,14 @@
   "scripts": {
     "test": "npm test --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
-    "check": "npm test && npm run build"
+    "check": "npm test && npm run build",
+    "test:hosting": "node --test tests/*.test.mjs",
+    "cloudflare:prepare": "node scripts/cloudflare-prepare.mjs"
   },
   "engines": {
     "node": ">=24"
+  },
+  "devDependencies": {
+    "wrangler": "^4.161.0"
   }
 }
