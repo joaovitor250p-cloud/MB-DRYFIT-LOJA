@@ -1,0 +1,16 @@
+const appearanceReply=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store'}});
+export function validateAppearance(input){
+ if(!input||typeof input!=='object'||Array.isArray(input))throw Error('Configuração inválida.');
+ const out={};for(const [key,max] of Object.entries({announcement:140,eyebrow:100,title:120,subtitle:350,button_text:45,about:3000})){if(typeof input[key]!=='string'||input[key].length>max)throw Error('Confira o campo '+key+'.');out[key]=input[key].trim()}
+ if(!['original','editorial','minimal'].includes(input.template))throw Error('Escolha um modelo de página.');out.template=input.template;
+ if(!['default','image','video','none'].includes(input.media_type))throw Error('Escolha o tipo de mídia.');out.media_type=input.media_type;
+ const safeURL=(value,relative=false)=>{if(!value)return '';if(relative&&/^\/(?!\/)[^\s\\]*$|^#[a-zA-Z0-9_-]+$/.test(value))return value;let url;try{url=new URL(value)}catch{throw Error('Use um link HTTPS válido.')}if(url.protocol!=='https:'||url.username||url.password||value.length>2000)throw Error('Use um link HTTPS válido.');return url.href};
+ out.media_url=safeURL(String(input.media_url||''));out.button_url=safeURL(String(input.button_url||'#colecao'),true);if(['image','video'].includes(out.media_type)&&!out.media_url)throw Error('Informe o link direto da imagem, GIF ou vídeo.');
+ if(!/^#[a-fA-F0-9]{6}$/.test(input.accent||''))throw Error('Escolha uma cor válida.');out.accent=input.accent;
+ return out;
+}
+export async function handleAppearance(req,env,member){const path=new URL(req.url).pathname,publicRead=path==='/api/shop/appearance';if(!publicRead&&member?.role!=='owner')return appearanceReply({error:'Apenas o dono pode personalizar o catálogo.'},403);if(publicRead&&req.method!=='GET')return appearanceReply({error:'Use GET.'},405);
+ try{const row=await env.DB.prepare("SELECT * FROM storefront_settings WHERE id='appearance'").first();if(!row)throw Error('Configuração do catálogo indisponível.');if(publicRead)return appearanceReply({appearance:JSON.parse(row.published),revision:row.revision});if(req.method==='GET')return appearanceReply({draft:JSON.parse(row.draft),published:JSON.parse(row.published),revision:row.revision,store:env.MB_STORE_KEY});
+ if(req.method!=='PUT')return appearanceReply({error:'Operação inválida.'},405);const data=await req.json();if(!Number.isInteger(data.expected_revision)||!['draft','publish'].includes(data.action))return appearanceReply({error:'Atualize a configuração antes de salvar.'},400);const appearance=JSON.stringify(validateAppearance(data.appearance)),now=new Date().toISOString();const result=await env.DB.prepare("UPDATE storefront_settings SET draft=?,published=CASE WHEN ?='publish' THEN ? ELSE published END,revision=revision+1,updated_at=?,updated_by=? WHERE id='appearance' AND revision=?").bind(appearance,data.action,appearance,now,member.id,data.expected_revision).run();if(result.meta.changes!==1)return appearanceReply({error:'Outro acesso alterou o catálogo. Reabra o editor para conferir as mudanças.'},409);return appearanceReply({ok:true,revision:data.expected_revision+1,published:data.action==='publish'});
+ }catch(e){return appearanceReply({error:e.message},400)}
+}
