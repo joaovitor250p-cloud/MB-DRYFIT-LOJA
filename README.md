@@ -4,9 +4,9 @@ Código da **MB Dryfit** e da **MB For Her**, reunido em um repositório privado
 
 ## Acessos publicados
 
-- [Entrada da equipe: Modo dono e Modo vendedor](https://mb-dryfit.joaovitor250p.workers.dev/acesso)
-- [Catálogo MB Dryfit](https://mb-dryfit.joaovitor250p.workers.dev/catalogo)
-- [Catálogo MB For Her](https://mb-for-her.joaovitor250p.workers.dev/catalogo)
+- [Entrada da equipe: Modo dono e Modo vendedor](https://mbdryfit.com.br/acesso)
+- [Catálogo MB Dryfit](https://mbdryfit.com.br)
+- [Catálogo MB For Her](https://forher.mbdryfit.com.br)
 
 Os endereços antigos chatgpt.site foram preservados, mas não sincronizam operações com estes bancos novos. As fotos estão temporariamente desativadas; as peças exibem imagem substituta.
 
@@ -22,7 +22,7 @@ Entra no acesso compartilhado da equipe e abre a MB Dryfit. Dentro do painel, es
 
 Entra com e-mail e uma única senha do dono e abre a MB Dryfit. Depois pode alternar entre as duas pelo botão Trocar de loja na barra lateral ou superior, sem outro login. Estoque, equipe, clientes, fotos, cupons e resultados continuam separados por loja.
 
-O e-mail do ChatGPT não libera os modos de negócio. O dono não precisa informar uma segunda senha nem entrar primeiro na conta dos vendedores. Os novos logins abrem a MB Dryfit. Ambos os modos usam a troca de loja dentro do painel principal e têm login com e-mail preenchido, senha, Entrar e Esqueci minha senha. A entrada de equipe da For Her aponta para a principal. Configurações está vazia para reorganização futura. A sessão e as permissões são conferidas no servidor. O login da equipe persiste por 30 dias, com renovação durante o uso do painel, e sobrevive ao fechamento do navegador. Sair explicitamente revoga o acesso.
+O e-mail do ChatGPT não libera os modos de negócio. O dono não precisa informar uma segunda senha nem entrar primeiro na conta dos vendedores. Os novos logins abrem a MB Dryfit. Ambos os modos usam a troca de loja dentro do painel principal e têm login com e-mail preenchido, senha, Entrar e Esqueci minha senha. A entrada de equipe da For Her aponta para a principal. Configurações está vazia para reorganização futura; Personalizar catálogo possui sua própria área. A central agora tem cartões Sou o dono/Sou vendedor e retorno à seleção nos formulários. A sessão e as permissões são conferidas no servidor. O login da equipe persiste por 30 dias, com renovação durante o uso do painel, e sobrevive ao fechamento do navegador. Sair explicitamente revoga o acesso.
 
 O repositório privado guarda o código e é acessível com a conta GitHub autorizada. Para visualizar a loja funcionando, use os links dos catálogos acima. GitHub Pages não executa o Worker, D1 e R2 deste projeto. O GitHub Actions testa e compila o código, mas não publica automaticamente nos sites.
 
@@ -89,7 +89,7 @@ Os valores reais ficam nas variáveis de ambiente do provedor, fora do Git:
 
 Os arquivos `.env.example` apresentam apenas os nomes das variáveis. Não colocar senhas, tokens ou chaves reais no repositório. O cadastro de senhas ocorre pela aplicação; o código não contém senhas iniciais.
 
-O build de cada unidade gera `dist/server/index.js` e suas migrações. A hospedagem atual continua no Sites, com D1 (`DB`) e R2 (`BUCKET`). Os IDs existentes em `.openai/hosting.json` identificam as publicações atuais; não criar outros projetos por acidente.
+O build de cada unidade gera `dist/server/index.js` e suas migrações. A hospedagem atual usa os Workers `mb-dryfit` e `mb-for-her` na conta Cloudflare do titular, cada um com D1 (`DB`) independente. Fotos estão desativadas e não há binding R2 ativo. Os IDs em `.openai/hosting.json` pertencem aos Sites antigos; não publicar neles por engano. Consulte `docs/revisao/central-acesso-dominios-oficiais.md` para a publicação atual.
 
 Consulte também o [funcionamento dos acessos unificados](stores/mb-dryfit/docs/acessos-unificados.md).
 
