@@ -13,5 +13,6 @@
     "database_name": "mb-for-her-db",
     "database_id": "9d35dce4-4f58-4a00-9578-574e23bb13f1",
     "bucket": "mb-for-her-fotos"
-  }
+  },
+  "photos_enabled": false
 }

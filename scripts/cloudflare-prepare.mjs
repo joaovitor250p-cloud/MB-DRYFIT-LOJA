@@ -10,8 +10,8 @@ export function validateConfig(config){
   const url=new URL(store.origin);if(url.protocol!=='https:'||url.pathname!=='/'||url.search||url.hash||url.username||url.password||!url.hostname.endsWith('.workers.dev'))throw Error('Use a origem HTTPS workers.dev de cada loja, sem caminho.');
   if(!/^[a-z0-9][a-z0-9-]{2,62}$/.test(store.worker||'')||!url.hostname.startsWith(store.worker+'.'))throw Error('O nome do Worker deve corresponder ao endereço.');
   if(!/^[a-f0-9-]{36}$/.test(store.database_id||'')||!/^mb-[a-z0-9-]+$/.test(store.database_name||''))throw Error('Configure o banco D1 da loja.');
-  if(!/^mb-[a-z0-9-]{2,59}$/.test(store.bucket||''))throw Error('Configure o bucket de fotos da loja.');
-  if(ids.has(store.database_id)||buckets.has(store.bucket)||origins.has(url.origin))throw Error('As lojas precisam de bancos, fotos e endereços separados.');
+  if(config.photos_enabled!==false&&!/^mb-[a-z0-9-]{2,59}$/.test(store.bucket||''))throw Error('Configure o bucket de fotos da loja.');
+  if(ids.has(store.database_id)||(config.photos_enabled!==false&&buckets.has(store.bucket))||origins.has(url.origin))throw Error('As lojas precisam de bancos, fotos e endereços separados.');
   ids.add(store.database_id);buckets.add(store.bucket);origins.add(url.origin);
  }
  return config;
@@ -29,7 +29,7 @@ export async function prepare(config,{root=process.cwd(),output=resolve(root,'cl
   for(const migration of migrations){const number=migration.split('_')[0];if(numbers.has(number))throw Error('Migrações conflitantes: '+number);numbers.add(number)}
   await mkdir(resolve(dest,'migrations'),{recursive:true});await writeFile(resolve(dest,'worker.js'),worker);
   for(const migration of migrations)await copyFile(resolve(source,'drizzle',migration),resolve(dest,'migrations',migration));
-  const manifest={name:store.worker,account_id:config.account_id,main:'worker.js',compatibility_date:'2026-11-01',workers_dev:true,limits:{cpu_ms:10},vars:{MB_STORE_KEY:key,MB_UNIFIED_STAFF:'1'},d1_databases:[{binding:'DB',database_name:store.database_name,database_id:store.database_id,migrations_dir:'migrations'}],r2_buckets:[{binding:'BUCKET',bucket_name:store.bucket}]};
+  const manifest={name:store.worker,account_id:config.account_id,main:'worker.js',compatibility_date:'2026-11-01',workers_dev:true,limits:{cpu_ms:10},vars:{MB_STORE_KEY:key,MB_UNIFIED_STAFF:'1',MB_PHOTOS_ENABLED:config.photos_enabled===false?'0':'1'},d1_databases:[{binding:'DB',database_name:store.database_name,database_id:store.database_id,migrations_dir:'migrations'}],...(config.photos_enabled===false?{}:{r2_buckets:[{binding:'BUCKET',bucket_name:store.bucket}]})};
   await writeFile(resolve(dest,'wrangler.json'),JSON.stringify(manifest,null,2)+'\n');
  }
  return output;

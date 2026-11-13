@@ -19,3 +19,5 @@ test('packaging changes only output links, keeps store bindings isolated and ref
   await writeFile(join(root,'stores/mb-dryfit/drizzle/0000_conflict.sql'),'SELECT 1;');await assert.rejects(prepare(config(),{root}),/conflitantes/);
  }finally{await rm(root,{recursive:true,force:true})}
 });
+
+test('explicit photo-free setup accepts no bucket and never configures an R2 binding',()=>{const c=config();c.photos_enabled=false;delete c.dryfit.bucket;delete c.her.bucket;assert.equal(validateConfig(c),c)});
