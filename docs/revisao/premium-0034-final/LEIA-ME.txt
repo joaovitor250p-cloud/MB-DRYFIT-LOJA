@@ -1,0 +1,9 @@
+MB Dryfit + MB For Her — revisão premium 0034, ajustes finais
+
+1. Extraia TODO o arquivo ZIP para uma pasta.
+2. Abra ABRIR_CAPTURAS.html no Chrome, Edge ou outro navegador.
+3. Clique nas capturas para ampliar. O vídeo pode ser reproduzido nessa galeria.
+4. Leia RELATORIO_AJUSTES_FINAIS.md para os testes e limitações.
+
+São capturas reais do projeto executado em ambiente isolado.
+Esta modernização NÃO foi publicada nas lojas oficiais.
