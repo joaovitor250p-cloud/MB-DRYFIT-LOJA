@@ -48,7 +48,6 @@ export async function handleOwnerAccess(req,env,identity,member){
   }
   if(path==='/api/owner-access/login'&&req.method==='POST'){
    if(!unifiedStaffEnabled(env)||env.MB_STORE_KEY!=='dryfit')return ownerReply({error:'Use a entrada única do dono na MB Dryfit.'},409);
-   const active=await readUnifiedStaffSession(req,env);if(active?.role==='seller')return ownerReply({error:'Saia do modo vendedor antes de entrar como dono.'},409);
    const data=await readShopJSON(req,2000),email=typeof data.email==='string'?data.email.trim().toLowerCase():'';if(email.length>254||typeof data.password!=='string'||data.password.length<8||data.password.length>128)return ownerReply({error:'Confira o e-mail e a senha do dono.'},400);
    const now=new Date().toISOString(),expires=new Date(Date.now()+900000).toISOString(),throttle=await authDigest('owner-single-login:'+(req.headers.get('CF-Connecting-IP')||'unknown'));
    await env.DB.prepare('INSERT INTO auth_throttles (id,attempts,expires_at) VALUES (?,1,?) ON CONFLICT(id) DO UPDATE SET attempts=CASE WHEN expires_at<=? THEN 1 ELSE attempts+1 END,expires_at=CASE WHEN expires_at<=? THEN excluded.expires_at ELSE expires_at END').bind(throttle,expires,now,now).run();

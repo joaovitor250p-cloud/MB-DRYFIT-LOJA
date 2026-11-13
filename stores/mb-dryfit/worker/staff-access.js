@@ -10,29 +10,38 @@ async function staffKey(env){if(typeof env.MB_STAFF_BRIDGE_KEY!=='string'||env.M
 async function staffSign(env,text){return staffHex(await crypto.subtle.sign('HMAC',await staffKey(env),new TextEncoder().encode(text)))}
 async function staffVerify(env,text,signature){if(!/^[0-9a-f]{64}$/.test(signature||''))return false;return crypto.subtle.verify('HMAC',await staffKey(env),Uint8Array.from(signature.match(/../g),v=>parseInt(v,16)),new TextEncoder().encode(text))}
 async function staffMember(env,email){const row=await env.DB.prepare('SELECT id FROM members WHERE lower(email)=?').bind(email).first();if(row)return row.id;const uid='staff-'+crypto.randomUUID();await env.DB.prepare("INSERT INTO members(id,email,role,shared_seller) VALUES (?,?,'customer',0)").bind(uid,email).run();return uid}
-async function localRootSession(env,hash){
- const row=await env.DB.prepare('SELECT * FROM staff_access_sessions WHERE token_hash=? AND parent_hash IS NULL AND expires_at>?').bind(hash,new Date().toISOString()).first();if(!row)return null;
- if(row.role==='owner'){if(staffStore(env).key!=='dryfit')return null;const config=await env.DB.prepare("SELECT email,revision FROM store_owner_access WHERE id='primary'").first();if(!config||row.email!==config.email||row.owner_revision!==config.revision)return null}
- else{const access=await env.DB.prepare("SELECT email FROM vendor_access WHERE id='shared'").first();if(access?.email!==row.email)return null}
- return row;
+async function inspectLocalRoot(env,hash){
+ const row=await env.DB.prepare('SELECT * FROM staff_access_sessions WHERE token_hash=? AND parent_hash IS NULL').bind(hash).first();if(!row)return {session:null,reason:'session_missing'};
+ if(!Number.isFinite(Date.parse(row.expires_at))||Date.parse(row.expires_at)<=Date.now())return {session:null,reason:'session_expired'};
+ if(row.role==='owner'){if(staffStore(env).key!=='dryfit')return {session:null,reason:'owner_root_store_invalid'};const config=await env.DB.prepare("SELECT email,revision FROM store_owner_access WHERE id='primary'").first();if(!config)return {session:null,reason:'owner_configuration_missing'};if(row.email!==config.email)return {session:null,reason:'owner_email_changed'};if(row.owner_revision!==config.revision)return {session:null,reason:'owner_credentials_changed'}}
+ else{const access=await env.DB.prepare("SELECT email FROM vendor_access WHERE id='shared'").first();if(access?.email!==row.email)return {session:null,reason:'seller_access_changed'}}
+ return {session:row,reason:'ok'};
 }
-async function bridgeRequest(env,target,fields){const destination=STAFF_STORES.find(s=>s.key===target);if(!destination)return null;const body=JSON.stringify({...fields,issuer:staffStore(env).key,time:Date.now()}),signature=await staffSign(env,body);const response=await fetch(destination.origin+'/api/staff-access/authority',{method:'POST',headers:{'Content-Type':'application/json','X-MB-Bridge-Signature':signature,'User-Agent':'Mozilla/5.0 MB-Staff-Bridge/1.0'},body,signal:AbortSignal.timeout(6000)});return response.ok?response.json():null}
+async function localRootSession(env,hash){return (await inspectLocalRoot(env,hash)).session}
+async function bridgeRequest(env,target,fields){const destination=STAFF_STORES.find(s=>s.key===target);if(!destination)return null;const body=JSON.stringify({...fields,issuer:staffStore(env).key,time:Date.now()}),signature=await staffSign(env,body);const response=await fetch(destination.origin+'/api/staff-access/authority',{method:'POST',headers:{'Content-Type':'application/json','X-MB-Bridge-Signature':signature,'User-Agent':'Mozilla/5.0 MB-Staff-Bridge/1.0'},body,signal:AbortSignal.timeout(6000)});if(!response.ok)throw Object.assign(Error('Não foi possível validar a sessão entre as lojas. Tente novamente.'),{status:503,code:'AUTH_AUTHORITY_UNAVAILABLE'});return response.json()}
 async function rootAuthority(env,hash,target,action='introspect'){
  if(target!==staffStore(env).key)return bridgeRequest(env,target,{session_hash:hash,action});
- const row=await localRootSession(env,hash);if(action==='logout'){await env.DB.prepare('DELETE FROM staff_access_sessions WHERE token_hash=? AND parent_hash IS NULL').bind(hash).run();return {active:false}}
- if(!row)return {active:false};if(action==='renew'){row.expires_at=new Date(Date.now()+30*86400000).toISOString();await env.DB.prepare('UPDATE staff_access_sessions SET expires_at=? WHERE token_hash=?').bind(row.expires_at,hash).run()}
+ const checked=await inspectLocalRoot(env,hash),row=checked.session;if(action==='logout'){await env.DB.prepare('DELETE FROM staff_access_sessions WHERE token_hash=? AND parent_hash IS NULL').bind(hash).run();return {active:false}}
+ if(!row)return {active:false,reason:checked.reason};if(action==='renew'){row.expires_at=new Date(Date.now()+30*86400000).toISOString();await env.DB.prepare('UPDATE staff_access_sessions SET expires_at=? WHERE token_hash=?').bind(row.expires_at,hash).run()}
  return {active:true,role:row.role,email:row.email,expires_at:row.expires_at};
 }
 function sessionRootStore(session,env){return session.parent_hash?(session.parent_store||'dryfit'):staffStore(env).key}
-export async function readUnifiedStaffSession(req,env){
- if(!unifiedStaffEnabled(env))return null;const raw=staffToken(req);if(!raw)return null;const row=await env.DB.prepare('SELECT * FROM staff_access_sessions WHERE token_hash=? AND expires_at>?').bind(await authDigest(raw),new Date().toISOString()).first();if(!row)return null;
- if(!row.parent_hash)return await localRootSession(env,row.token_hash)?row:null;
- const rootStore=sessionRootStore(row,env);if(row.role==='owner'&&rootStore!=='dryfit')return null;
- try{const parent=await rootAuthority(env,row.parent_hash,rootStore);return parent?.active&&parent.role===row.role&&parent.email===row.email?row:null}catch{return null}
+async function inspectStaffSession(req,env){
+ if(!unifiedStaffEnabled(env))return {session:null,reason:'legacy_auth'};
+ const raw=staffToken(req);if(!raw)return {session:null,reason:(req.headers.get('Cookie')||'').includes('__Host-mb_staff=')?'invalid_staff_cookie':'no_staff_cookie'};
+ const row=await env.DB.prepare('SELECT * FROM staff_access_sessions WHERE token_hash=?').bind(await authDigest(raw)).first();if(!row)return {session:null,reason:'session_missing'};
+ if(!Number.isFinite(Date.parse(row.expires_at))||Date.parse(row.expires_at)<=Date.now())return {session:null,reason:'session_expired'};
+ if(!row.parent_hash)return inspectLocalRoot(env,row.token_hash);
+ const rootStore=sessionRootStore(row,env);if(row.role==='owner'&&rootStore!=='dryfit')return {session:null,reason:'owner_root_store_invalid'};
+ try{const parent=await rootAuthority(env,row.parent_hash,rootStore);if(!parent?.active)return {session:null,reason:'parent_'+(parent?.reason||'session_inactive')};if(parent.role!==row.role||parent.email!==row.email)return {session:null,reason:'parent_role_changed'};return {session:row,reason:'ok'}}catch{return {session:null,reason:'authority_unavailable',transient:true}}
 }
+export async function readUnifiedStaffSession(req,env){const checked=await inspectStaffSession(req,env);if(checked.transient)throw Object.assign(Error('Não foi possível validar sua sessão. Tente novamente.'),{status:503,code:'AUTH_AUTHORITY_UNAVAILABLE'});return checked.session}
 export async function staffRequestIdentity(req,env){
- if(!unifiedStaffEnabled(env))return shopRequestIdentity(req,env);const session=await readUnifiedStaffSession(req,env);if(session)return {uid:session.user_id,email:session.email,account:{id:session.user_id,email:session.email,staff_session:true},staffMode:session};
- const account=await customerSession(req,env);if(!account)return {uid:null,email:null,account:null};const member=await env.DB.prepare('SELECT id FROM members WHERE lower(email)=?').bind(account.email).first();return {uid:member?.id||'account-'+account.id,email:account.email,account};
+ if(!unifiedStaffEnabled(env)){const identity=await shopRequestIdentity(req,env);return {...identity,auth:{source:identity.account?'account_cookie':identity.uid?'platform_identity':'none',reason:identity.uid?'ok':'not_authenticated',store_key:staffStore(env).key}}}
+ const checked=await inspectStaffSession(req,env),session=checked.session,auth={source:session?'staff_cookie':'none',reason:checked.reason,transient:!!checked.transient,store_key:staffStore(env).key};
+ if(session)return {uid:session.user_id,email:session.email,account:{id:session.user_id,email:session.email,staff_session:true},staffMode:session,auth};
+ if(checked.transient)return {uid:null,email:null,account:null,auth};
+ const account=await customerSession(req,env);if(!account)return {uid:null,email:null,account:null,auth};const member=await env.DB.prepare('SELECT id FROM members WHERE lower(email)=?').bind(account.email).first();return {uid:member?.id||'account-'+account.id,email:account.email,account,auth:{...auth,source:'account_cookie'}};
 }
 export async function createStaffSession(env,{uid,email,role,owner_revision=0,parent_hash=null,parent_store=null,expires_at=null}){
  if(!['owner','seller'].includes(role))throw Error('Modo inválido.');const token=staffHex(crypto.getRandomValues(new Uint8Array(32))),token_hash=await authDigest(token),expires=expires_at||new Date(Date.now()+30*86400000).toISOString();
@@ -80,5 +89,5 @@ export async function handleUnifiedStaff(req,env){
    const claim={iss:store.key,aud:target,root_store:sessionRootStore(row,env),role:row.role,email:row.email,parent:row.parent_hash||row.token_hash,nonce:crypto.randomUUID(),exp:Date.now()+45000},encoded=btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(claim)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');return staffReply({action:STAFF_STORES.find(s=>s.key===target).origin+'/acesso/continuar',ticket:encoded+'.'+await staffSign(env,encoded)});
   }
   return staffReply({error:'Não encontrado.'},404);
- }catch(error){return staffReply({error:String(error.message).includes('UNIQUE')?'Esta troca já foi usada. Escolha a loja novamente.':'Não foi possível trocar de loja agora. Tente novamente.'},String(error.message).includes('UNIQUE')?409:401)}
+ }catch(error){return staffReply({error:String(error.message).includes('UNIQUE')?'Esta troca já foi usada. Escolha a loja novamente.':'Não foi possível trocar de loja agora. Tente novamente.'},error.status|| (String(error.message).includes('UNIQUE')?409:401))}
 }
