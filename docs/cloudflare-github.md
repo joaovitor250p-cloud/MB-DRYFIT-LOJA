@@ -20,7 +20,7 @@ A conta Cloudflare vazia não contém os dados dos sites chatgpt.site. Criar ban
 
 Antes de trocar os links: obter exportações seguras de cada D1 e cópias R2, verificar restauração em recursos isolados e preservar contas/hashes/configurações. As fotos devem manter suas chaves e relações. Usar exportação lógica e registro das migrações para não reaplicar SQL já existente. Migrações de For Her precisam ser verificadas separadamente. Não executar `migrations apply` cegamente sobre importações sem histórico. Não criar vendas fictícias na base real.
 
-Há uma segunda revisão remota com migração alternativa 0031. Consolidar primeiro: nunca aplicar duas migrações que adicionam `archived_at`. Esta branch foi testada com `0031_model_management.sql`. O workflow não aplica migrações nem limpa bancos; antes de publicar, consulta somente a estrutura mínima esperada e falha se ela não existir.
+A segunda revisão remota foi consolidada nesta branch: a migração alternativa que repetia `archived_at` foi descartada em favor de `0031_model_management.sql`, que inclui auditoria e proteção do histórico. Nunca aplicar as duas migrações 0031 juntas. O workflow não aplica migrações nem limpa bancos; antes de publicar, consulta somente a estrutura mínima esperada e falha se ela não existir.
 
 ## Segredos de execução e acessos
 
@@ -38,8 +38,13 @@ O workflow **Publicar lojas na conta Cloudflare** exige disparo manual e a frase
 
 ## Estado atual
 
-A preparação no GitHub não significa site publicado. Ainda faltam recursos/IDs da conta, conexão segura, consolidação da revisão, exportação/importação e restauração verificada dos dados, configuração dos acessos e validação dos novos endereços. Os sites originais não foram alterados.
+A preparação no GitHub não significa site publicado. Ainda faltam recursos/IDs da conta, conexão segura, exportação/importação e restauração verificada dos dados, configuração dos acessos e validação dos novos endereços. Os sites originais não foram alterados.
 
 ## Recursos D1 criados e confirmados
 
 Na conta confirmada `d7a2b42a954796ce0ba8c2b6cccf1265`, foram criados separadamente `mb-dryfit-db` (`4550e9b3-16af-47c9-99d8-b65594ad5553`) e `mb-for-her-db` (`9d35dce4-4f58-4a00-9578-574e23bb13f1`). O banco preexistente não foi modificado. Os novos bancos permanecem vazios; nenhuma migração, importação ou publicação foi feita nessa operação. Os IDs não são credenciais. R2 e Workers ainda precisam ser configurados.
+
+## Verificação de infraestrutura — 13/11/2026
+A autorização OAuth para Workers/D1 foi confirmada. A consulta de buckets R2 falhou com código Cloudflare 10042: `Please enable R2 through the Cloudflare Dashboard`. Não foram criados buckets, não foi habilitada cobrança e não houve publicação. Os D1 novos continuam vazios.
+
+O leitor Sites permite inspecionar tabelas, mas não oferece aqui exportação transacional D1 nem exportação integral de objetos R2. A consulta de variáveis confirma os nomes configurados, mas não disponibiliza todos os valores secretos. Portanto, não há ainda cópia completa e restaurável dos bancos/fotos/configurações antigas. Não anunciar migração concluída, não recriar senhas e não ativar MB_OWNER_SETUP_JSON sobre dados importados. A preparação Cloudflare e as autorizações não eliminam esses impedimentos. Os links workers.dev de produção só devem ser divulgados depois de validar dados, fotos e autenticação.

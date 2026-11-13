@@ -30,5 +30,7 @@ Cópias recuperáveis de código anteriores permanecem em /workspace/recovery/du
 ## Arquivos principais
 worker/staff-access.js, owner-access.js, staff-diagnostics.js, staff-session-ui.js, staff-hub.html, owner-login.html, api.js, page.html, model-management.js, model-management-ui.js, staff-sales.js, layout-admin.css; scripts/build.mjs; drizzle/0031_model_management.sql. Testes de autorização, interface, modelos, migração e preservação de histórico foram adicionados/ajustados em tests/.
 
-## Consolidação pendente
-O remoto modernizacao/etapas-1-2 recebeu outras alterações de administração durante esta revisão, incluindo uma migração alternativa 0031_model_archive_guard.sql. Esta implementação foi preservada separadamente em revisao/correcao-dono-modelos-0031, sem sobrescrever a branch remota. Não aplicar as duas migrações 0031 juntas: ambas adicionam archived_at. Comparar e consolidar implementações e testes antes de liberar qualquer versão. Os resultados acima correspondem a esta branch isolada, não a uma combinação das duas revisões.
+## Consolidação concluída nesta branch
+As revisões foram reconciliadas preservando a implementação transacional, a revalidação de sessão e os testes adicionais da branch remota. Os testes antigos foram adaptados ao contrato PATCH, à confirmação por lista de IDs e ao arquivamento explícito. A única migração 0031 mantida é `0031_model_management.sql`; a alternativa que duplicava archived_at não integra o pacote. O histórico original continua no Git. Nenhum merge na branch principal ou implantação foi realizado.
+
+Após a consolidação: 363 testes Dryfit e 313 For Her, todos aprovados; ambos os builds passaram. Os dois testes de hospedagem também passaram. Não são evidência de validação física/visual.
