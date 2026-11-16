@@ -47,15 +47,17 @@ A migração nova `0042_product_model_gallery.sql` passa a ter índice de imagen
 ## 4. Validação automatizada
 
 A revisão foi executada pelo GitHub Actions:
-- 447 testes MB Dryfit;
-- 394 testes MB For Her;
-- 3 testes de hospedagem;
+- 448 testes MB Dryfit;
+- 395 testes MB For Her;
+- 6 testes de hospedagem (incluindo compilação real e sequência de migrações);
 - 1 suíte de backup cifrado;
 - 3 testes de exportação simulada sem Cloudflare;
 - 7 testes de recuperação SQLite, fotos, origem e caminhos TAR;
 - 4 testes de guardião de segurança.
 
-**859 testes aprovados**, builds concluídos e nenhuma falha na execução verificada em https://github.com/joaovitor250p-cloud/MB-DRYFIT-LOJA/actions/runs/43904111745 .
+**864 testes aprovados**, builds concluídos e nenhuma falha na execução verificada em https://github.com/joaovitor250p-cloud/MB-DRYFIT-LOJA/actions/runs/43906604878 .
+
+Os builds das duas lojas foram corrigidos para incorporar os módulos de fotos e galeria no Worker final e empacotar a migração 0042. A preparação da Cloudflare rejeita migrações faltantes (nesta branch, 0035–0041). Quando o índice ainda não existe, fotos não publicadas continuam protegidas por resposta 404. Esses testes não significam publicação nem migração remota.
 
 Esse resultado valida a revisão do código e os serviços simulados, **não** mede a velocidade real em Android/iPhone, não confirma quotas/custos da Cloudflare e não comprova restauração remota.
 
