@@ -26,7 +26,7 @@ test('PDV compacto mostra uma única seleção visível e mantém confirmação,
   ctx.renderSellerPOS();await new Promise(setImmediate);
   assert.equal(document.querySelectorAll('[data-express-payment]').length,4);
   assert.ok(document.querySelector('.mb-pos-extras'));
-  assert.equal(document.querySelector('.mb-pos-extras').open,false);
+  assert.equal(document.querySelector('.mb-pos-extras').hasAttribute('open'),false);
   assert.equal(document.querySelectorAll('.pos-agent-card').length,0);
   assert.ok(document.querySelector('#saleAgent'));
   assert.ok(document.querySelector('#scan'));
@@ -37,7 +37,7 @@ test('PDV compacto mostra uma única seleção visível e mantém confirmação,
   assert.match(document.querySelector('#checkoutSale').textContent,/Finalizar venda/);
   document.querySelector('[data-express-payment=pix]').onclick();
   assert.equal(document.querySelector('#salePayment').value,'pix');
-  assert.equal(document.querySelector('.mb-pos-extras').open,false);
+  assert.equal(document.querySelector('.mb-pos-extras').hasAttribute('open'),false);
   assert.equal(document.querySelector('#checkoutSale').disabled,true,'Sem vendedor não é possível finalizar.');
   const agent=document.querySelector('#saleAgent');
   Object.defineProperty(agent,'value',{value:'agent-raquel',writable:true,configurable:true});
