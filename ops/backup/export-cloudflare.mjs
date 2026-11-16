@@ -57,7 +57,7 @@ function assertCredentials(){
  if(process.env.MB_BACKUP_PASSPHRASE.length<16)throw Error('A frase de backup precisa ter pelo menos 16 caracteres.');
 }
 function assertObjectKey(key){
- if(typeof key!=='string'||!key||key.startsWith('/')||key.includes('\\')||key.split('/').some(part=>!part||part==='.'||part==='..'||part==='.git'))throw Error('Nome inseguro de objeto no R2. Exportação interrompida para evitar escrita fora da pasta.');
+ if(typeof key!=='string'||!key||key.startsWith('/')||key.includes('\\')||/[\x00-\x1f\x7f]/.test(key)||key.split('/').some(part=>!part||part==='.'||part==='..'||part==='.git'))throw Error('Nome inseguro de objeto no R2. Exportação interrompida para evitar escrita fora da pasta.');
 }
 async function enumerateObjects(bucket){
  const objects=new Map(),caseFolded=new Set();
