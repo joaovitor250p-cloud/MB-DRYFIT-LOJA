@@ -38,6 +38,53 @@ Exemplos de **pastas locais previamente exportadas**, criadas fora do Git:
 
 Se faltarem imagens ou dados, o arquivo gerado **não deve ser anunciado como backup completo**; documente as ausências. Verifique as permissões da pasta e não a coloque em diretórios sincronizados públicos.
 
+## Exportação Cloudflare para um arquivo criptografado (manual, só leitura)
+
+Existe também uma ferramenta de **exportação autenticada** que pode ser executada pelo próprio dono em um computador de confiança:
+
+`ops/backup/export-cloudflare.mjs`
+
+Ela lê o D1 e o bucket R2 de **uma loja por vez**, confere a lista de objetos antes e depois da cópia, cria a relação de SHA-256, inclui o código rastreado pelo Git local e gera um `.mbbackup` cifrado. Não contém comandos de publicação, atualização nem remoção dos bancos ou buckets remotos.
+
+### Requisitos
+
+- Node.js 24 ou superior e `tar`;
+- Dependências do projeto instaladas com `npm ci` (o script usa `npx --no-install wrangler`, sem instalar ferramentas pela internet durante a exportação);
+- AWS CLI no PATH para acesso S3 de leitura ao Cloudflare R2;
+- Variáveis de ambiente locais **CLOUDFLARE_API_TOKEN**, **AWS_ACCESS_KEY_ID**, **AWS_SECRET_ACCESS_KEY** e **MB_BACKUP_PASSPHRASE**;
+- Token Cloudflare com permissão mínima de **ler/exportar o D1** e credenciais R2 que possam **listar e baixar objetos somente** dos buckets corretos. Nunca disponibilizar permissão de escrita se não for necessária;
+- Um disco local **criptografado** e espaço suficiente para os objetos originais, SQL exportado, TAR de código e pacote cifrado. O programa precisa de área temporária; o conteúdo temporário não é apagado com garantia de sobrescrita física.
+
+Antes de executar, veja o plano sem autenticação e sem qualquer conexão externa:
+
+```sh
+node ops/backup/export-cloudflare.mjs --store mb-dryfit --destination /pasta-privada/backups --plan
+node ops/backup/export-cloudflare.mjs --store mb-for-her --destination /pasta-privada/backups --plan
+```
+
+Quando você já tiver validado as credenciais, o bucket e o banco corretos, utilize **somente no seu computador autorizado**:
+
+```sh
+node ops/backup/export-cloudflare.mjs --store mb-dryfit --destination /pasta-privada/backups --execute
+node ops/backup/export-cloudflare.mjs --store mb-for-her --destination /pasta-privada/backups --execute
+```
+
+Cada execução produz um arquivo de nome único, contendo SQL do D1, todos os objetos do R2 observados na listagem, snapshot do código do commit Git local, um resumo `origem.json` e `manifesto.json` com hashes. Não substitui backups anteriores.
+
+Se faltar qualquer objeto, se a listagem R2 mudar durante a cópia, se houver erro de autenticação, se a validação de hashes falhar ou se o código tiver alterações locais não commitadas, a operação falha sem anunciar sucesso. É necessário **confirmar separadamente** a integridade dos objetos, as referências do D1 e a recuperação real em banco e bucket isolados.
+
+**ATENÇÃO:** D1 e R2 não são exportados como uma única transação. Mesmo se a lista de arquivos não mudar, pedidos e estoque podem ter sido alterados enquanto o D1 era exportado. Para obter um ponto de recuperação coerente, combinar período controlado de baixa atividade, inventário de registros e restauração de teste com conferência. O script ainda identifica a cópia como **não comprovada para restauração completa**.
+
+Nunca compartilhe tokens, senhas, conteúdos dos backups ou arquivos temporários no ChatGPT, GitHub, mensagens ou pastas públicas. A ferramenta não pede essas informações pelo chat.
+
+### Testar sem qualquer Cloudflare
+
+```sh
+node --test ops/backup/export-cloudflare.test.mjs
+```
+
+O teste simula Wrangler, AWS S3 e Git localmente, comprova geração de arquivo criptografado e verifica que a rotina não executa operações de escrita remota.
+
 ## Inventário SHA-256 obrigatório antes da criptografia
 
 Após concluir as exportações e verificar os arquivos de cada loja, gere **um inventário por unidade**. A ferramenta registra caminhos relativos, tamanhos, hashes SHA-256 e quantidades observadas. Ela rejeita symlinks, arquivos ausentes ou modificados e misturas de identificadores das duas lojas.
