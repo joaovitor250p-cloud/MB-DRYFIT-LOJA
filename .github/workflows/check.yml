@@ -18,3 +18,4 @@ jobs:
       - run: npm run check
       - run: npm run test:hosting
       - run: node --test ops/backup/mb-backup.test.mjs
+      - run: node --test ops/security/repository-guard.test.mjs
