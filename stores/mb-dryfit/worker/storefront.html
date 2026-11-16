@@ -124,13 +124,55 @@ html[data-hero-paused=true] .hero-backdrop{animation-play-state:paused}
 @media(max-width:600px){#customerAccount.customer-profile{padding:20px 16px}.profile-identity{gap:15px;padding:18px 14px}.profile-avatar-large{width:68px;height:68px}.profile-identity h3{font-size:20px}.profile-member-label{font-size:6px;letter-spacing:1px}.profile-identity p{font-size:10px}.profile-shortcuts{gap:7px}.profile-shortcuts button{padding:14px 10px}.profile-shortcuts strong{font-size:10px}.profile-shortcuts small{font-size:8px}.profile-shortcuts button>span{font-size:23px;margin-bottom:12px}.profile-avatar-options{gap:8px}.profile-avatar-options button{padding:9px 6px}.profile-avatar-options small{font-size:8px}}
 @media(prefers-reduced-motion:reduce){.profile-shortcuts button,.profile-avatar-options button{transition:none}}
 
+
+/* MB Dryfit 2026: focused dark campaign; leave all catalog product controls untouched. */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+.mb-hero{min-height:630px;display:flex;flex-direction:column;justify-content:space-between;gap:0;padding:26px clamp(22px,6vw,100px) 0;background:#0a0b0d;color:#fff;isolation:isolate}
+.mb-hero:before{background:linear-gradient(90deg,rgba(7,9,12,.93),rgba(7,9,12,.72) 43%,rgba(7,9,12,.22) 100%),linear-gradient(0deg,rgba(7,9,12,.78),transparent 42%);z-index:-2}
+.mb-hero .hero-gridlines,.mb-hero .hero-curation{display:none}
+.mb-hero .hero-motion-video{position:absolute;inset:0;z-index:-3;width:100%;height:100%;object-fit:cover;object-position:center;opacity:.82}
+.mb-hero .hero-backdrop{position:absolute;inset:0;z-index:-4;width:100%;height:100%;object-fit:cover;opacity:.7}
+.mb-hero .hero-topline{border-color:#ffffff30;color:#fffc;letter-spacing:1.7px}
+.mb-hero .hero-topline button{color:#fffc}
+.mb-hero .mb-hero-copy{margin:auto 0;padding:70px 0 75px;max-width:680px;animation:none}
+.mb-hero .mb-hero-copy>.hero-eyebrow{font:700 11px 'DM Sans',Inter,sans-serif;letter-spacing:3px;color:#fffc}
+.mb-hero h1{font:800 clamp(62px,8vw,120px)/.96 'DM Sans',Inter,sans-serif;letter-spacing:-.065em;margin:24px 0;color:#fff}
+.mb-hero h1 em{color:#ff812c;font-style:normal}
+.mb-hero .mb-hero-copy>p{font:400 clamp(14px,1.3vw,18px)/1.65 'DM Sans',Inter,sans-serif;max-width:390px;color:#ffffffe0;margin:0 0 30px}
+.mb-hero .solid-cta{border-radius:4px;background:#ff7625;color:#111;padding:17px 25px;font:800 12px 'DM Sans',Inter,sans-serif;letter-spacing:.02em;gap:28px;min-height:50px}
+.mb-hero .solid-cta:hover{background:#ff944e}
+.mb-hero .hero-secondary{color:#fff;font:600 11px 'DM Sans',Inter,sans-serif}
+.mb-hero .hero-bottom{border-color:#ffffff30;min-height:75px}
+.mb-hero .hero-bottom>span,.mb-hero .hero-bottom>span b,.mb-hero .hero-category-links button{color:#fff}
+.mb-hero .hero-category-links button{font:600 11px 'DM Sans',Inter,sans-serif;letter-spacing:.03em}
+.mb-hero .hero-category-links button span{color:#ff812c}
+.mb-hero .hero-bottom:before{background:#ff812c}
+.mb-hero .hero-scroll{color:#fff9}
+.brand-selection-heading h2{font:700 clamp(25px,3vw,36px)/1.15 'DM Sans',Inter,sans-serif;letter-spacing:-.04em}
+.brand-tile{border-radius:8px;min-height:100px}
+@media(max-width:700px){
+ .mb-hero{min-height:590px;padding:16px 20px 0}
+ .mb-hero .mb-hero-copy{padding:86px 0 74px}
+ .mb-hero h1{font-size:clamp(52px,12vw,78px);letter-spacing:-.06em;line-height:1.02;margin:18px 0 23px}
+ .mb-hero .mb-hero-copy>p{font-size:14px;line-height:1.6;max-width:280px}
+ .mb-hero .hero-motion-video{object-position:63% center;opacity:.67}
+ .mb-hero:before{background:linear-gradient(90deg,#080a0be8,#080a0b91 55%,#080a0b2b),linear-gradient(0deg,#080a0bda,transparent 52%)}
+ .mb-hero .hero-bottom>span,.mb-hero .hero-scroll{display:none}
+ .mb-hero .hero-bottom{min-height:77px}
+ .mb-hero .hero-category-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}
+ .mb-hero .hero-category-links button{font-size:10px;text-align:center;border:1px solid #ffffff45;border-radius:4px;padding:10px 3px}
+ .mb-hero .hero-category-links button span{margin-left:3px}
+ .brand-tile{min-height:85px}
+}
+@media(prefers-reduced-motion:reduce){.mb-hero .hero-motion-video{display:none}}
+
 </style></head><body><div class="announcement"><span>MB DRYFIT / VISTA O MOVIMENTO</span><a href="#colecao">CONHEÇA A COLEÇÃO <span>↗</span></a></div>
 <header class="campaign-header" id="siteHeader"><a class="logo" href="/catalogo" aria-label="MB Dryfit início">MB <b>DRYFIT</b><small>SPORT & LIFESTYLE</small></a><nav class="main-nav" aria-label="Navegação principal"><a href="#colecao">Coleção</a><a href="#marcas">Marcas</a><a href="#sobre">Sobre a MB</a></nav><div class="shop-header-tools"><button class="shop-tool theme-tool" data-shop-theme aria-label="Alternar tema">☾</button><button class="shop-tool" data-open-favorites aria-label="Ver favoritos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg></button><button class="shop-tool notification-tool" data-open-notifications aria-label="Ver notificações"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM9 21h6"/></svg><b data-notification-count hidden>0</b></button><button type="button" class="shop-cart-open" data-open-cart><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14l1 14H4L5 7Zm3 0V5a4 4 0 0 1 8 0v2"/></svg><span>Carrinho</span><b data-cart-count>0</b></button></div></header>
 <section class="mb-hero" aria-label="Coleção MB Dryfit">
 <img class="hero-backdrop" src="/brand-assets/mb-gym-poster.jpg" alt="" fetchpriority="high" aria-hidden="true"><video id="heroMotionVideo" class="hero-motion-video" autoplay muted loop playsinline preload="metadata" poster="/brand-assets/mb-gym-poster.jpg" aria-hidden="true" tabindex="-1"><source src="/brand-assets/mb-gym-motion.mp4" type="video/mp4"></video>
 <div class="hero-gridlines" aria-hidden="true"></div>
 <div class="hero-topline"><span><i></i> MB DRYFIT / SPORT &amp; LIFESTYLE</span><button type="button" data-hero-motion aria-pressed="false" aria-label="Pausar animações da abertura">Ⅱ <span>Pausar movimento</span></button></div>
-<div class="mb-hero-copy"><span class="hero-eyebrow">O MOVIMENTO COMEÇA EM VOCÊ.</span><h1>VISTA O<br>SEU <em>RITMO.</em></h1><p>Atitude no treino. Estilo na rua.<br>Encontre a peça que acompanha você.</p><div class="hero-actions"><a class="solid-cta" href="#colecao">ENCONTRE SEU MODELO <span>↗</span></a><a class="hero-secondary" href="#marcas">EXPLORE AS MARCAS <span>↗</span></a></div></div>
+<div class="mb-hero-copy"><span class="hero-eyebrow">O MOVIMENTO COMEÇA EM VOCÊ.</span><h1>VISTA O<br>SEU <em>RITMO.</em></h1><p>Do treino ao dia a dia. Conforto e estilo para acompanhar o seu ritmo.</p><div class="hero-actions"><a class="solid-cta" href="#colecao">VER A COLEÇÃO <span>↗</span></a><a class="hero-secondary" href="#marcas">EXPLORE AS MARCAS <span>↗</span></a></div></div>
 <div class="hero-curation"><div class="hero-curation-heading"><span>ESCOLHAS DA MB</span><span>DO TREINO PARA A VIDA ↙</span></div><div class="hero-product-grid" id="heroProducts"><div class="hero-loading">MB <b>DRYFIT</b></div></div><p>Seu modelo. Sua cor. Seu tamanho.</p></div>
 <div class="hero-bottom"><span>DO TREINO<br><b>PARA A VIDA.</b></span><div class="hero-category-links"><button type="button" data-hero-category="Camisa">CAMISAS <span>↗</span></button><button type="button" data-hero-category="Bermuda">BERMUDAS <span>↗</span></button><button type="button" data-hero-category="Conjunto">CONJUNTOS <span>↗</span></button></div><a href="#colecao" class="hero-scroll" aria-label="Explorar a coleção">EXPLORE <span>↓</span></a></div>
 </section>
