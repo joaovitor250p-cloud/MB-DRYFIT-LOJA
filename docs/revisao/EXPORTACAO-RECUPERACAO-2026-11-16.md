@@ -10,7 +10,7 @@
 Foi adicionado `ops/backup/export-cloudflare.mjs`, que possui o modo `--plan` (sem rede) e `--execute` (exige credenciais no ambiente local). A implementação utiliza Wrangler para exportação D1 **somente leitura** e AWS CLI para listar, baixar e conferir os objetos do R2 via protocolo S3, sem exclusões.
 
 O programa:
-- usa as configurações explícitas de cada loja em `cloudflare.domains.config.json`;
+- usa as configurações explícitas de cada loja em `cloudflare.domains.config.json`, incluindo o `database_id` D1 para cada unidade, via configuração temporária do Wrangler removida após a exportação;
 - exporta um D1 por vez, sem copiar registros de uma loja para a outra;
 - confere chaves, tamanhos e ETags antes e depois do download R2;
 - inclui o código **rastreado e commitado** da árvore Git ativa (rejeita alterações locais não commitadas ou arquivos desconhecidos);
