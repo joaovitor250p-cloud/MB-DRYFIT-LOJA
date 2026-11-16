@@ -35,7 +35,7 @@ test('identidade visual tem conteúdo próprio e não usa material da outra loja
  const hero=document.querySelector('.mb-landing-2026');
  assert.ok(hero.querySelector('.mb-her-editorial-scene'));
  assert.equal(hero.querySelector('.mb-editorial-photo'),null);
- assert.ok(hero.textContent.includes('ESSÊNCIA'));
+ assert.ok(hero.textContent.includes('SEU ESTILO.'));
  assert.ok(existsSync('brand-assets/mb-for-her-mark.svg'));
  assert.ok(existsSync('brand-assets/mb-for-her-marble.svg'));
  assert.match(css,/--hero-accent:#c63f75/);
