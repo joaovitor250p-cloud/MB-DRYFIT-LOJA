@@ -141,6 +141,25 @@ tar -tf /recuperacao/dryfit-recuperado.tar
 
 O comando `unpack` **não restaura banco nenhum**, apenas recupera e verifica um arquivo TAR. Ele contém dados **descriptografados**: use pasta privada, nunca suba ao Git e remova o TAR após recuperação. Para restaurar de verdade, confira arquivos e associações e teste a importação em um **D1 remoto isolado**, com bucket separado, antes de considerar qualquer restauração de produção.
 
+## Verificar recuperação LOCAL do conteúdo cifrado
+
+Após gerar os dois pacotes, use o comando de restauração de teste **sem conectar à Cloudflare**. Ele abre o arquivo cifrado em uma pasta temporária privada, confere os hashes do manifesto, executa o SQL em um SQLite local isolado, examina códigos de barras como TEXTO, verifica fotos referenciadas e valida o código-fonte em TAR.
+
+```sh
+node ops/backup/check-restore.mjs --store mb-dryfit --archive /backups/mb-dryfit-ARQUIVO.mbbackup
+node ops/backup/check-restore.mjs --store mb-for-her --archive /backups/mb-for-her-ARQUIVO.mbbackup
+```
+
+Exibe contagem de produtos, vendas, pedidos e fotos referenciadas sem mostrar códigos individuais ou dados pessoais. Se alguma imagem vinculada não existir no pacote ou se o arquivo pertencer à loja errada, o processo falha. Também rejeita caminhos perigosos e links dentro do TAR e remove a área temporária ao terminar. O verificador usa `node:sqlite` do Node 24 e espaço temporário suficiente para descompactar os dados; use disco criptografado.
+
+**Limite importante:** passar nesta checagem **não comprova que o D1 remoto será restaurado com sucesso** ou que o banco e o R2 de origem estavam sincronizados no mesmo instante. Ainda é obrigatório ensaiar uma restauração isolada real no Cloudflare, com acesso de administrador autorizado e sem tocar na produção.
+
+Teste automatizado sem acesso a contas:
+
+```sh
+node --test ops/backup/check-restore.test.mjs
+```
+
 ## O que ainda falta para o requisito completo
 
 - Acesso autorizado às duas contas/bancos D1 e buckets R2 de produção.
