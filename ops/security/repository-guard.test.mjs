@@ -31,3 +31,13 @@ test('documentos legados não são novos backups atuais',()=>{
  // Não apagar nem reescrever o histórico nesta etapa; proteger a visibilidade do repositório exige revisão separada.
  assert.ok(legacyData.has('stores/mb-dryfit/data/nex-import.json'));
 });
+
+test('nenhum fluxo executável continua apontando para os domínios antigos',()=>{
+ let occurrences='';
+ try {
+  occurrences=execFileSync('git',['grep','-n','-E','savoryaccordion3\\.chatgpt\\.site|atelier-loja-mw96xrv3','--','stores/mb-dryfit/worker','stores/mb-for-her/worker'],{encoding:'utf8'});
+ } catch(error) {
+  if(error.status!==1)throw error;
+ }
+ assert.equal(occurrences.trim(),'','Origem desatualizada encontrada em código executável:\\n'+occurrences.split('\\n').map(x=>x.split(':').slice(0,2).join(':')).filter(Boolean).join('\\n'));
+});
