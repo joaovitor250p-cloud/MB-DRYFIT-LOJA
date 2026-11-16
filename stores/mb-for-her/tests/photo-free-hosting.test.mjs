@@ -17,6 +17,11 @@ test('dono pode publicar variação nova sem foto quando R2 está desativado',as
   const published=await d.request('products/'+p.id+'/publication','POST',{published:true});
   assert.equal(published.status,200,await published.clone().text());
   assert.equal(d.sql.prepare('SELECT published FROM products WHERE id=?').get(p.id).published,1);
+  assert.equal(d.sql.prepare('SELECT main_photo FROM products WHERE id=?').get(p.id).main_photo,'/api/photos/sem-foto-mb');
+  const worker=(await import('../worker/api.js')).default;
+  const substitute=await worker.fetch(new Request('https://mb.test/catalogo/fotos/sem-foto-mb'),d.env);
+  assert.equal(substitute.status,200);
+  assert.match(substitute.headers.get('Content-Type')||'',/image\/svg\+xml/);
   const listed=await d.request('catalog/products');
   assert.equal(listed.status,200);
   assert.ok((await listed.json()).some(v=>v.id===p.id),'Catálogo deve listar o modelo sem foto.');
