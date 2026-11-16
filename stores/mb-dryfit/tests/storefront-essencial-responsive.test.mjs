@@ -37,5 +37,5 @@ test('identidade própria e regras para notebook tablet celular e telas pequenas
  assert.match(css,/scroll-margin-top:90px/);
  assert.ok(document.querySelector('.mb-editorial-photo'));
  assert.equal(document.querySelector('.mb-her-editorial-scene'),null);
- assert.ok(html.includes('ESTILO PRA'));
+ assert.ok(html.includes('SUAS REGRAS.'));
 });
