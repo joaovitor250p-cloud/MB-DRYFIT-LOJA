@@ -12,12 +12,14 @@ Foi adicionado `ops/backup/export-cloudflare.mjs`, que possui o modo `--plan` (s
 O programa:
 - usa as configurações explícitas de cada loja em `cloudflare.domains.config.json`, incluindo o `database_id` D1 para cada unidade, via configuração temporária do Wrangler removida após a exportação;
 - exporta um D1 por vez, sem copiar registros de uma loja para a outra;
-- confere chaves, tamanhos e ETags antes e depois do download R2;
+- confere chaves, tamanhos e ETags antes e depois do download R2 e verifica o MD5 de objetos com ETag de upload simples; ETags multipart não equivalem a MD5;
 - inclui o código **rastreado e commitado** da árvore Git ativa (rejeita alterações locais não commitadas ou arquivos desconhecidos);
-- cria `origem.json` e `manifesto.json`, com hashes SHA-256;
+- cria `origem.json` e `manifesto.json`, com hashes SHA-256; na recuperação verifica conta, banco, bucket e bytes informados na origem;
 - gera arquivos `.mbbackup` cifrados em AES-256-GCM com senha do proprietário;
 - autentica o arquivo cifrado com o comando `verify` e testa automaticamente a **recuperação LOCAL** do SQL, manifesto, TAR e referências de fotos antes de anunciar conclusão; se falhar, descarta o pacote recém-gerado e informa o erro;
 - apaga a pasta temporária após o processo.
+- isola credenciais: Wrangler recebe apenas o token Cloudflare, AWS CLI recebe credenciais R2, Git não recebe segredos e verificador local usa apenas a senha do pacote;
+- recusa chaves R2 e entradas TAR com caminhos especiais ou perigosos no Windows;
 - não coloca senhas, fotos reais, arquivos comerciais ou backup no GitHub.
 
 O script é compatível com Windows: executa o CLI do Wrangler pelo Node sem depender de `npx.cmd`. Foi adicionado `ops/backup/backup-duas-lojas.ps1`, que mostra o plano e permite rodar as duas lojas, separadamente, após confirmação e entrada privada das chaves no terminal.
@@ -50,10 +52,10 @@ A revisão foi executada pelo GitHub Actions:
 - 3 testes de hospedagem;
 - 1 suíte de backup cifrado;
 - 3 testes de exportação simulada sem Cloudflare;
-- 2 testes de recuperação SQLite e fotos;
+- 7 testes de recuperação SQLite, fotos, origem e caminhos TAR;
 - 4 testes de guardião de segurança.
 
-**854 testes aprovados**, builds concluídos e nenhuma falha na execução verificada em https://github.com/joaovitor250p-cloud/MB-DRYFIT-LOJA/actions/runs/43893470826 .
+**859 testes aprovados**, builds concluídos e nenhuma falha na execução verificada em https://github.com/joaovitor250p-cloud/MB-DRYFIT-LOJA/actions/runs/43903100879 .
 
 Esse resultado valida a revisão do código e os serviços simulados, **não** mede a velocidade real em Android/iPhone, não confirma quotas/custos da Cloudflare e não comprova restauração remota.
 
