@@ -52,7 +52,12 @@ test('exportação simulada: D1, R2 e commit em backup cifrado; nenhuma escrita 
    ' fs.mkdirSync(path.dirname(file),{recursive:true});',
    ' fs.writeFileSync(file,["CREATE TABLE products(id TEXT PRIMARY KEY, barcode TEXT);","INSERT INTO products VALUES (\\u0027p\\u0027,\\u00270000000077\\u0027);"].join(String.fromCharCode(10)));',
    '}else if(command==="aws"){',
-   ' if(args.includes("list-objects-v2"))console.log(JSON.stringify({IsTruncated:false,Contents:[{Key:"photos/foto-1",Size:6,ETag:"abc",LastModified:"2026-01-01T00:00:00Z"}]}));',
+   ' if(args.includes("list-objects-v2")){',
+   '  const counter=path.join(process.env.MB_TEST_FIXTURE,"r2-list-count");',
+   '  const number=(Number(fs.existsSync(counter)?fs.readFileSync(counter,"utf8"):"0")+1);fs.writeFileSync(counter,String(number));',
+   '  const etag=process.env.MB_TEST_R2_CHANGE==="1"&&number>1?"alterado":"abc";',
+   '  console.log(JSON.stringify({IsTruncated:false,Contents:[{Key:"photos/foto-1",Size:6,ETag:etag,LastModified:"2026-01-01T00:00:00Z"}]}));',
+   ' }',
    ' else if(args.includes("sync")){',
    '  const target=args[args.indexOf("sync")+2];fs.mkdirSync(path.join(target,"photos"),{recursive:true});fs.writeFileSync(path.join(target,"photos","foto-1"),"ABCDEF");',
    ' }else process.exit(14);',
@@ -82,5 +87,12 @@ test('exportação simulada: D1, R2 e commit em backup cifrado; nenhuma escrita 
   const verify=spawnSync(process.execPath,[join(root,'ops/backup/mb-backup.mjs'),'verify',archive],{env,encoding:'utf8',timeout:30000});
   assert.equal(verify.status,0,verify.stderr);
   assert.match(result.stdout,/NÃO foi validada restauração real/);
+  // Mudança remota entre a primeira e a segunda listagem deve falhar fechado.
+  const counter=join(fixture,'r2-list-count');writeFileSync(counter,'0');
+  const changedDest=join(fixture,'nao-exportado');
+  const changed=call(['--store','mb-dryfit','--destination',changedDest,'--execute'],{...env,MB_TEST_R2_CHANGE:'1'});
+  assert.notEqual(changed.status,0,'Não aceitar backup inconsistente.');
+  assert.match(changed.stderr,/alteração no R2/);
+  assert.equal(existsSync(changedDest),false,'Não anunciar arquivo cifrado de snapshot inconsistente.');
  }finally{rmSync(fixture,{recursive:true,force:true})}
 });
