@@ -10,7 +10,7 @@ const root=resolve(import.meta.dirname,'../..');
 const pack=join(root,'ops/backup/mb-backup.mjs');
 const checker=join(root,'ops/backup/check-restore.mjs');
 const env={...process.env,MB_BACKUP_PASSPHRASE:'frase-forte-local-so-para-testes'};
-async function fixture(store,includePhoto=true,historyImageTable=null,originOverride={}){
+async function fixture(store,includePhoto=true,historyImageTable=null,originOverride={},unsafeCodeTar=false){
  const dir=await mkdtemp(join(tmpdir(),'mb-restore-integration-')),source=join(dir,'source');
  await mkdir(join(source,'d1'),{recursive:true});
  await mkdir(join(source,'codigo'),{recursive:true});
@@ -30,7 +30,9 @@ async function fixture(store,includePhoto=true,historyImageTable=null,originOver
  await writeFile(join(source,'d1','database.sql'),sql);
  if(includePhoto)await writeFile(join(source,'r2','photos','foto-1'),Buffer.from([255,216,255,0,1,2]));
  await writeFile(join(dir,'arquivo.txt'),'código rastreado');
- execFileSync('tar',['-cf',join(source,'codigo','fonte.tar'),'-C',dir,'arquivo.txt']);
+ execFileSync('tar',unsafeCodeTar
+  ? ['-cf',join(source,'codigo','fonte.tar'),'--transform','s|^|C:/|','-C',dir,'arquivo.txt']
+  : ['-cf',join(source,'codigo','fonte.tar'),'-C',dir,'arquivo.txt']);
  const settings=JSON.parse(await readFile(join(root,'cloudflare.domains.config.json'),'utf8'));
  const database=store==='mb-dryfit'?settings.dryfit:settings.her;
  await writeFile(join(source,'origem.json'),JSON.stringify({
@@ -99,5 +101,17 @@ test('restauração rejeita contagens de bytes de origem adulteradas',async()=>{
   const result=spawnSync(process.execPath,[checker,'--store','mb-dryfit','--archive',data.archive],{env,encoding:'utf8',cwd:root,timeout:30000});
   assert.notEqual(result.status,0);
   assert.match(result.stderr,/Bytes da origem D1\/R2 divergem/);
+ }finally{await rm(data.dir,{recursive:true,force:true})}
+});
+
+test('recuperação bloqueia TAR de código contendo caminho absoluto Windows', {
+ skip:process.platform==='win32'
+},async()=>{
+ const data=await fixture('mb-dryfit',true,null,{},true);
+ try{
+  const r=spawnSync(process.execPath,[checker,'--store','mb-dryfit','--archive',data.archive],{env,encoding:'utf8',cwd:root,timeout:30000});
+  assert.notEqual(r.status,0);
+  assert.match(r.stderr,/Caminho inseguro no TAR/);
+  assert.doesNotMatch(r.stdout,/LOCAL_RESTORE_CHECK_PASSED/);
  }finally{await rm(data.dir,{recursive:true,force:true})}
 });
