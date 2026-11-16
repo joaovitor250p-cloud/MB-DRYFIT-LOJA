@@ -53,7 +53,7 @@ jobs:
                   '<div class="mb-visual-actions hero-actions"><a href="#colecao" class="solid-cta">'+cta+' <span aria-hidden="true">↗</span></a>'
                   '<a href="#marcas" class="hero-secondary">EXPLORAR MARCAS <span aria-hidden="true">→</span></a></div></div>'
                   '<div class="mb-visual-bottom">'+category.group()+'</div>'+
-                  ('<div class="mb-editorial-photo mb-visual-hidden"><img src="/brand-assets/mb-gym-poster.jpg" alt="" aria-hidden="true"><div class="mb-editorial-orange"></div></div>' if store=='mb-dryfit' else '<div class="mb-her-editorial-scene mb-visual-hidden"></div>')+
+                  ('<div class="mb-editorial-photo mb-visual-hidden"><img src="/brand-assets/mb-gym-poster.jpg" alt="" aria-hidden="true"><div class="mb-editorial-orange"></div></div>' if store=='mb-dryfit' else '<div class="mb-her-editorial-scene mb-visual-hidden">FEITA PARA SE SENTIR INCRÍVEL.</div>')+
                   '</section>')
             h=h[:start]+hero+h[end:]
             css="""
@@ -186,7 +186,7 @@ jobs:
                   '<div class="mb-visual-actions hero-actions"><a href="#colecao" class="solid-cta">'+cta+' <span aria-hidden="true">↗</span></a>'
                   '<a href="#marcas" class="hero-secondary">EXPLORAR MARCAS <span aria-hidden="true">→</span></a></div></div>'
                   '<div class="mb-visual-bottom">'+category.group()+'</div>'+
-                  ('<div class="mb-editorial-photo mb-visual-hidden"><img src="/brand-assets/mb-gym-poster.jpg" alt="" aria-hidden="true"><div class="mb-editorial-orange"></div></div>' if store=='mb-dryfit' else '<div class="mb-her-editorial-scene mb-visual-hidden"></div>')+
+                  ('<div class="mb-editorial-photo mb-visual-hidden"><img src="/brand-assets/mb-gym-poster.jpg" alt="" aria-hidden="true"><div class="mb-editorial-orange"></div></div>' if store=='mb-dryfit' else '<div class="mb-her-editorial-scene mb-visual-hidden">FEITA PARA SE SENTIR INCRÍVEL.</div>')+
                   '</section>')
             h=h[:start]+hero+h[end:]
             css="""
