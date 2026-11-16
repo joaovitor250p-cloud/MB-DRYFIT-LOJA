@@ -119,8 +119,25 @@ async function exportEncrypted(opt){
   const d1=join(staging,'d1'),r2=join(staging,'r2'),code=join(staging,'codigo');
   await Promise.all([fs.mkdir(d1),fs.mkdir(r2),fs.mkdir(code)]);
   const sql=join(d1,'database.sql');
-  // Wrangler exporta SELECT/DDL em SQL; opção --remote NÃO grava na produção.
-  await run(nodeExecutable(),[wranglerCli(),'d1','export',details.database_name,'--remote','--output',sql],{env:cfEnv()});
+  // Seleção explícita do ID D1 de CADA loja: este repositório não mantém
+  // wrangler.toml na raiz. Não depender de um projeto ou binding local implícito.
+  // O arquivo temporário contém apenas IDs públicos de infraestrutura (sem token).
+  if(!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(details.database_id||'')){
+   throw Error('Identificador de banco D1 inválido para '+opt.store+'.');
+  }
+  const backupWrangler=join(staging,'wrangler-backup.json');
+  await fs.writeFile(backupWrangler,JSON.stringify({
+   name:'mb-backup-readonly-'+opt.store,
+   compatibility_date:'2025-01-01',
+   account_id:config.account_id,
+   d1_databases:[{binding:'DB',database_name:details.database_name,database_id:details.database_id}]
+  },null,2)+'\n',{mode:0o600});
+  try{
+   // Wrangler exporta SELECT/DDL em SQL; --remote NÃO grava na produção.
+   await run(nodeExecutable(),[wranglerCli(),'d1','export','DB','--remote','--output',sql,'--config',backupWrangler],{env:cfEnv()});
+  }finally{
+   await fs.rm(backupWrangler,{force:true});
+  }
   const sqlStat=await fs.stat(sql);
   if(!sqlStat.isFile()||sqlStat.size<50)throw Error('Exportação SQL D1 vazia ou incompleta; backup não gerado.');
   const objectsBefore=await enumerateObjects(details.bucket);
