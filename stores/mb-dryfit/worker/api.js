@@ -1,6 +1,7 @@
 import {handleAppearance} from './appearance.js';
 import {handleCatalogReset} from './catalog-reset.js';
 import {unavailablePhoto} from './photo-storage.js';
+import {uploadPhoto} from './photo-upload.js';
 import {handleModelManagement} from './model-management.js';
 import {authorizationFailure} from './staff-diagnostics.js';
 import {handleRetail,prepareRetailSale,retailSaleSignature} from './retail-operations.js';
@@ -148,7 +149,7 @@ return json({published:input.published,variants:targets.length,online:online.len
 
 
 if(u.pathname.startsWith('/api/photos/')){const key=u.pathname.slice(12);if(!/^[a-zA-Z0-9-]+$/.test(key))return json({error:'Arquivo inválido'},400);if(!staff&&!await env.DB.prepare('SELECT id FROM products WHERE published=1 AND active=1 AND (photo=? OR main_photo=?) LIMIT 1').bind(u.pathname,u.pathname).first())return new Response('Não encontrado',{status:404});if(!env.BUCKET||env.MB_PHOTOS_ENABLED==='0')return unavailablePhoto();const obj=await env.BUCKET.get('photos/'+key);if(!obj)return new Response('Não encontrado',{status:404});return new Response(obj.body,{headers:{'Content-Type':obj.httpMetadata?.contentType||'image/jpeg','X-Content-Type-Options':'nosniff','Cache-Control':'private, max-age=3600'}});}
-if(u.pathname==='/api/upload'&&req.method==='POST'){if(!env.BUCKET||env.MB_PHOTOS_ENABLED==='0')return json({error:'As fotos estão temporariamente desativadas. O cadastro e o estoque continuam disponíveis; o armazenamento de imagens será configurado depois.'},503);if(!['image/jpeg','image/png','image/webp'].includes(req.headers.get('Content-Type')))return json({error:'Use JPG, PNG ou WebP.'},400);const bytes=await req.arrayBuffer();if(bytes.byteLength>5*1024*1024)return json({error:'A foto deve ter até 5 MB.'},400);const key=crypto.randomUUID();await env.BUCKET.put('photos/'+key,bytes,{httpMetadata:{contentType:req.headers.get('Content-Type')}});return json({photo:'/api/photos/'+key});}
+if(u.pathname==='/api/upload'&&req.method==='POST'){if(!env.BUCKET||env.MB_PHOTOS_ENABLED==='0')return json({error:'As fotos estão temporariamente desativadas. O cadastro e o estoque continuam disponíveis; o armazenamento de imagens será configurado depois.'},503);return uploadPhoto(req,env.BUCKET)}
 if(u.pathname==='/api/products'&&req.method==='GET'){const {results}=await env.DB.prepare(owner?'SELECT * FROM products WHERE archived_at IS NULL ORDER BY created_at DESC':staff?'SELECT * FROM products WHERE active=1 ORDER BY created_at DESC':'SELECT * FROM products WHERE active=1 AND published=1 ORDER BY created_at DESC').all();if(!staff)return json(results.map(p=>({id:p.id,model_id:p.model_id,name:p.name,description:p.description,category:p.category,brand:p.brand,price:p.price,size:p.size,color:p.color,photo:p.photo?.replace('/api/photos/','/catalogo/fotos/')||null,main_photo:p.main_photo?.replace('/api/photos/','/catalogo/fotos/')||null,available:p.stock-p.reserved_stock>0,available_quantity:Math.max(0,p.stock-p.reserved_stock)})));return json(results.map(p=>({...p,available_stock:p.stock-p.reserved_stock})));}
 if(u.pathname==='/api/stock-receipts'){
 if(!owner)return json({error:'Acesso restrito ao dono.'},403);
