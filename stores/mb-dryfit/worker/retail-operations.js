@@ -44,8 +44,12 @@ export async function handleRetail(req,env,member){
     const data=await req.json();
     if(!data||typeof data!=='object'||!['auto','manual'].includes(data.barcode_mode)||!Number.isInteger(data.expected_revision)||data.expected_revision<0||Object.keys(data).some(k=>!['barcode_mode','expected_revision'].includes(k)))return retailReply({error:'Confira o modo de código e atualize suas preferências.'},400);
     const now=new Date().toISOString(),json=JSON.stringify({barcode_mode:data.barcode_mode});
-    // Id isolado: não modifica a configuração publicada nem as versões do catálogo.
-    const result=await env.DB.prepare("INSERT INTO storefront_settings(id,draft,published,revision,updated_at,updated_by) SELECT 'owner_preferences',?,'{}',1,?,? WHERE ?=0 ON CONFLICT(id) DO UPDATE SET draft=excluded.draft,revision=storefront_settings.revision+1,updated_at=excluded.updated_at,updated_by=excluded.updated_by WHERE storefront_settings.revision=?").bind(json,now,member.id,data.expected_revision,data.expected_revision).run();
+    // Uma linha própria não modifica o editor do catálogo; revisão evita sobrescrita entre aparelhos.
+    const current=await env.DB.prepare("SELECT revision FROM storefront_settings WHERE id='owner_preferences'").first();
+    if((current?.revision??0)!==data.expected_revision)return retailReply({error:'As preferências foram alteradas em outro aparelho. Atualize e tente novamente.'},409);
+    const result=current?
+      await env.DB.prepare("UPDATE storefront_settings SET draft=?,revision=revision+1,updated_at=?,updated_by=? WHERE id='owner_preferences' AND revision=?").bind(json,now,member.id,data.expected_revision).run():
+      await env.DB.prepare("INSERT OR IGNORE INTO storefront_settings(id,draft,published,revision,updated_at,updated_by) VALUES ('owner_preferences',?,'{}',1,?,?)").bind(json,now,member.id).run();
     if(!result.meta.changes)return retailReply({error:'As preferências foram alteradas em outro aparelho. Atualize e tente novamente.'},409);
     return retailReply({barcode_mode:data.barcode_mode,preferences_revision:data.expected_revision+1,preferences_saved:true});
   }
