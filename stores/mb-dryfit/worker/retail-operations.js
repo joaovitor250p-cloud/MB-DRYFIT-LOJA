@@ -38,6 +38,30 @@ function returnAmount(sale,already,quantity){const net=BigInt(sale.quantity*sale
 async function returnRows(env,id){return (await env.DB.prepare('SELECT ri.*,COALESCE(s.product_name,p.name) AS name,COALESCE(s.product_color,p.color) AS color,COALESCE(s.product_size,p.size) AS size,COALESCE(s.product_photo,p.photo,p.main_photo) AS photo FROM sale_return_items ri JOIN sales s ON s.id=ri.sale_id LEFT JOIN products p ON p.id=s.product_id WHERE ri.return_id=?').bind(id).all()).results}
 export async function handleRetail(req,env,member){
  const u=new URL(req.url),path=u.pathname;try{if(!['owner','seller'].includes(member.role))return retailReply({error:'Acesso restrito à equipe.'},403);const recovery=path.match(/^\/api\/retail\/order-recovery\/([a-zA-Z0-9-]+)$/);if(recovery&&req.method==='POST')return issueOrderRecovery(req,env,member,recovery[1]);
+ if(path==='/api/retail/settings'){
+  if(member.role!=='owner')return retailReply({error:'Acesso restrito ao dono.'},403);
+  if(req.method==='POST'){
+    const data=await req.json();
+    if(!data||typeof data!=='object'||!['auto','manual'].includes(data.barcode_mode)||!Number.isInteger(data.expected_revision)||data.expected_revision<0||Object.keys(data).some(k=>!['barcode_mode','expected_revision'].includes(k)))return retailReply({error:'Confira o modo de código e atualize suas preferências.'},400);
+    const now=new Date().toISOString(),json=JSON.stringify({barcode_mode:data.barcode_mode});
+    // Uma linha própria não modifica o editor do catálogo; revisão evita sobrescrita entre aparelhos.
+    const current=await env.DB.prepare("SELECT revision FROM storefront_settings WHERE id='owner_preferences'").first();
+    if((current?.revision??0)!==data.expected_revision)return retailReply({error:'As preferências foram alteradas em outro aparelho. Atualize e tente novamente.'},409);
+    const result=current?
+      await env.DB.prepare("UPDATE storefront_settings SET draft=?,revision=revision+1,updated_at=?,updated_by=? WHERE id='owner_preferences' AND revision=?").bind(json,now,member.id,data.expected_revision).run():
+      await env.DB.prepare("INSERT OR IGNORE INTO storefront_settings(id,draft,published,revision,updated_at,updated_by) VALUES ('owner_preferences',?,'{}',1,?,?)").bind(json,now,member.id).run();
+    if(!result.meta.changes)return retailReply({error:'As preferências foram alteradas em outro aparelho. Atualize e tente novamente.'},409);
+    return retailReply({barcode_mode:data.barcode_mode,preferences_revision:data.expected_revision+1,preferences_saved:true});
+  }
+  if(req.method!=='GET')return retailReply({error:'Método não permitido.'},405);
+  const [row,preferences]=await Promise.all([
+    env.DB.prepare("SELECT minimum_stock FROM inventory_preferences WHERE id='store'").first(),
+    env.DB.prepare("SELECT draft,revision FROM storefront_settings WHERE id='owner_preferences'").first()
+  ]);
+  let barcodeMode='auto';
+  try{const parsed=JSON.parse(preferences?.draft||'{}');if(['auto','manual'].includes(parsed.barcode_mode))barcodeMode=parsed.barcode_mode}catch{}
+  return retailReply({minimum_stock:row?.minimum_stock??4,photos_enabled:!!env.BUCKET&&env.MB_PHOTOS_ENABLED!=='0',barcode_mode:barcodeMode,preferences_revision:preferences?.revision??0,preferences_saved:!!preferences});
+ }
  if(path==='/api/retail/stock-alerts'){
   if(member.role!=='owner')throw retailError('Acesso restrito ao dono.',403);
   if(req.method==='POST'){const d=await req.json(),minimum=d.minimum;if(d.product_id){if(minimum!==null&&(!Number.isInteger(minimum)||minimum<0||minimum>999999))throw retailError('Informe mínimo válido.');const updated=await env.DB.prepare('UPDATE products SET minimum_stock=? WHERE id=?').bind(minimum,String(d.product_id)).run();if(!updated.meta.changes)throw retailError('Produto não encontrado.',404)}else{if(!Number.isInteger(minimum)||minimum<0||minimum>999999)throw retailError('Informe mínimo válido.');await env.DB.prepare("INSERT INTO inventory_preferences(id,minimum_stock) VALUES ('store',?) ON CONFLICT(id) DO UPDATE SET minimum_stock=excluded.minimum_stock").bind(minimum).run()}return retailReply({ok:true})}

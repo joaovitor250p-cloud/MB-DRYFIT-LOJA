@@ -25,3 +25,138 @@ html[data-theme=dark] .editor-actionbar{background:#17212e}html[data-theme=dark]
 @media(prefers-reduced-motion:reduce){.staff-workspace dialog[open],.staff-workspace .operations-shortcuts button,.editor-tool-nav button{animation:none!important;transition:none!important;transform:none!important}}
 #appearanceStatus[data-state=warning]{border-color:#ebd3a0;color:#8b651e;background:#fffaf0}
 @media(max-width:700px){.staff-workspace .topbar{display:grid;grid-template-columns:42px minmax(0,1fr) 40px;gap:10px;padding:12px 15px}.staff-workspace .topbar>.sidebar-toggle{grid-column:1;grid-row:1;min-width:40px;padding:10px}.staff-workspace .topbar>div:not(.profile){grid-column:2;grid-row:1;min-width:0}.staff-workspace .topbar #breadcrumb{font-size:12px;line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.staff-workspace .topbar .store-switch-trigger{font-size:10px;max-width:100%;white-space:nowrap}.staff-workspace .topbar .workspace-search-trigger{position:static!important;grid-column:3;grid-row:1;width:40px;min-width:40px;max-width:40px;margin:0;padding:10px}.staff-workspace .topbar .workspace-search-trigger span{display:none}.staff-workspace .topbar .profile{grid-column:1/-1;grid-row:2;max-width:none;width:100%;margin:0;display:flex;flex-wrap:nowrap;justify-content:space-between;padding-top:8px;border-top:1px solid var(--line)}.staff-workspace .topbar .profile>div{text-align:left!important;min-width:0}.staff-workspace .topbar .profile small{font-size:9px}.staff-workspace .topbar .profile #identity{overflow:hidden;text-overflow:ellipsis;max-width:180px;white-space:nowrap}.staff-workspace .topbar .profile #vendorLogout{margin-left:auto;min-height:35px}.staff-workspace .topbar .profile .avatar{display:none}}
+
+
+/* Desempenho do editor de modelos: o backdrop-filter causa repintura de
+   toda a página sob o formulário enquanto a grade é rolada, sobretudo
+   em Windows/Chrome com aceleração gráfica limitada. Manter contraste
+   com overlay sem blur e isolar a renderização das cores fora da tela. */
+.staff-workspace #modelModal::backdrop{
+  background:rgba(15,23,42,.50);
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  animation:none!important;
+}
+.staff-workspace #modelModal[open]{
+  animation:none!important;
+  transform:none!important;
+  box-shadow:0 14px 34px #11182724;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+.staff-workspace #modelModal .color-builder{
+  animation:none!important;
+  transition:none!important;
+  content-visibility:auto;
+  contain-intrinsic-size:auto 320px;
+}
+.staff-workspace.mb-model-editing .topbar{
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+.staff-workspace.mb-model-editing #view,
+.staff-workspace.mb-model-editing #view .card,
+.staff-workspace.mb-model-editing #view .hero-art,
+.staff-workspace.mb-model-editing #view .pill{
+  animation-play-state:paused!important;
+  transition:none!important;
+}
+
+
+/* PDV EXPRESSO 2026 — menos componentes em tela, menos rolagem. */
+.staff-workspace:has(#scanForm) #view>.heading{
+ display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;margin-bottom:18px;
+}
+.staff-workspace:has(#scanForm) #view>.heading h2{font-size:clamp(25px,2.2vw,33px);letter-spacing:-.045em}
+.staff-workspace:has(#scanForm) #view>.heading .sub{font-size:12px;margin-top:4px}
+.staff-workspace:has(#scanForm) #toggleSaleExpress{display:none}
+.staff-workspace:has(#scanForm) .pos-layout{
+ display:grid;grid-template-columns:minmax(0,1.03fr) minmax(350px,.97fr);
+ gap:18px;align-items:start;
+}
+.staff-workspace:has(#scanForm) .pos-layout .panel{
+ box-shadow:none;border:1px solid #e5e9f0;border-radius:16px;
+}
+.staff-workspace:has(#scanForm) #scanForm{padding:22px 24px}
+.staff-workspace:has(#scanForm) #scanForm label{font-size:13px;font-weight:700}
+.staff-workspace:has(#scanForm) #scanForm .scan{
+ height:70px;min-height:70px;font-size:clamp(20px,2.4vw,27px);
+ font-weight:650;letter-spacing:-.025em;border-radius:12px;
+}
+.staff-workspace:has(#scanForm) #scanForm .actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:15px}
+.staff-workspace:has(#scanForm) #scanForm .actions button{min-height:43px;border-radius:10px;font-size:12px}
+.staff-workspace:has(#scanForm) .mb-pos-tip{font-size:11px;color:#8a96a6}
+.staff-workspace:has(#scanForm) #scannedProduct.mb-pos-last-item{
+ margin-top:12px;padding:14px 18px;min-height:0;
+}
+.staff-workspace:has(#scanForm) #scannedProduct.mb-pos-last-item[hidden]{display:none!important}
+.mb-pos-last-row{display:flex;align-items:center;gap:14px;min-width:0}
+.mb-pos-last-row img,.mb-pos-no-photo{width:53px;height:60px;flex:none;object-fit:cover;border-radius:9px;background:#f1f4f8}
+.mb-pos-no-photo{display:grid;place-items:center;color:#9aa6b5;font-weight:800}
+.mb-pos-last-row>div{display:flex;flex:1;flex-direction:column;min-width:0;gap:4px}
+.mb-pos-last-row small{font-size:9px;letter-spacing:.13em;color:#8a96a6;font-weight:800}
+.mb-pos-last-row strong{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mb-pos-last-row span{font-size:12px;color:#64748b}
+.mb-pos-last-row>b{white-space:nowrap;font-size:15px}
+.staff-workspace:has(#scanForm) .pos-cart{
+ padding:22px 24px;min-width:0;display:flex;flex-direction:column;gap:12px;
+}
+.staff-workspace:has(#scanForm) .pos-cart>.heading{margin:0;display:flex;justify-content:space-between;align-items:center}
+.staff-workspace:has(#scanForm) .pos-cart>.heading h2{font-size:24px;letter-spacing:-.05em}
+.mb-pos-item-count{display:inline-grid;place-items:center;min-width:25px;height:25px;padding:0 6px;border-radius:50px;background:#fff1e9;color:#ea5a07;font:800 12px Inter,Arial,sans-serif;vertical-align:middle}
+.staff-workspace:has(#scanForm) .sale-agent-slot{padding:0;margin:0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.staff-workspace:has(#scanForm) .sale-agent-slot label{flex:1;min-width:170px;margin:0;font-size:12px}
+.staff-workspace:has(#scanForm) .sale-agent-slot select{min-height:43px}
+.staff-workspace:has(#scanForm) .sale-agent-slot .text-button{font-size:11px;margin-top:15px}
+.staff-workspace:has(#scanForm) .sale-agent-slot .help{font-size:11px;margin:0}
+.staff-workspace:has(#scanForm) .pos-agent-cards{display:none}
+.staff-workspace:has(#scanForm) #saleItems{min-height:0;max-height:320px;overflow:auto;overscroll-behavior:contain}
+.staff-workspace:has(#scanForm) .retail-sale-empty.mb-pos-empty{padding:22px 10px;margin:0;min-height:75px}
+.staff-workspace:has(#scanForm) .retail-sale-empty.mb-pos-empty h3{font-size:14px;margin:0 0 5px}
+.staff-workspace:has(#scanForm) .retail-sale-empty.mb-pos-empty p{font-size:12px;margin:0;color:#7e8999}
+.staff-workspace:has(#scanForm) .retail-sale-line{padding:11px 0;gap:10px}
+.staff-workspace:has(#scanForm) .retail-sale-line-copy p{margin:3px 0}
+.staff-workspace:has(#scanForm) .retail-sale-line .sale-photo{width:46px;height:52px}
+.staff-workspace:has(#scanForm) .mb-pos-payment-heading{
+ font-size:13px;font-weight:750;display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+}
+.staff-workspace:has(#scanForm) .mb-pos-payment-heading span{font-size:11px;font-weight:400;color:#8591a1}
+.staff-workspace:has(#scanForm) .express-payment-buttons{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0;
+}
+.staff-workspace:has(#scanForm) .express-payment-buttons button{
+ min-height:46px;min-width:0;border:1px solid #dfe5ed;border-radius:10px;
+ padding:8px 4px;font-size:12px;font-weight:700;
+ background:#fff;color:#354052;white-space:nowrap;
+}
+.staff-workspace:has(#scanForm) .express-payment-buttons button.on,
+.staff-workspace:has(#scanForm) .express-payment-buttons button[aria-pressed=true]{
+ background:var(--orange,#ff6900);border-color:var(--orange,#ff6900);color:#fff;
+}
+.staff-workspace:has(#scanForm) .mb-pos-extras{margin:2px 0;border-top:1px solid #edf0f4;padding-top:10px}
+.staff-workspace:has(#scanForm) .mb-pos-extras summary{
+ cursor:pointer;display:flex;justify-content:space-between;align-items:center;
+ gap:12px;font-size:12px;font-weight:700;color:#536173;padding:6px 0;
+}
+.staff-workspace:has(#scanForm) .mb-pos-extras summary span{font-size:10px;font-weight:400;color:#929dad}
+.staff-workspace:has(#scanForm) .mb-pos-extras[open] summary{margin-bottom:10px}
+.staff-workspace:has(#scanForm) .mb-pos-extras .retail-checkout-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.staff-workspace:has(#scanForm) .mb-pos-extras .retail-checkout-fields label{font-size:11px}
+.staff-workspace:has(#scanForm) .mb-pos-extras .retail-checkout-fields input,
+.staff-workspace:has(#scanForm) .mb-pos-extras .retail-checkout-fields select{min-height:42px}
+.staff-workspace:has(#scanForm) .sale-price-summary{margin:0;padding:8px 0;border:0}
+.staff-workspace:has(#scanForm) .sale-price-summary p{margin:3px 0;font-size:12px}
+.staff-workspace:has(#scanForm) .pos-total{margin:0;padding:10px 0 0;border-top:1px solid #e8edf4;display:flex;justify-content:space-between;align-items:center}
+.staff-workspace:has(#scanForm) .pos-total strong{font-size:clamp(25px,2.5vw,37px);letter-spacing:-.05em}
+.staff-workspace:has(#scanForm) #checkoutSale{min-height:56px;border-radius:11px;font-size:15px;font-weight:800;margin-top:0!important}
+.staff-workspace:has(#scanForm) .express-dock{display:none!important}
+@media(max-width:1050px){
+ .staff-workspace:has(#scanForm) .pos-layout{grid-template-columns:minmax(0,1fr)}
+ .staff-workspace:has(#scanForm) .pos-cart{position:static}
+}
+@media(max-width:550px){
+ .staff-workspace:has(#scanForm) #scanForm,.staff-workspace:has(#scanForm) .pos-cart{padding:16px}
+ .staff-workspace:has(#scanForm) .express-payment-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .staff-workspace:has(#scanForm) .mb-pos-extras .retail-checkout-fields{grid-template-columns:1fr}
+ .staff-workspace:has(#scanForm) .mb-pos-payment-heading span{display:none}
+}

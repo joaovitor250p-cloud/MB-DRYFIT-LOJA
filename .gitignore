@@ -13,3 +13,16 @@ node_modules/
 cloudflare-dist/
 cloudflare.config.json
 **/.wrangler/
+
+# Arquivos de backup e exportações privadas — nunca versionar
+**/*.mbbackup
+**/*.tar
+**/*.sqlite3
+**/*.sql.gz
+.local-backups/
+private-exports/
+ops/backup/exports/
+ops/backup/restored/
+
+# Inventários de exportações reais não devem ir ao repositório
+**/manifesto.json

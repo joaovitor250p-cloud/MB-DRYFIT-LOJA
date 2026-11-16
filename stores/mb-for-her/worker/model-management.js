@@ -26,19 +26,53 @@ export async function handleModelManagement(req,env,member,validate){const path=
  const mode=data.barcode_mode||group.seed.barcode_mode||'auto';if(!['auto','manual'].includes(mode))throw modelProblem('Modo de código inválido.');const changes=[],seen=new Set(),seenIds=new Set(),modelId=group.seed.model_id||crypto.randomUUID();
  for(const color of data.colors){if(typeof color.name!=='string'||!color.name.trim()||color.name.length>50||!photoValid(color.photo)||!Array.isArray(color.sizes)||!color.sizes.length||color.sizes.length>12)throw modelProblem('Confira as cores e tamanhos.');for(const v of color.sizes){if(!['P','M','G','GG','EG','EGG','Único'].includes(v.size))throw modelProblem('Tamanho inválido.');const old=v.id?group.rows.find(p=>p.id===v.id):null;if(v.id&&!old)throw modelProblem('A variação não pertence a este modelo.',409);if(v.id&&seenIds.has(v.id))throw modelProblem('Variação repetida.',409);if(v.id)seenIds.add(v.id);if(old&&v.stock!==0&&v.stock!==undefined)throw modelProblem('Use Reposição para alterar o estoque de uma variação existente.',409);
  const p=validate({...data,price:v.price??(raw.price!==undefined?data.price:old?.price??data.price),extra_code:v.extra_code??(raw.extra_code!==undefined?data.extra_code:old?.extra_code??data.extra_code),color:color.name,size:v.size,stock:old?0:v.stock,photo:(Object.hasOwn(color,'photo')?color.photo:old?.photo)||data.main_photo||null,active:v.active??(old?!!old.active:data.active)});if(!p.name||data.name?.length>120)throw modelProblem('Informe um nome válido.');const key=modelCanonical(p.color)+'|'+p.size;if(seen.has(key))throw modelProblem('Cor e tamanho repetidos.',409);seen.add(key);if(old&&v.barcode&&v.barcode!==old.barcode)throw modelProblem('O código original da variação deve ser preservado.',409);changes.push({old,p,published:v.published===undefined?(old?.published||0):v.published===true?1:v.published===false?0:null,manual:v.barcode})}}
- if(changes.length>240)throw modelProblem('Selecione até 240 variações.');const name=changes[0].p.name;const others=(await env.DB.prepare('SELECT id,name FROM products WHERE id NOT IN (SELECT value FROM json_each(?))').bind(JSON.stringify(group.rows.map(p=>p.id))).all()).results;if(others.some(p=>modelCanonical(p.name)===modelCanonical(name)))throw modelProblem('Já existe outro modelo com este nome. Revise o cadastro para evitar duplicidade.',409);
+ if(changes.length>240)throw modelProblem('Selecione até 240 variações.');const name=changes[0].p.name;const others=(await env.DB.prepare('SELECT DISTINCT name FROM products WHERE id NOT IN (SELECT value FROM json_each(?))').bind(JSON.stringify(group.rows.map(p=>p.id))).all()).results;if(others.some(p=>modelCanonical(p.name)===modelCanonical(name)))throw modelProblem('Já existe outro modelo com este nome. Revise o cadastro para evitar duplicidade.',409);
  const retained=group.rows.filter(p=>!seenIds.has(p.id));for(const p of retained){const key=modelCanonical(p.color)+'|'+p.size;if(seen.has(key))throw modelProblem('Este tamanho e cor já existem no modelo.',409);seen.add(key)}
  const audit=modelAudit(env,member,group,'edit',{old_name:group.seed.name,new_name:name,existing_ids:group.rows.map(p=>p.id)}),statements=[audit.statement,env.DB.prepare('DELETE FROM normalized_variant_claims WHERE product_id IN (SELECT value FROM json_each(?))').bind(audit.json)];
  // Stage unique names inside the transaction so safe color/size swaps do not violate the unique index mid-update.
  for(const old of group.rows)statements.push(env.DB.prepare('UPDATE products SET name=? WHERE id=?').bind('__mb_edit_'+audit.id+'_'+old.id,old.id));
- const newCodes=new Set(),result=[];
- for(const {old,p,published,manual} of changes){let code=old?.barcode,id=old?.id||crypto.randomUUID();if(published===null)throw modelProblem('Situação de publicação inválida.');const canPublish=p.active&&p.price>0&&!!(p.photo||data.main_photo);if(published&&!canPublish&&data.colors.some(c=>c.sizes.some(v=>v.id===id&&v.published===true)))throw modelProblem('Para publicar, ative a variação e informe preço e foto.');const online=canPublish?published:0;
-  if(!old){if(mode==='manual'){code=manual;if(typeof code!=='string'||!/^[0-9A-Z][0-9A-Z .$/+%\-]{0,39}$/.test(code))throw modelProblem('Informe o código original da nova variação.');if(newCodes.has(code)||await env.DB.prepare('SELECT id FROM products WHERE barcode=? UNION ALL SELECT product_id AS id FROM product_barcodes WHERE barcode=?').bind(code,code).first())throw modelProblem('Código já associado a outra variação.',409)}else do{code=String(10000000+crypto.getRandomValues(new Uint32Array(1))[0]%90000000)}while(newCodes.has(code)||await env.DB.prepare('SELECT id FROM products WHERE barcode=? UNION ALL SELECT product_id AS id FROM product_barcodes WHERE barcode=?').bind(code,code).first());newCodes.add(code);
-   statements.push(env.DB.prepare('INSERT INTO products(id,name,description,category,brand,price,stock,photo,active,created_at,barcode,extra_code,size,color,model_id,main_photo,fit_chart,barcode_mode,published) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(id,name,p.description,p.category,p.brand,p.price,p.stock,p.photo,p.active,new Date().toISOString(),code,p.extra_code,p.size,p.color,modelId,data.main_photo||null,group.seed.fit_chart,mode,online))
-  }else statements.push(env.DB.prepare('UPDATE products SET name=?,description=?,category=?,brand=?,price=?,photo=?,main_photo=?,extra_code=?,size=?,color=?,model_id=?,barcode_mode=?,active=?,published=? WHERE id=?').bind(name,p.description,p.category,p.brand,p.price,p.photo,data.main_photo||null,p.extra_code,p.size,p.color,modelId,mode,p.active,online,id));
-  statements.push(env.DB.prepare('INSERT INTO normalized_variant_claims(model_name_key,color_key,size,product_id) VALUES (?,?,?,?)').bind(modelCanonical(name),modelCanonical(p.color),p.size,id));result.push({id,barcode:code,color:p.color,size:p.size,created:!old})
+ const reserved=new Set(),pendingCodes=new Map();
+ const automatic=()=>String(10000000+crypto.getRandomValues(new Uint32Array(1))[0]%90000000);
+ for(let index=0;index<changes.length;index++){
+  const change=changes[index];if(change.old)continue;
+  let code;
+  if(mode==='manual'){
+   code=change.manual;
+   if(typeof code!=='string'||!/^[0-9A-Z][0-9A-Z .$/+%\\-]{0,39}$/.test(code))throw modelProblem('Informe o código original da nova variação.');
+   if(reserved.has(code))throw modelProblem('Código repetido no mesmo modelo.',409);
+  }else do{code=automatic()}while(reserved.has(code));
+  reserved.add(code);pendingCodes.set(index,{code});
  }
- for(const p of retained){statements.push(env.DB.prepare('UPDATE products SET name=?,description=?,category=?,brand=?,main_photo=?,model_id=? WHERE id=?').bind(name,changes[0].p.description,changes[0].p.category,changes[0].p.brand,data.main_photo||null,modelId,p.id),env.DB.prepare('INSERT INTO normalized_variant_claims(model_name_key,color_key,size,product_id) VALUES (?,?,?,?)').bind(modelCanonical(name),modelCanonical(p.color),p.size,p.id));result.push({id:p.id,barcode:p.barcode,color:p.color,size:p.size,created:false})}
+ let safeCodes=false;
+ for(let attempt=0;attempt<6;attempt++){
+  if(!reserved.size){safeCodes=true;break}
+  const serialized=JSON.stringify([...reserved]);
+  const hits=(await env.DB.prepare('SELECT barcode FROM products WHERE barcode IN (SELECT value FROM json_each(?)) UNION SELECT barcode FROM product_barcodes WHERE barcode IN (SELECT value FROM json_each(?))').bind(serialized,serialized).all()).results;
+  if(!hits.length){safeCodes=true;break}
+  const taken=new Set(hits.map(row=>row.barcode));
+  for(const info of pendingCodes.values()){
+   if(!taken.has(info.code))continue;
+   if(mode==='manual')throw modelProblem('Código já associado a outra variação.',409);
+   reserved.delete(info.code);
+   do{info.code=automatic()}while(reserved.has(info.code)||taken.has(info.code));
+   reserved.add(info.code);
+  }
+ }
+ if(!safeCodes)throw modelProblem('Não foi possível reservar um código exclusivo. Tente novamente.',409);
+ const result=[];
+ for(const [index,{old,p,published}] of changes.entries()){
+  const code=old?.barcode||pendingCodes.get(index)?.code,id=old?.id||crypto.randomUUID();
+  if(published===null)throw modelProblem('Situação de publicação inválida.');
+  const canPublish=p.active&&p.price>0&&(env.MB_PHOTOS_ENABLED==='0'||!!(p.photo||(data.main_photo&&data.main_photo!=='/api/photos/sem-foto-mb')));
+  if(published&&!canPublish&&data.colors.some(c=>c.sizes.some(v=>v.id===id&&v.published===true)))throw modelProblem('Para publicar, ative a variação e informe preço e foto.');
+  const online=canPublish?published:0;
+  const fallbackPhoto=online&&env.MB_PHOTOS_ENABLED==='0'&&!p.photo&&!data.main_photo?'/api/photos/sem-foto-mb':data.main_photo||null;
+  if(!old)statements.push(env.DB.prepare('INSERT INTO products(id,name,description,category,brand,price,stock,photo,active,created_at,barcode,extra_code,size,color,model_id,main_photo,fit_chart,barcode_mode,published) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(id,name,p.description,p.category,p.brand,p.price,p.stock,p.photo,p.active,new Date().toISOString(),code,p.extra_code,p.size,p.color,modelId,fallbackPhoto,group.seed.fit_chart,mode,online));
+  else statements.push(env.DB.prepare('UPDATE products SET name=?,description=?,category=?,brand=?,price=?,photo=?,main_photo=?,extra_code=?,size=?,color=?,model_id=?,barcode_mode=?,active=?,published=? WHERE id=?').bind(name,p.description,p.category,p.brand,p.price,p.photo,fallbackPhoto,p.extra_code,p.size,p.color,modelId,mode,p.active,online,id));
+  statements.push(env.DB.prepare('INSERT INTO normalized_variant_claims(model_name_key,color_key,size,product_id) VALUES (?,?,?,?)').bind(modelCanonical(name),modelCanonical(p.color),p.size,id));
+  result.push({id,barcode:code,color:p.color,size:p.size,created:!old});
+ }
+  for(const p of retained){statements.push(env.DB.prepare('UPDATE products SET name=?,description=?,category=?,brand=?,main_photo=?,model_id=? WHERE id=?').bind(name,changes[0].p.description,changes[0].p.category,changes[0].p.brand,data.main_photo||null,modelId,p.id),env.DB.prepare('INSERT INTO normalized_variant_claims(model_name_key,color_key,size,product_id) VALUES (?,?,?,?)').bind(modelCanonical(name),modelCanonical(p.color),p.size,p.id));result.push({id:p.id,barcode:p.barcode,color:p.color,size:p.size,created:false})}
  await env.DB.batch(statements);return modelReply({ok:true,model_id:modelId,name,created:result.filter(v=>v.created).length,reused:result.filter(v=>!v.created).length,variants:result})
  }catch(error){const conflict=/UNIQUE|guard_count|CHECK constraint|Produto com histórico|FOREIGN KEY/.test(String(error.message));return modelReply({error:conflict?'O modelo mudou ou possui vínculos. Atualize a prévia; use Arquivar quando houver histórico.':error.message},error.status||(conflict?409:400))}
 }

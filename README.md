@@ -1,6 +1,6 @@
 # MB DRYFIT LOJA
 
-Código da **MB Dryfit** e da **MB For Her**, reunido em um repositório privado. O catálogo do cliente é a entrada principal; vendedores e dono têm acessos próprios.
+Código da **MB Dryfit** e da **MB For Her**, reunido em um repositório GitHub. **Atenção: a visibilidade atualmente detectada é pública.** O titular deve revisar o histórico comercial e considerar a alteração para privado em Settings; esta branch não altera essa configuração. O catálogo do cliente é a entrada principal; vendedores e dono têm acessos próprios.
 
 ## Acessos publicados
 
@@ -24,7 +24,7 @@ Entra com e-mail e uma única senha do dono e abre a MB Dryfit. Depois pode alte
 
 O e-mail do ChatGPT não libera os modos de negócio. O dono não precisa informar uma segunda senha nem entrar primeiro na conta dos vendedores. Os novos logins abrem a MB Dryfit. Ambos os modos usam a troca de loja dentro do painel principal e têm login com e-mail preenchido, senha, Entrar e Esqueci minha senha. A entrada de equipe da For Her aponta para a principal. Configurações está vazia para reorganização futura; Personalizar catálogo possui sua própria área. A central agora tem cartões Sou o dono/Sou vendedor e retorno à seleção nos formulários. A sessão e as permissões são conferidas no servidor. O login da equipe persiste por 30 dias, com renovação durante o uso do painel, e sobrevive ao fechamento do navegador. Sair explicitamente revoga o acesso.
 
-O repositório privado guarda o código e é acessível com a conta GitHub autorizada. Para visualizar a loja funcionando, use os links dos catálogos acima. GitHub Pages não executa o Worker, D1 e R2 deste projeto. O GitHub Actions testa e compila o código, mas não publica automaticamente nos sites.
+O GitHub guarda o código e é acessível com a conta autorizada. **Não subir segredos, fotos privadas, exportações do D1 ou backups para este repositório.** Para visualizar a loja funcionando, use os links dos catálogos acima. GitHub Pages não executa o Worker, D1 e R2 deste projeto. O GitHub Actions testa e compila o código, mas não publica automaticamente nos sites.
 
 ## Vendas e controle da loja
 
@@ -97,7 +97,7 @@ Consulte também o [funcionamento dos acessos unificados](stores/mb-dryfit/docs/
 
 **Este repositório não substitui um backup dos dados atuais.** Bancos D1, fotos enviadas para R2 e contas do Firebase continuam nos serviços de produção. Uma migração de hospedagem exige transferir esses recursos e configurar as variáveis de ambiente.
 
-A pasta `stores/mb-dryfit/data/` contém os arquivos legados de importação do Nex, usados pela importação original e pelos testes de códigos de barras. Eles não representam o estoque atual nem contêm um backup das vendas e dos clientes de hoje. Este repositório é privado também por conter esse material da loja.
+A pasta `stores/mb-dryfit/data/` contém os arquivos legados de importação do Nex, usados pela importação original e pelos testes de códigos de barras. Eles não representam o estoque atual nem contêm um backup das vendas e dos clientes de hoje. **ATENÇÃO:** o repositório foi detectado como público em 16/11/2026 apesar de conter esse material antigo. Ajustar a visibilidade exige uma operação administrativa específica na conta GitHub; o histórico não é apagado automaticamente ao mudar para privado.
 
 Migrações já aplicadas são imutáveis: alterações de esquema entram em novos arquivos SQL, sem senhas ou dados operacionais.
 

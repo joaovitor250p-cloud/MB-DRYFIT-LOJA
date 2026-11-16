@@ -30,3 +30,870 @@ html[data-catalog-font=modern] body[data-premium-brand] .mb-hero-copy h1{font-fa
 /* Live editing stays legible while resizing or typing; expressive mode remains opt-in. */
 html[data-appearance-live=true]:not([data-catalog-motion=expressive]) .mb-hero-copy,html[data-appearance-live=true]:not([data-catalog-motion=expressive]) .hero-curation,html[data-appearance-live=true] .reveal{animation:none!important;opacity:1!important;transform:none!important;transition:none!important}
 html body .appearance-preview-note{transform:none!important;left:auto;right:auto;bottom:auto;display:block;box-sizing:border-box;width:100%;max-width:none;height:auto;min-height:0;white-space:normal;line-height:1.6;padding:8px 10px;box-shadow:none}
+
+
+/* ================================================================
+   MB CATALOG | EDITORIAL FIRST FOLD 2026
+   Two independent art directions; no remote fonts, video or libraries.
+   Keeps appearance-editor hero selectors and collection/category hooks.
+   ================================================================ */
+html body .mb-hero.mb-landing-2026{
+  --hero-accent:#ff6900;--hero-ink:#141820;--hero-paper:#fff;
+  isolation:isolate;position:relative;box-sizing:border-box;max-width:none;
+  display:grid;grid-template-columns:minmax(0,1.05fr) minmax(340px,.97fr);
+  grid-template-rows:auto minmax(0,1fr) auto;align-items:center;
+  column-gap:clamp(24px,4.2vw,76px);row-gap:0;
+  margin:0;padding:17px clamp(26px,5vw,94px) 22px;
+  min-height:clamp(595px,73svh,790px);overflow:hidden;
+  background:#fff;color:var(--hero-ink);border-bottom:1px solid #efeae5;
+}
+html body .mb-hero.mb-landing-2026::before,
+html body .mb-hero.mb-landing-2026::after{display:none!important;content:none!important}
+html body .mb-landing-2026 .hero-gridlines{display:none!important}
+html body .mb-landing-2026 .hero-topline{
+  position:relative;z-index:3;grid-column:1/-1;grid-row:1;
+  display:flex;justify-content:space-between;align-items:center;
+  gap:20px;min-height:48px;padding:12px 0 18px;
+  border:0;border-bottom:1px solid #e9e7e2;color:#6d7480;
+  font:700 10px/1.5 Inter,Arial,sans-serif;letter-spacing:.13em;
+}
+html body .mb-landing-2026 .hero-topline span{font-size:inherit;letter-spacing:inherit}
+html body .mb-landing-2026 .hero-topline b{margin:0 5px;color:var(--hero-accent)}
+html body .mb-landing-2026 .hero-topline i{background:var(--hero-accent);box-shadow:none;width:7px;height:7px}
+html body .mb-landing-2026 .mb-hero-copy{
+  grid-column:1;grid-row:2;align-self:center;position:relative;z-index:2;
+  box-sizing:border-box;width:100%;max-width:780px;min-width:0;
+  margin:0;padding:46px 0;animation:none!important;
+}
+html body .mb-landing-2026 .mb-hero-copy>.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:13px;
+  color:#766e68;font:800 10px/1.6 Inter,Arial,sans-serif;
+  letter-spacing:.17em;text-transform:uppercase;
+}
+html body .mb-landing-2026 .mb-hero-copy>.hero-eyebrow::before{
+  content:"";display:block;width:29px;height:3px;background:var(--hero-accent);
+}
+html body .mb-landing-2026 .mb-hero-copy h1{
+  box-sizing:border-box;max-width:100%;margin:25px 0;
+  color:var(--hero-ink);font-family:Inter,Arial,sans-serif;
+  font-weight:900;font-size:clamp(52px,5.85vw,98px);
+  line-height:.99;letter-spacing:-.075em;text-transform:uppercase;
+  overflow-wrap:normal;word-break:normal;white-space:normal;
+}
+html body .mb-landing-2026 .mb-hero-copy h1 em{
+  display:inline;color:var(--hero-accent);font-style:normal;
+}
+html body .mb-landing-2026 .mb-hero-copy>p{
+  max-width:480px;color:#64707e;margin:0 0 28px;
+  font:400 clamp(14px,1.15vw,17px)/1.75 Inter,Arial,sans-serif;
+  white-space:normal;
+}
+html body .mb-landing-2026 .hero-actions{
+  display:flex;flex-wrap:wrap;align-items:center;gap:12px;
+}
+html body .mb-landing-2026 .hero-actions .solid-cta{
+  display:inline-flex;align-items:center;justify-content:space-between;
+  min-height:53px;gap:28px;padding:14px 24px;
+  background:var(--hero-accent);color:#fff;
+  font:800 11px/1.2 Inter,Arial,sans-serif;letter-spacing:.045em;
+  text-decoration:none;border:0;border-radius:7px;
+  transition:background .15s ease,transform .15s ease;
+}
+html body .mb-landing-2026 .hero-actions .solid-cta:hover{
+  background:var(--hero-accent);filter:brightness(.92);transform:translateY(-1px);
+}
+html body .mb-landing-2026 .hero-actions .hero-secondary{
+  min-height:50px;display:inline-flex;align-items:center;gap:16px;
+  padding:12px 4px;background:transparent;
+  color:var(--hero-ink);text-decoration:none;border:0;
+  font:800 11px/1.2 Inter,Arial,sans-serif;letter-spacing:.045em;
+}
+html body .mb-landing-2026 .mb-hero-micro{
+  display:flex;flex-wrap:wrap;gap:8px 17px;margin-top:36px;
+  color:#77808a;font:500 10px/1.6 Inter,Arial,sans-serif;
+}
+html body .mb-landing-2026 .mb-hero-micro span{white-space:nowrap}
+html body .mb-landing-2026 .mb-hero-micro b{
+  color:var(--hero-accent);font-weight:800;margin-right:4px;
+}
+html body .mb-landing-2026 .hero-curation{
+  grid-column:2;grid-row:2;position:relative!important;z-index:1;
+  align-self:center;width:100%;max-width:none;min-width:0;
+  height:clamp(425px,39vw,550px);margin:22px 0;
+  display:block!important;opacity:1!important;pointer-events:auto!important;
+  padding:0;background:none;border:none;animation:none!important;
+}
+html body .mb-landing-2026 .hero-bottom{
+  grid-row:3;grid-column:1/-1;position:relative;bottom:auto;left:auto;right:auto;
+  display:flex;justify-content:space-between;align-items:center;
+  gap:28px;width:100%;min-height:70px;margin:0;padding:20px 0 0;
+  border-top:1px solid #e9e7e2;color:#6d7280;
+}
+html body .mb-landing-2026 .hero-bottom>span{
+  color:#29303b;font:600 10px/1.35 Inter,Arial,sans-serif;
+  letter-spacing:.09em;
+}
+html body .mb-landing-2026 .hero-bottom>span b{font-size:14px;color:#141820}
+html body .mb-landing-2026 .hero-category-links{
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;
+}
+html body .mb-landing-2026 .hero-category-links button{
+  min-height:36px;display:flex;align-items:center;gap:13px;
+  padding:10px 15px;color:#303845;background:#f7f7f5;
+  border:1px solid #e9e7e2;border-radius:100px;
+  font:800 10px/1 Inter,Arial,sans-serif;letter-spacing:.04em;
+  transition:background .16s,border-color .16s,color .16s;
+}
+html body .mb-landing-2026 .hero-category-links button:hover{
+  background:var(--hero-accent);color:#fff;border-color:var(--hero-accent);
+}
+html body .mb-landing-2026 .hero-scroll{
+  min-height:36px;display:inline-flex;align-items:center;gap:12px;
+  color:#5b6572;text-decoration:none;white-space:nowrap;
+  font:700 10px/1.2 Inter,Arial,sans-serif;letter-spacing:.05em;
+}
+html body .mb-landing-2026 .hero-scroll span{color:var(--hero-accent);font-size:21px}
+/* Dryfit: white editorial field, high-contrast black training photograph,
+   saturated orange product typography — no autoplay downloads. */
+html body .mb-landing-dryfit .mb-editorial-dryfit{
+  display:grid!important;grid-template-columns:61% 39%;
+  align-items:stretch;overflow:visible;
+}
+html body .mb-landing-dryfit .mb-editorial-photo{
+  position:relative;overflow:hidden;z-index:1;
+  min-width:0;background:#252932;border-radius:7px 0 0 7px;
+}
+html body .mb-landing-dryfit .mb-editorial-photo::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(165deg,#1318240d,#13182488);
+  pointer-events:none;
+}
+html body .mb-landing-dryfit .mb-editorial-photo img.hero-backdrop{
+  display:block;position:absolute;inset:0;z-index:0;
+  width:100%;height:100%;object-fit:cover;object-position:center;
+  opacity:1;animation:none;transform:none;
+}
+html body .mb-landing-dryfit .mb-editorial-photo-caption{
+  position:absolute;z-index:2;bottom:19px;left:17px;right:12px;
+  color:#fff;font:700 9px/1.4 Inter,Arial,sans-serif;
+  letter-spacing:.11em;
+}
+html body .mb-landing-dryfit .mb-editorial-orange{
+  min-width:0;background:#ff6900;color:#10151c;
+  border-radius:0 7px 7px 0;padding:24px 16px 22px;
+  display:flex;flex-direction:column;justify-content:space-between;
+}
+html body .mb-landing-dryfit .mb-editorial-orange-top{
+  font:800 10px/1.35 Inter,Arial,sans-serif;letter-spacing:.09em;
+}
+html body .mb-landing-dryfit .mb-editorial-orange strong{
+  display:block;font:900 clamp(33px,4.05vw,70px)/.82 Inter,Arial,sans-serif;
+  letter-spacing:-.092em;overflow-wrap:normal;word-break:normal;
+}
+html body .mb-landing-dryfit .mb-editorial-orange strong span{color:#fff}
+html body .mb-landing-dryfit .mb-editorial-orange-bottom{
+  display:flex;justify-content:space-between;gap:8px;
+  border-top:1px solid #15192255;padding-top:13px;
+  font:800 8px/1.3 Inter,Arial,sans-serif;letter-spacing:.045em;
+}
+html body .mb-landing-dryfit .mb-editorial-number{
+  position:absolute;z-index:3;top:24px;left:-26px;
+  min-width:86px;aspect-ratio:1;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;background:#fff;color:#141820;
+  border:1px solid #e7e7e7;border-radius:100px;
+  box-shadow:0 12px 35px #1218201d;
+  font:900 39px/.9 Inter,Arial,sans-serif;letter-spacing:-.08em;
+}
+html body .mb-landing-dryfit .mb-editorial-number span{
+  margin-top:7px;font-size:8px;letter-spacing:.07em;
+}
+html:not([data-theme=dark]) body .mb-landing-dryfit{
+  background:#fff!important;color:#141820!important;
+}
+html:not([data-theme=dark]) body .mb-landing-dryfit .solid-cta{background:#ff6900!important}
+/* For Her: boutique editorial magazine rather than a recolored sport banner. */
+html body .mb-hero.mb-landing-her{
+  --hero-accent:#c63f75;--hero-ink:#2e2130;
+  background:linear-gradient(115deg,#fff 0%,#fffdfd 44%,#fdf2f6 100%);
+  border-color:#f1dbe4;
+  grid-template-columns:minmax(0,1fr) minmax(360px,.95fr);
+}
+html body .mb-landing-her .hero-topline,
+html body .mb-landing-her .hero-bottom{border-color:#f0dce5}
+html body .mb-landing-her .mb-hero-copy h1{
+  font-family:Georgia,'Times New Roman',serif;
+  font-size:clamp(52px,5.75vw,97px);
+  font-weight:400;line-height:1.04;letter-spacing:-.065em;text-transform:none;
+}
+html body .mb-landing-her .mb-hero-copy h1 em{
+  color:#c63f75;font-style:italic;font-weight:400;
+}
+html body .mb-landing-her .hero-actions .solid-cta{
+  background:#b83268;color:white;border-radius:0 18px 0 18px;
+}
+html body .mb-landing-her .hero-actions .solid-cta:hover{background:#a72d61}
+html body .mb-landing-her .hero-category-links button{
+  background:#fff8fb;border-color:#efd5e1;color:#6f3a53;
+  border-radius:6px 17px 6px 17px;
+}
+html body .mb-landing-her .hero-category-links button:hover{
+  background:#c63f75;color:white;
+}
+html body .mb-landing-her .mb-editorial-her{position:relative!important}
+html body .mb-landing-her .mb-her-editorial-scene{
+  position:relative;isolation:isolate;box-sizing:border-box;
+  width:calc(100% - 29px);height:100%;overflow:hidden;
+  padding:27px 28px 19px;
+  background:radial-gradient(circle at 70% 28%,#fff8fc 0,#e8bacd 55%,#c8779d 100%);
+  border:1px solid #e9c5d4;border-radius:46% 46% 9px 9px/37% 37% 9px 9px;
+  box-shadow:20px 18px 0 #f7e6ed;
+  display:flex;flex-direction:column;justify-content:space-between;
+}
+html body .mb-landing-her .mb-her-editorial-scene::before{
+  content:"";position:absolute;inset:14px 14px 0;z-index:-1;
+  border:1px solid #ffffff80;
+  border-radius:46% 46% 6px 6px/37% 37% 6px 6px;
+}
+html body .mb-landing-her .mb-her-editorial-scene::after{
+  content:"";position:absolute;z-index:-1;left:-33%;right:-33%;top:45%;
+  height:65%;transform:rotate(-18deg);
+  background:linear-gradient(180deg,#ffffff05 8%,#fff8fc66 46%,#f6d6e56b 80%);
+  border:1px solid #fff6;
+}
+html body .mb-landing-her .mb-her-orbit{
+  position:absolute;pointer-events:none;border:1px solid #ffffffb5;border-radius:50%;
+  transform:rotate(-27deg);z-index:-1;
+}
+html body .mb-landing-her .mb-her-orbit-one{width:520px;height:200px;left:-115px;top:34%}
+html body .mb-landing-her .mb-her-orbit-two{width:600px;height:270px;left:-110px;top:40%;border-color:#fff6}
+html body .mb-landing-her .mb-her-editorial-top,
+html body .mb-landing-her .mb-her-editorial-foot{
+  display:flex;align-items:start;justify-content:space-between;gap:20px;
+  color:#542840;font:800 9px/1.6 Inter,Arial,sans-serif;
+  letter-spacing:.12em;
+}
+html body .mb-landing-her .mb-her-editorial-center{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;position:relative;margin:20px auto;width:100%;
+}
+html body .mb-landing-her .mb-her-outline{
+  font:italic 400 clamp(68px,9vw,135px)/.85 Georgia,serif;
+  color:#ffffffec;letter-spacing:-.09em;text-shadow:1px 2px 0 #ad5d8266;
+}
+html body .mb-landing-her .mb-her-editorial-center strong{
+  display:block;color:#562840;
+  font:400 clamp(39px,4.3vw,68px)/1 Georgia,serif;
+  letter-spacing:-.075em;
+}
+html body .mb-landing-her .mb-her-editorial-center strong span{color:#fff}
+html body .mb-landing-her .mb-her-editorial-caption{
+  display:block;max-width:280px;margin-top:23px;color:#6b3550;
+  font:800 9px/1.7 Inter,Arial,sans-serif;letter-spacing:.14em;
+}
+html body .mb-landing-her .mb-her-editorial-foot img{
+  width:82px;max-height:42px;object-fit:contain;opacity:.85;filter:grayscale(1);
+}
+html body .mb-landing-her .mb-her-side-label{
+  position:absolute;z-index:2;right:-10px;top:24%;writing-mode:vertical-rl;
+  color:#7d4560;font:800 10px/1.2 Inter,Arial,sans-serif;letter-spacing:.14em;
+}
+html body .mb-landing-her .mb-her-side-label span{color:#c63f75;margin-top:12px}
+/* Preserve the visual editor's layout modes and navigation-only pages. */
+html[data-banner-height=compact] body .mb-landing-2026{min-height:535px}
+html[data-banner-height=tall] body .mb-landing-2026{min-height:89svh}
+html[data-banner-align=center] body .mb-landing-2026 .mb-hero-copy{text-align:center;margin-inline:auto}
+html[data-banner-align=center] body .mb-landing-2026 .mb-hero-copy>.hero-eyebrow{justify-content:center}
+html[data-banner-align=center] body .mb-landing-2026 .hero-actions{justify-content:center}
+html[data-catalog-font=sport] body .mb-landing-2026 .mb-hero-copy h1{font-family:'Barlow Condensed',Impact,sans-serif;font-weight:800}
+html[data-catalog-font=classic] body .mb-landing-2026 .mb-hero-copy h1{font-family:Georgia,serif;font-weight:400}
+html[data-catalog-font=modern] body .mb-landing-2026 .mb-hero-copy h1{font-family:Inter,Arial,sans-serif;font-weight:900}
+html[data-catalog-template=minimal] body .mb-landing-2026{grid-template-columns:minmax(0,1fr)}
+html[data-catalog-template=minimal] body .mb-landing-2026 .hero-curation{display:none!important}
+body.shopping-page .mb-hero.mb-landing-2026,
+body.favorites-page .mb-hero.mb-landing-2026{display:none!important}
+@media(max-width:1100px){
+  html body .mb-hero.mb-landing-2026{
+    grid-template-columns:minmax(0,1fr) minmax(300px,.88fr);column-gap:22px;
+    padding-inline:clamp(25px,4vw,50px);min-height:610px;
+  }
+  html body .mb-landing-2026 .mb-hero-copy h1{font-size:clamp(48px,6vw,78px)}
+  html body .mb-landing-her .mb-hero-copy h1{font-size:clamp(50px,6.1vw,78px)}
+  html body .mb-landing-2026 .hero-curation{height:420px}
+  html body .mb-landing-dryfit .mb-editorial-orange strong{font-size:clamp(32px,4.1vw,52px)}
+  html body .mb-landing-2026 .mb-hero-micro{gap:8px}
+}
+@media(max-width:780px){
+  html body .mb-hero.mb-landing-2026,
+  html body .mb-hero.mb-landing-her{
+    grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto auto;
+    min-height:0;row-gap:0;padding:13px 22px 22px;
+  }
+  html body .mb-landing-2026 .hero-topline{grid-column:1;grid-row:1;min-height:44px;font-size:8px;gap:10px}
+  html body .mb-landing-2026 .hero-topline .mb-hero-edition{display:none}
+  html body .mb-landing-2026 .mb-hero-copy{
+    grid-column:1;grid-row:2;max-width:660px;padding:35px 0 27px;
+  }
+  html body .mb-landing-2026 .mb-hero-copy h1{font-size:clamp(45px,11vw,76px);margin:19px 0}
+  html body .mb-landing-her .mb-hero-copy h1{font-size:clamp(49px,10.5vw,75px)}
+  html body .mb-landing-2026 .mb-hero-copy>p{margin-bottom:21px;font-size:14px;line-height:1.65}
+  html body .mb-landing-2026 .hero-actions .solid-cta{min-height:47px;padding:13px 17px}
+  html body .mb-landing-2026 .mb-hero-micro{margin-top:22px;font-size:9px}
+  html body .mb-landing-2026 .hero-curation{
+    grid-column:1;grid-row:3;height:clamp(275px,58vw,400px);
+    width:100%;margin:10px 0 24px;
+  }
+  html body .mb-landing-2026 .hero-bottom{
+    grid-column:1;grid-row:4;min-height:0;flex-wrap:wrap;
+    justify-content:space-between;gap:16px 10px;padding-top:18px;
+  }
+  html body .mb-landing-2026 .hero-category-links{justify-content:flex-start;order:3;width:100%}
+  html body .mb-landing-2026 .hero-scroll{margin-left:auto}
+  html body .mb-landing-dryfit .mb-editorial-orange strong{font-size:clamp(34px,7vw,60px)}
+  html body .mb-landing-her .mb-her-editorial-center strong{font-size:clamp(41px,7vw,62px)}
+  html body .mb-landing-her .mb-her-outline{font-size:clamp(65px,13vw,110px)}
+}
+@media(max-width:420px){
+  html body .mb-hero.mb-landing-2026{padding-inline:16px}
+  html body .mb-landing-2026 .mb-hero-copy h1{font-size:clamp(39px,11.5vw,54px)}
+  html body .mb-landing-her .mb-hero-copy h1{font-size:clamp(45px,11.3vw,55px)}
+  html body .mb-landing-2026 .hero-curation{height:290px}
+  html body .mb-landing-dryfit .mb-editorial-orange{padding:14px 10px}
+  html body .mb-landing-dryfit .mb-editorial-orange strong{font-size:34px}
+  html body .mb-landing-dryfit .mb-editorial-number{left:-7px;top:12px;min-width:60px;font-size:26px}
+  html body .mb-landing-her .mb-her-editorial-scene{padding:19px 18px}
+  html body .mb-landing-her .mb-her-editorial-center strong{font-size:40px}
+  html body .mb-landing-2026 .mb-hero-micro span{white-space:normal}
+}
+@media(prefers-reduced-motion:reduce){
+  html body .mb-landing-2026 *,html body .mb-landing-2026 *::before,
+  html body .mb-landing-2026 *::after{animation:none!important;transition:none!important}
+}
+
+
+/* Brand chrome and uploaded/custom background media compatibility. */
+html:not([data-theme=dark]) body[data-premium-brand=her] .mb-hero.mb-landing-her{
+  background:linear-gradient(115deg,#fff 0%,#fffdfd 44%,#fdf2f6 100%)!important;
+}
+html body .mb-landing-her .mb-her-editorial-texture.hero-backdrop{
+  display:block;position:absolute;z-index:-1;inset:0;width:100%;height:100%;
+  object-fit:cover;opacity:.09;pointer-events:none;animation:none;
+}
+html body .mb-landing-her .mb-her-editorial-scene img[hidden],
+html body .mb-landing-dryfit .mb-editorial-photo img[hidden]{display:none!important}
+html:not([data-theme=dark]) body .campaign-header{
+  box-shadow:0 4px 24px #19212b06;
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+}
+html:not([data-theme=dark]) body .announcement{
+  background:#fff8f1;border-color:#fce8d8;color:#9d4707;
+}
+html:not([data-theme=dark]) body[data-premium-brand=her] .announcement{
+  background:#fff3f8;border-color:#f6dce7;color:#91375e;
+}
+html:not([data-theme=dark]) body .campaign-header .shop-cart-open{
+  border-radius:9px;
+}
+@media(max-width:780px){
+  html body .mb-landing-her .mb-her-editorial-texture.hero-backdrop{object-position:center}
+}
+
+
+/* VITRINE ESSENCIAL 2026: mobile-first, marcas compactas, editorial sem ruído.
+   Não altera filtros, grid de produtos, carrinho ou editor de aparência. */
+html body .mb-hero.mb-landing-2026{
+  min-height:clamp(450px,59svh,670px);
+  grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);
+  padding-top:9px;padding-bottom:12px;column-gap:clamp(16px,3vw,50px);
+}
+html body .mb-landing-2026 .hero-topline{min-height:36px;padding:7px 0 10px}
+html body .mb-landing-2026 .mb-hero-copy{padding:24px 0 30px}
+html body .mb-landing-2026 .mb-hero-copy h1{
+  font-size:clamp(43px,5.15vw,82px);letter-spacing:-.063em;
+  line-height:1.02;margin:16px 0 19px;overflow-wrap:normal;
+}
+html body .mb-landing-2026 .mb-hero-copy>p{max-width:460px;margin:0 0 23px}
+html body .mb-landing-2026 .hero-curation{height:clamp(310px,33vw,480px);margin:14px 0}
+html body .mb-landing-2026 .hero-bottom{
+  min-height:50px;padding:13px 0 4px;gap:14px;
+}
+html body .mb-landing-2026 .hero-bottom>span{
+  font-size:10px;font-weight:800;letter-spacing:.07em;white-space:nowrap;
+}
+html body .mb-landing-2026 .hero-category-links{gap:7px}
+html body .mb-landing-2026 .hero-category-links button{
+  padding:9px 13px;min-height:36px;font-size:10px;border-radius:6px;
+}
+html body .mb-landing-dryfit .mb-editorial-photo{
+  border-radius:12px 0 0 12px;background:#171a1f;
+}
+html body .mb-landing-dryfit .mb-editorial-photo img.hero-backdrop{
+  object-fit:cover;object-position:center 35%;
+}
+html body .mb-landing-dryfit .mb-editorial-orange{border-radius:0 12px 12px 0}
+html body .mb-landing-dryfit .mb-editorial-orange strong{
+  font-size:clamp(32px,3.25vw,57px);line-height:.87;
+}
+html body .mb-landing-dryfit .mb-editorial-orange-top{letter-spacing:.12em}
+html body .mb-hero.mb-landing-her{
+  background:linear-gradient(125deg,#fff 0%,#fff9fb 44%,#f9e5ee 100%)!important;
+  border-radius:0 0 34px 0;
+}
+html body .mb-landing-her .mb-hero-copy h1{
+  font-family:Georgia,'Times New Roman',serif;
+  text-transform:none;font-weight:400;letter-spacing:-.055em;
+  font-size:clamp(47px,5.6vw,86px);
+}
+html body .mb-landing-her .mb-hero-copy h1 em{color:#bb3d72}
+html body .mb-landing-her .mb-her-editorial-scene{
+  border-radius:44% 44% 18px 18px/34% 34% 18px 18px;
+  background:radial-gradient(circle at 66% 24%,#fffafa 0%,#f5d8e5 43%,#d885a9 100%);
+  box-shadow:13px 12px 0 #fae4ec;
+}
+html body .mb-landing-her .mb-her-editorial-center strong{
+  font-size:clamp(48px,5vw,75px);
+  font-style:italic;font-family:Georgia,'Times New Roman',serif;
+  color:#6e2a4a;
+}
+html body .mb-landing-her .mb-her-outline{font-size:clamp(64px,7vw,115px)}
+html body .mb-landing-her .mb-her-editorial-foot img{max-height:34px}
+html body .mb-landing-her .hero-bottom .hero-category-links button{
+  background:#fff8fb;color:#753651;border-color:#ecd3de;
+  border-radius:18px 5px 18px 5px;
+}
+/* Replace the large repeated five-column brand banner with light category navigation. */
+html body .brand-selection.mb-brand-strip{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:10px 26px;
+  padding:17px clamp(22px,5vw,94px);
+  margin:0;min-height:0;background:#fff!important;color:#1a2533!important;
+  border-top:0;border-bottom:1px solid #e8ebef;
+}
+html body .mb-brand-strip .brand-selection-heading{
+  display:block;flex:none;margin:0;padding:0;border:0;
+}
+html body .mb-brand-strip .brand-selection-heading h2{
+  margin:0;padding:0;color:#4a5360!important;
+  font:700 13px/1.4 Inter,Arial,sans-serif!important;letter-spacing:-.01em;
+}
+html body .mb-brand-strip .brand-tile-list{
+  display:flex;flex:1;flex-wrap:wrap;align-items:center;justify-content:flex-end;
+  gap:8px;min-width:0;
+}
+html body .mb-brand-strip .brand-tile{
+  display:flex;align-items:center;flex-direction:row;justify-content:center;
+  position:relative;min-height:39px;height:auto;width:auto;min-width:70px;
+  padding:9px 15px!important;background:#f7f8fa!important;color:#38404c!important;
+  border:1px solid #e7eaf0!important;border-radius:999px!important;
+  overflow:hidden;transform:none!important;transition:background .14s,border-color .14s;
+  box-shadow:none!important;
+}
+html body .mb-brand-strip .brand-tile>span:not(.brand-symbol){
+  font:700 12px/1.2 Inter,Arial,sans-serif!important;
+  letter-spacing:0!important;text-transform:none;
+}
+html body .mb-brand-strip .brand-tile .brand-symbol{
+  display:none!important;
+}
+html body .mb-brand-strip .brand-tile:hover,
+html body .mb-brand-strip .brand-tile.is-selected{
+  background:#fff3ea!important;border-color:#ffb787!important;color:#bf4e04!important;
+}
+html body:has(.mb-landing-her) .mb-brand-strip{
+  background:#fffafb!important;border-bottom-color:#f1e3e9;
+}
+html body:has(.mb-landing-her) .mb-brand-strip .brand-tile{
+  background:#fff3f8!important;border-color:#f0dce6!important;color:#793c58!important;
+}
+html body:has(.mb-landing-her) .mb-brand-strip .brand-tile.is-selected,
+html body:has(.mb-landing-her) .mb-brand-strip .brand-tile:hover{
+  background:#fbe2ee!important;border-color:#d988ab!important;color:#922f60!important;
+}
+/* Product picking and filters below this point are deliberately unchanged. */
+html body .collection-section{
+  padding-top:clamp(32px,4vw,58px)!important;
+  scroll-margin-top:90px;
+}
+html body .collection-section .editorial-heading{
+  display:flex;flex-wrap:wrap;gap:14px;align-items:end;justify-content:space-between;
+  margin-bottom:22px;
+}
+html body .collection-section .editorial-heading h2{
+  font-size:clamp(29px,3vw,44px);letter-spacing:-.045em;
+  line-height:1.13;margin:7px 0 0;max-width:680px;
+}
+html body .collection-section .editorial-heading>p{
+  color:#747d8b;font-size:13px;line-height:1.5;margin:0 0 3px;
+}
+html body:has(.mb-landing-her) .collection-section .editorial-heading{
+  padding-left:0;border-left:0;
+}
+html body:has(.mb-landing-her) .collection-section .editorial-heading h2{
+  font-family:Georgia,'Times New Roman',serif;font-weight:400;
+  font-size:clamp(32px,3.4vw,48px);letter-spacing:-.035em;color:#392333;
+}
+html body .about-section{
+  padding-top:clamp(35px,5vw,72px)!important;padding-bottom:clamp(35px,5vw,72px)!important;
+  gap:clamp(18px,4vw,65px);background:#f7f8f9;
+}
+html body:has(.mb-landing-her) .about-section{background:#fcf2f6}
+html body .about-copy h2{font-size:clamp(30px,3vw,46px);line-height:1.12}
+html body .about-copy p{font-size:14px;line-height:1.75}
+html body .about-copy .about-signature{display:none}
+html body .about-image{max-height:370px;overflow:hidden;border-radius:12px}
+html body .about-image img{height:100%;width:100%;object-fit:cover}
+html body .contact-section{padding-top:clamp(35px,5vw,68px);padding-bottom:clamp(35px,5vw,68px)}
+/* Fold / responsive checks: desktop >=1280, laptop 1024, tablet 768, phone 390/320. */
+@media(max-width:1140px){
+ html body .mb-hero.mb-landing-2026{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);min-height:0}
+ html body .mb-landing-2026 .mb-hero-copy h1{font-size:clamp(43px,5vw,65px)}
+ html body .mb-landing-her .mb-hero-copy h1{font-size:clamp(45px,5.25vw,70px)}
+ html body .mb-landing-2026 .hero-curation{height:clamp(310px,35vw,405px)}
+ html body .mb-landing-dryfit .mb-editorial-orange strong{font-size:clamp(31px,3.6vw,45px)}
+}
+@media(max-width:780px){
+ html body .mb-hero.mb-landing-2026,
+ html body .mb-hero.mb-landing-her{
+  grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto auto;
+  padding:12px clamp(16px,4vw,28px) 18px;gap:0;
+ }
+ html body .mb-landing-2026 .mb-hero-copy{
+  grid-column:1;grid-row:2;max-width:100%;padding:25px 0 20px;
+ }
+ html body .mb-landing-2026 .mb-hero-copy h1{font-size:clamp(39px,8.5vw,65px);margin:15px 0}
+ html body .mb-landing-her .mb-hero-copy h1{font-size:clamp(42px,8.6vw,67px)}
+ html body .mb-landing-2026 .mb-hero-copy>p{font-size:14px;line-height:1.6}
+ html body .mb-landing-2026 .hero-curation{
+  grid-column:1;grid-row:3;width:100%;height:clamp(240px,48vw,350px);margin:4px 0 15px;
+ }
+ html body .mb-landing-2026 .hero-bottom{grid-column:1;grid-row:4;padding:12px 0 0}
+ html body .mb-landing-2026 .hero-category-links{order:initial;width:auto}
+ html body .brand-selection.mb-brand-strip{padding:12px 16px;gap:10px}
+ html body .mb-brand-strip .brand-selection-heading{width:100%}
+ html body .mb-brand-strip .brand-tile-list{
+  justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;
+  scroll-snap-type:x proximity;overscroll-behavior-x:contain;
+  scrollbar-width:thin;padding-bottom:2px;
+ }
+ html body .mb-brand-strip .brand-tile{flex:0 0 auto;scroll-snap-align:start}
+ html body .collection-section .editorial-heading>p{display:none}
+}
+@media(max-width:520px){
+ html body .mb-landing-2026 .hero-topline{min-height:0;padding:5px 0 8px}
+ html body .mb-landing-2026 .mb-hero-copy h1{font-size:clamp(36px,10vw,53px);letter-spacing:-.055em}
+ html body .mb-landing-her .mb-hero-copy h1{font-size:clamp(38px,10.2vw,56px)}
+ html body .mb-landing-2026 .mb-hero-copy>p{margin-bottom:16px;font-size:13px}
+ html body .mb-landing-2026 .hero-actions{gap:10px}
+ html body .mb-landing-2026 .hero-actions .solid-cta{min-height:45px;font-size:10px}
+ html body .mb-landing-2026 .hero-actions .hero-secondary{font-size:10px}
+ html body .mb-landing-2026 .hero-curation{height:clamp(210px,58vw,285px)}
+ html body .mb-landing-dryfit .mb-editorial-orange{padding:14px 10px}
+ html body .mb-landing-dryfit .mb-editorial-orange strong{font-size:clamp(28px,8vw,40px)}
+ html body .mb-landing-her .mb-her-editorial-center strong{font-size:clamp(37px,9vw,51px)}
+ html body .mb-landing-her .mb-her-outline{font-size:clamp(55px,14vw,78px)}
+ html body .mb-landing-2026 .hero-bottom{display:block}
+ html body .mb-landing-2026 .hero-bottom>span{display:none}
+ html body .mb-landing-2026 .hero-category-links{
+  width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;
+ }
+ html body .mb-landing-2026 .hero-category-links button{
+  min-width:0;padding:10px 3px;font-size:9px;justify-content:center;
+ }
+ html body .collection-section .editorial-heading h2{font-size:29px}
+ html body:has(.mb-landing-her) .collection-section .editorial-heading h2{font-size:33px}
+ html body .about-section{grid-template-columns:1fr;padding-inline:20px!important}
+ html body .about-image{max-height:260px}
+}
+@media(max-width:360px){
+ html body .mb-hero.mb-landing-2026{padding-inline:13px}
+ html body .mb-landing-2026 .mb-hero-copy h1{font-size:35px}
+ html body .mb-landing-her .mb-hero-copy h1{font-size:37px}
+ html body .mb-landing-2026 .hero-actions .hero-secondary{display:none}
+ html body .mb-landing-dryfit .mb-editorial-orange strong{font-size:28px}
+}
+
+
+/* ===== CAMPAIGN ELITE: typography-first art direction for both storefronts.
+   Only the presentation shell is changed. Product cards & selectors untouched. ===== */
+html body .mb-hero.mb-campaign-elite{
+ display:grid!important;grid-template-columns:minmax(0,46%) minmax(0,54%)!important;
+ grid-template-rows:auto minmax(0,1fr) auto!important;
+ gap:0!important;padding:0!important;position:relative;isolation:isolate;
+ min-height:clamp(540px,69svh,740px)!important;width:100%;
+ max-width:none;overflow:hidden!important;border:0!important;border-radius:0!important;
+}
+html body .mb-campaign-elite .hero-topline{
+ grid-column:1/-1;grid-row:1;z-index:5;
+ padding:11px clamp(22px,4.5vw,76px)!important;
+ background:#11151b!important;color:#f2f4f6!important;border:0!important;
+ display:flex;align-items:center;justify-content:space-between;
+ height:auto;min-height:44px;
+ font:800 10px/1.3 Inter,Arial,sans-serif;letter-spacing:.14em;
+}
+html body .mb-campaign-elite .hero-topline i{background:#ff6800}
+html body .mb-campaign-elite .mb-hero-season{color:#afb3b7!important;font-size:9px!important;letter-spacing:.15em}
+html body .mb-campaign-elite .mb-hero-copy{
+ grid-column:1;grid-row:2;z-index:3;align-self:stretch;
+ margin:0!important;padding:clamp(38px,5.3vw,90px) clamp(24px,4.5vw,76px)!important;
+ width:100%!important;max-width:none!important;
+ background:#11151b!important;color:#fff!important;
+ display:flex;flex-direction:column;justify-content:center;align-items:flex-start;
+}
+html body .mb-campaign-elite .mb-hero-copy .hero-eyebrow{
+ color:#f5a16b!important;font-size:10px!important;font-weight:800!important;letter-spacing:.16em!important;
+}
+html body .mb-campaign-elite .mb-hero-copy h1{
+ color:white!important;font-family:Inter,'Arial Black',Arial,sans-serif!important;
+ font-weight:950!important;font-size:clamp(54px,5.2vw,102px)!important;
+ letter-spacing:-.077em!important;line-height:.965!important;
+ text-transform:uppercase!important;margin:22px 0 24px!important;
+ max-width:none!important;overflow-wrap:normal!important;
+}
+html body .mb-campaign-elite .mb-hero-copy h1 em{
+ color:#ff6900!important;font-style:normal!important;
+}
+html body .mb-campaign-elite .mb-hero-copy>p{
+ color:#c4c9cf!important;max-width:450px!important;margin:0 0 30px!important;
+ font-size:clamp(14px,1.14vw,17px)!important;line-height:1.7!important;
+}
+html body .mb-campaign-elite .hero-actions{display:flex;flex-wrap:wrap;align-items:center;gap:14px!important}
+html body .mb-campaign-elite .hero-actions .solid-cta{
+ min-height:54px!important;border-radius:2px!important;padding:16px 23px!important;
+ background:#ff6900!important;color:#11151b!important;
+ font-weight:900!important;font-size:11px!important;letter-spacing:.065em!important;
+ box-shadow:none!important;transition:transform .16s,background .16s!important;
+}
+html body .mb-campaign-elite .hero-actions .solid-cta:hover{background:#ff8124!important;transform:translateY(-2px)}
+html body .mb-campaign-elite .hero-actions .hero-secondary{
+ min-height:52px!important;padding:14px 3px!important;color:#f3f5f6!important;
+ font-weight:700!important;font-size:11px!important;letter-spacing:.05em!important;
+}
+html body .mb-campaign-elite .mb-campaign-line{
+ display:flex;align-items:center;gap:9px;margin-top:44px;
+ font:800 9px/1.3 Inter,Arial,sans-serif;color:#a7adb3;letter-spacing:.13em;
+}
+html body .mb-campaign-elite .mb-campaign-line-dot{width:7px;height:7px;border-radius:50%;background:#ff6900}
+html body .mb-campaign-elite .hero-curation{
+ grid-column:2;grid-row:2;z-index:2;align-self:stretch;
+ display:block!important;position:relative!important;
+ min-height:0;height:100%!important;width:100%!important;
+ margin:0!important;padding:0!important;max-width:none!important;
+ overflow:hidden!important;background:#262c33!important;
+}
+html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-dryfit{
+ display:block!important;
+}
+html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-photo{
+ position:absolute!important;inset:0;z-index:0;width:100%;height:100%;
+ border:0!important;border-radius:0!important;overflow:hidden;
+}
+html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-photo::after{
+ background:linear-gradient(180deg,#12151a08 18%,#11151a8d 100%)!important;
+}
+html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-photo img.hero-backdrop{
+ position:absolute;inset:0;display:block!important;width:100%;height:100%;
+ object-fit:cover;object-position:center;opacity:1!important;
+ filter:saturate(.80) contrast(1.05);
+}
+html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-photo-caption{
+ left:clamp(20px,3vw,48px);bottom:27px;color:#fff;
+ font-size:10px!important;letter-spacing:.15em;
+}
+html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange{
+ position:absolute;top:20px;right:20px;z-index:2;
+ width:clamp(138px,17vw,220px);height:clamp(180px,24vw,290px);min-height:0;
+ display:flex!important;flex-direction:column;justify-content:space-between;
+ padding:16px!important;background:#ff6900!important;color:#11151b!important;
+ border-radius:0!important;box-shadow:0 18px 45px #0002;
+}
+html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange strong{
+ font:950 clamp(28px,3.2vw,49px)/.89 Inter,Arial,sans-serif!important;
+ letter-spacing:-.08em!important;color:#10141b;
+}
+html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange strong span{color:#fff}
+html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange-top{font-size:9px}
+html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange-bottom{font-size:8px}
+html body .mb-campaign-elite .hero-bottom{
+ grid-row:3;grid-column:1/-1;z-index:5;
+ background:#fff!important;border:0!important;border-bottom:1px solid #e8e9ec!important;
+ display:flex;align-items:center;justify-content:space-between;
+ padding:14px clamp(22px,4.5vw,76px)!important;
+ margin:0!important;min-height:58px!important;gap:12px!important;
+}
+html body .mb-campaign-elite .hero-bottom>span{
+ color:#3d444d;font:800 10px/1.3 Inter,Arial,sans-serif;letter-spacing:.10em;
+}
+html body .mb-campaign-elite .hero-category-links{display:flex;align-items:center;gap:8px}
+html body .mb-campaign-elite .hero-category-links button{
+ font:800 10px/1 Inter,Arial,sans-serif!important;letter-spacing:.04em!important;
+ color:#252b32!important;background:#f4f5f6!important;border:1px solid transparent!important;
+ padding:12px 16px!important;border-radius:3px!important;min-height:39px!important;
+}
+html body .mb-campaign-elite .hero-category-links button:hover{background:#ff6900!important;color:#111!important}
+/* For Her is a different fashion editorial, not the menswear layout recolored. */
+html body .mb-campaign-elite.mb-landing-her{
+ min-height:clamp(565px,71svh,760px)!important;
+ grid-template-columns:minmax(0,49%) minmax(0,51%)!important;
+ background:#fef8fb!important;
+}
+html body .mb-campaign-elite.mb-landing-her .hero-topline{
+ background:#f6e6ed!important;color:#6f354e!important;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-hero-season{color:#995c75!important}
+html body .mb-campaign-elite.mb-landing-her .hero-topline i{background:#b93369}
+html body .mb-campaign-elite.mb-landing-her .mb-hero-copy{
+ background:linear-gradient(120deg,#fff 0%,#fff9fc 72%,#f8e6ed 100%)!important;
+ color:#2c2030!important;padding-right:25px!important;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-hero-copy .hero-eyebrow{color:#b23c72!important}
+html body .mb-campaign-elite.mb-landing-her .mb-hero-copy h1{
+ font:400 clamp(51px,5.45vw,105px)/.97 Georgia,'Times New Roman',serif!important;
+ letter-spacing:-.064em!important;text-transform:none!important;
+ color:#342132!important;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-hero-copy h1 em{
+ color:#b9366b!important;font-style:italic!important;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-hero-copy>p{
+ color:#705d6a!important;font-size:clamp(14px,1.2vw,18px)!important;
+}
+html body .mb-campaign-elite.mb-landing-her .hero-actions .solid-cta{
+ background:#b9366b!important;color:#fff!important;border-radius:100px!important;
+}
+html body .mb-campaign-elite.mb-landing-her .hero-actions .solid-cta:hover{background:#9b2856!important}
+html body .mb-campaign-elite.mb-landing-her .hero-actions .hero-secondary{color:#6b3c54!important}
+html body .mb-campaign-elite.mb-landing-her .mb-campaign-line{color:#9d7186}
+html body .mb-campaign-elite.mb-landing-her .mb-campaign-line-dot{background:#b9366b}
+html body .mb-campaign-elite.mb-landing-her .hero-curation{
+ background:radial-gradient(circle at 77% 14%,#fff9fb,#f4d4e3 57%,#d38baa 100%)!important;
+ display:flex!important;justify-content:center;align-items:center;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-her-editorial-scene{
+ position:relative;width:min(78%,460px)!important;height:min(88%,550px)!important;
+ padding:clamp(18px,2.4vw,38px)!important;
+ border-radius:48% 48% 5px 5px/39% 39% 5px 5px!important;
+ background:linear-gradient(130deg,#f9d9e5,#d48aaa 60%,#c66894)!important;
+ border:1px solid #f9dce9!important;
+ box-shadow:17px 17px 0 #fff5!important;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-her-editorial-scene::after{
+ background:linear-gradient(140deg,#fff9 0%,#ffffff08 50%,#fff7 100%);
+}
+html body .mb-campaign-elite.mb-landing-her .mb-her-editorial-center{
+ margin:18px auto!important;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-her-outline{
+ color:#fff9!important;font:italic 400 clamp(74px,8vw,145px)/.9 Georgia,serif!important;
+ letter-spacing:-.07em!important;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-her-editorial-center strong{
+ color:#5f2544!important;font:italic 400 clamp(60px,6.8vw,106px)/.92 Georgia,serif!important;
+ letter-spacing:-.065em!important;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-her-editorial-caption{
+ color:#5f2544!important;letter-spacing:.17em!important;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-her-editorial-top,
+html body .mb-campaign-elite.mb-landing-her .mb-her-editorial-foot{
+ color:#4d273d!important;font-size:9px!important;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-her-side-label{
+ font:800 10px/1.2 Inter,Arial,sans-serif;color:#88476a;
+}
+html body .mb-campaign-elite.mb-landing-her .hero-bottom{
+ background:#fff7fa!important;border-bottom-color:#efd8e3!important;
+}
+html body .mb-campaign-elite.mb-landing-her .hero-category-links button{
+ background:#fce9f1!important;color:#85415e!important;border-radius:100px!important;
+}
+html body .mb-campaign-elite.mb-landing-her .hero-category-links button:hover{
+ background:#b9366b!important;color:white!important;
+}
+html body:has(.mb-campaign-elite.mb-landing-her) .mb-brand-strip{background:#fff!important}
+html body:has(.mb-campaign-elite.mb-landing-her) .mb-brand-strip .brand-tile{border-radius:100px!important}
+/* Compact brand strip uses the actual bundled trademark artwork as small icons. */
+html body .mb-brand-strip .brand-tile .brand-symbol{
+ display:block!important;position:relative!important;z-index:0!important;
+ inset:auto!important;width:22px!important;height:20px!important;
+ flex:0 0 22px;background-image:var(--brand-mark);background-repeat:no-repeat;
+ background-position:center;background-size:contain;
+ opacity:.75!important;filter:grayscale(1) brightness(.25)!important;
+ transform:none!important;mix-blend-mode:normal!important;
+}
+html body .mb-brand-strip .brand-tile{
+ display:inline-flex!important;flex-direction:row!important;align-items:center!important;
+ gap:7px!important;
+}
+html body .mb-brand-strip .brand-tile:hover .brand-symbol{opacity:1!important}
+html body .mb-brand-strip{scroll-margin-top:82px}
+/* Laptop and phone: single focal area, touch-friendly category shortcuts. */
+@media(max-width:1150px){
+ html body .mb-hero.mb-campaign-elite{grid-template-columns:minmax(0,50%) minmax(0,50%)!important}
+ html body .mb-campaign-elite .mb-hero-copy h1{font-size:clamp(48px,5.4vw,74px)!important}
+ html body .mb-campaign-elite.mb-landing-her .mb-hero-copy h1{font-size:clamp(46px,5.8vw,76px)!important}
+ html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange{width:160px;height:220px}
+ html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange strong{font-size:34px!important}
+}
+@media(max-width:780px){
+ html body .mb-hero.mb-campaign-elite,
+ html body .mb-hero.mb-campaign-elite.mb-landing-her{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:auto auto auto auto!important;
+  min-height:0!important;
+ }
+ html body .mb-campaign-elite .hero-topline{grid-column:1;grid-row:1;padding:10px 18px!important}
+ html body .mb-campaign-elite .mb-hero-season{display:none}
+ html body .mb-campaign-elite .mb-hero-copy{
+  grid-column:1;grid-row:2;padding:clamp(32px,6vw,55px) 20px!important;
+ }
+ html body .mb-campaign-elite .mb-hero-copy h1{font-size:clamp(47px,9.5vw,77px)!important;margin:17px 0!important}
+ html body .mb-campaign-elite.mb-landing-her .mb-hero-copy h1{font-size:clamp(48px,9.6vw,77px)!important}
+ html body .mb-campaign-elite .mb-hero-copy>p{font-size:14px!important;margin-bottom:22px!important}
+ html body .mb-campaign-elite .mb-campaign-line{margin-top:26px}
+ html body .mb-campaign-elite .hero-curation{
+  grid-column:1;grid-row:3;min-height:285px;height:clamp(285px,68vw,460px)!important;
+ }
+ html body .mb-campaign-elite .hero-bottom{grid-column:1;grid-row:4;padding:12px 16px!important}
+ html body .mb-campaign-elite.mb-landing-her .mb-her-editorial-scene{
+  height:88%!important;width:min(70%,410px)!important;
+ }
+ html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange{
+  width:clamp(135px,30vw,190px);height:clamp(170px,37vw,240px);
+ }
+}
+@media(max-width:520px){
+ html body .mb-campaign-elite .hero-topline{font-size:9px}
+ html body .mb-campaign-elite .mb-hero-copy{padding:31px 17px 34px!important}
+ html body .mb-campaign-elite .mb-hero-copy h1{
+  font-size:clamp(44px,11.2vw,61px)!important;
+ }
+ html body .mb-campaign-elite.mb-landing-her .mb-hero-copy h1{
+  font-size:clamp(45px,11vw,62px)!important;
+ }
+ html body .mb-campaign-elite .hero-actions .solid-cta{padding:13px 18px!important;min-height:48px!important}
+ html body .mb-campaign-elite .hero-actions .hero-secondary{font-size:10px!important}
+ html body .mb-campaign-elite .hero-curation{height:clamp(240px,65vw,340px)!important;min-height:240px}
+ html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange{
+  right:12px;top:12px;width:125px;height:158px;padding:11px!important;
+ }
+ html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange strong{font-size:27px!important}
+ html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange-top{font-size:7px!important}
+ html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange-bottom{font-size:7px!important}
+ html body .mb-campaign-elite.mb-landing-her .mb-her-editorial-scene{width:min(78%,300px)!important}
+ html body .mb-campaign-elite.mb-landing-her .mb-her-outline{font-size:clamp(67px,15vw,92px)!important}
+ html body .mb-campaign-elite.mb-landing-her .mb-her-editorial-center strong{font-size:clamp(56px,14vw,87px)!important}
+ html body .mb-campaign-elite .hero-bottom>span{display:none!important}
+ html body .mb-campaign-elite .hero-bottom .hero-category-links{
+  width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;
+ }
+ html body .mb-campaign-elite .hero-category-links button{font-size:9px!important;padding:12px 4px!important}
+}
+@media(max-width:365px){
+ html body .mb-campaign-elite .mb-hero-copy h1{font-size:41px!important}
+ html body .mb-campaign-elite.mb-landing-her .mb-hero-copy h1{font-size:42px!important}
+ html body .mb-campaign-elite .hero-actions .hero-secondary{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+ html body .mb-campaign-elite *,html body .mb-campaign-elite *::before,html body .mb-campaign-elite *::after{
+  transition:none!important;animation:none!important;
+ }
+}

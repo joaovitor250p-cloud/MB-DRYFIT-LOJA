@@ -19,3 +19,29 @@ test('entering all sales defaults to today, preserves selected filters during th
  const d=await ui(),{ctx,document,sql}=d;try{ctx.page='sales';ctx.enterSalesWorkspacePage('sales');await ctx.renderSalesWorkspace();assert.equal(document.querySelector('[name=start]').value,ctx.salesToday());document.querySelector('[data-sales-preset=month]').onclick();await new Promise(setImmediate);assert.equal(document.querySelector('[name=start]').value,ctx.salesToday().slice(0,7)+'-01');ctx.enterSalesWorkspacePage('sales');await ctx.renderSalesWorkspace();assert.equal(document.querySelector('[name=start]').value,ctx.salesToday().slice(0,7)+'-01');ctx.enterSalesWorkspacePage('cash');ctx.enterSalesWorkspacePage('sales');await ctx.renderSalesWorkspace();assert.equal(document.querySelector('[name=start]').value,ctx.salesToday())}finally{sql.close()}
 });
 test('express mode keeps total visible, offers quick payment and confirms the same transactional sale',async()=>{const d=await ui(),{ctx,document,products,sql}=d;try{ctx.renderSellerPOS();await new Promise(setImmediate);document.querySelector('#toggleSaleExpress').onclick();await new Promise(setImmediate);ctx.saleCart.set(products[0].barcode,{product:products[0],quantity:2});ctx.drawSaleCart();select(document,'#saleAgent','agent-raquel');document.querySelector('[data-express-payment=pix]').onclick();assert.equal(document.querySelectorAll('[data-express-payment]').length,4);assert.equal(document.querySelector('#expressTotalValue').textContent,'R$ 100.00');assert.equal(document.querySelector('#expressCheckout').disabled,false);ctx.confirm=()=>false;await document.querySelector('#expressCheckout').onclick();assert.equal(sql.prepare('SELECT COUNT(*) n FROM sales').get().n,0);ctx.confirm=()=>true;await document.querySelector('#expressCheckout').onclick();assert.equal(sql.prepare('SELECT COUNT(*) n FROM sale_batches').get().n,1);assert.equal(sql.prepare('SELECT payment_method FROM sale_batches').get().payment_method,'pix');assert.equal(sql.prepare('SELECT stock FROM products').get().stock,18)}finally{sql.close()}});
+
+test('PDV compacto mostra uma única seleção visível e mantém confirmação, carrinho e vendedor',async()=>{
+ const d=await ui(),{ctx,document,products,sql}=d;
+ try{
+  ctx.renderSellerPOS();await new Promise(setImmediate);
+  assert.equal(document.querySelectorAll('[data-express-payment]').length,4);
+  assert.ok(document.querySelector('.mb-pos-extras'));
+  assert.equal(document.querySelector('.mb-pos-extras').hasAttribute('open'),false);
+  assert.equal(document.querySelectorAll('.pos-agent-card').length,0);
+  assert.ok(document.querySelector('#saleAgent'));
+  assert.ok(document.querySelector('#scan'));
+  assert.equal(document.querySelector('#scannedProduct').hasAttribute('hidden'),true);
+  ctx.saleCart.set(products[0].barcode,{product:products[0],quantity:2});
+  ctx.drawSaleCart();
+  assert.equal(document.querySelector('#saleItemCount').textContent,'2');
+  assert.match(document.querySelector('#checkoutSale').textContent,/Finalizar venda/);
+  document.querySelector('[data-express-payment=pix]').onclick();
+  assert.equal(document.querySelector('[data-express-payment=pix]').getAttribute('aria-pressed'),'true');
+  assert.equal(document.querySelector('.mb-pos-extras').hasAttribute('open'),false);
+  assert.equal(document.querySelector('#checkoutSale').disabled,true,'Sem vendedor não é possível finalizar.');
+  const agent=document.querySelector('#saleAgent');
+  Object.defineProperty(agent,'value',{value:'agent-raquel',writable:true,configurable:true});
+  agent.onchange();
+  assert.equal(document.querySelector('#checkoutSale').disabled,false);
+ }finally{sql.close()}
+});

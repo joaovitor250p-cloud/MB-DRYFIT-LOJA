@@ -6,4 +6,14 @@ test('Ajustar opens every color and size, with independent barcode, reference an
 test('publication dialog selects an entire color or a single size and sends the exact desired online IDs',async()=>{const {ctx,$,document,calls}=setup();ctx.openPublication('black-m');assert.equal(document.querySelectorAll('[data-publish-variant]').length,3);const black=document.querySelector('[data-publication-color="0"]');assert.equal(black.indeterminate,true);black.checked=false;black.onchange();assert.equal(document.querySelector('[data-publish-variant="black-m"]').checked,false);assert.equal(document.querySelector('[data-publish-variant="red-m"]').checked,true);await $('#savePublication').onclick();assert.equal(calls[0][0],'products/black-m/publication');assert.deepEqual(Array.from(calls[0][2].published_ids),['red-m']);assert.equal($('#publicationModal').open,false)});
 test('owner stock areas are separate while sellers still see every active variation',()=>{const {ctx}=setup();ctx.query='';ctx.filter='';vm.runInContext(html.slice(html.indexOf("let catalogScope='internal';"),html.indexOf('async function copyCatalogLink')),ctx);assert.deepEqual(Array.from(ctx.available(),p=>p.id),['black-g']);vm.runInContext("catalogScope='published'",ctx);assert.deepEqual(Array.from(ctx.available(),p=>p.id),['black-m','red-m']);ctx.owner=()=>false;assert.equal(ctx.available().length,3);assert.ok(html.includes('data-catalog-scope="published"'))});
 test('manual code field preserves leading zeros when toggling automatic mode before saving',()=>{const {ctx,$,document}=setup();ctx.openModel();const mode=$('#modelBarcodeMode');Object.defineProperty(mode,'value',{value:'manual',writable:true,configurable:true});mode.onchange();let input=document.querySelector('[data-manual-code]');assert.ok(input);input.value='000005';input.oninput();mode.value='auto';mode.onchange();assert.equal(document.querySelector('[data-manual-code]'),null);mode.value='manual';mode.onchange();assert.equal(document.querySelector('[data-manual-code]').value,'000005')});
-test('favorite colors persist only on this device and appear on the next model form',()=>{const {ctx,$,document}=setup(),saved=new Map();ctx.localStorage={getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v)};ctx.openModel();$('#favoriteColorName').value='Azul';$('#toggleFavoriteColor').onclick();assert.deepEqual(JSON.parse(saved.get('mb-favorite-colors-local')),['Azul']);ctx.openModel();assert.ok([...document.querySelectorAll('[data-quick-color]')].some(b=>b.textContent==='Azul'))});
+test('modelo abre sem painel rápido e mantém os campos essenciais de variação',()=>{
+ const {ctx,$,document}=setup();
+ ctx.openModel();
+ assert.equal($('#favoriteColorName'),null);
+ assert.equal($('#quickModelQuantity'),null);
+ assert.equal($('#fillModelQuantities'),null);
+ assert.ok($('#modelColorRows'));
+ assert.ok($('#saveModel'));
+ assert.ok(document.querySelector('[data-size-color]'));
+ assert.ok(document.querySelector('[data-qty-color]'));
+});

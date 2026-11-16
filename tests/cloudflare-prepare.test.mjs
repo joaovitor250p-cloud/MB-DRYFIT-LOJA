@@ -22,3 +22,49 @@ test('packaging changes only output links, keeps store bindings isolated and ref
 });
 
 test('explicit photo-free setup accepts no bucket and never configures an R2 binding',()=>{const c=config();c.photos_enabled=false;delete c.dryfit.bucket;delete c.her.bucket;assert.equal(validateConfig(c),c)});
+
+test('publicação é bloqueada se migrações D1 intermediárias não foram recuperadas',async()=>{
+ const root=await mkdtemp(join(tmpdir(),'mb-release-gap-'));
+ try{
+  for(const store of ['mb-dryfit','mb-for-her']){
+   const dir=join(root,'stores',store);
+   await mkdir(join(dir,'dist','server'),{recursive:true});
+   await mkdir(join(dir,'drizzle'),{recursive:true});
+   await writeFile(join(dir,'dist','server','index.js'),'export default {fetch(){return new Response("ok")}}');
+   await writeFile(join(dir,'drizzle','0000_initial.sql'),'CREATE TABLE t(id INTEGER);');
+  }
+  // A versão existente possui salto real de 0034 para 0042: não deve
+  // existir forma silenciosa de preparar o pacote antes de conciliar o Codex.
+  await writeFile(join(root,'stores','mb-dryfit','drizzle','0002_missing_middle.sql'),'SELECT 1;');
+  await assert.rejects(prepare(config(),{root}),/Migrações ausentes em dryfit: 0001/);
+ }finally{await rm(root,{recursive:true,force:true})}
+});
+
+test('publicação parcial mantém 0000–0034 e segura 0042 quando as fotos estão desligadas',async()=>{
+ const root=await mkdtemp(join(tmpdir(),'mb-release-code-only-'));
+ try{
+  for(const store of ['mb-dryfit','mb-for-her']){
+   const dir=join(root,'stores',store);
+   await mkdir(join(dir,'dist','server'),{recursive:true});
+   await mkdir(join(dir,'drizzle'),{recursive:true});
+   await writeFile(join(dir,'dist','server','index.js'),'export default {fetch(){return new Response("sem fotos")}}');
+   await writeFile(join(dir,'drizzle','0000_initial.sql'),'CREATE TABLE t(id INTEGER);');
+   await writeFile(join(dir,'drizzle','0001_next.sql'),'ALTER TABLE t ADD COLUMN valor TEXT;');
+   await writeFile(join(dir,'drizzle','0042_product_model_gallery.sql'),'CREATE TABLE galeria(id TEXT);');
+  }
+  const c=config();c.photos_enabled=false;
+  await assert.rejects(prepare(c,{root}),/Migrações ausentes/,'Modo normal continua protegendo a sequência.');
+  const out=await prepare(c,{root,output:join(root,'partial'),codeOnly:true});
+  for(const key of ['dryfit','her']){
+   const m=JSON.parse(await readFile(join(out,key,'wrangler.json'),'utf8'));
+   assert.equal(m.vars.MB_PHOTOS_ENABLED,'0');
+   assert.equal(m.r2_buckets,undefined);
+   assert.equal(await readFile(join(out,key,'migrations/0001_next.sql'),'utf8'),'ALTER TABLE t ADD COLUMN valor TEXT;');
+   await assert.rejects(readFile(join(out,key,'migrations/0042_product_model_gallery.sql'),'utf8'),{code:'ENOENT'});
+  }
+  const withPhotos=config();
+  await assert.rejects(prepare(withPhotos,{root,codeOnly:true}),/exige fotos desativadas/);
+  await writeFile(join(root,'stores','mb-for-her','drizzle','0043_unexpected.sql'),'SELECT 1;');
+  await assert.rejects(prepare(c,{root,codeOnly:true}),/Migração posterior inesperada/);
+ }finally{await rm(root,{recursive:true,force:true})}
+});

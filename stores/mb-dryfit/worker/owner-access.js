@@ -32,7 +32,7 @@ export async function handleOwnerAccess(req,env,identity,member){
     await env.DB.prepare('INSERT INTO owner_password_resets(token_hash,email,revision,expires_at) VALUES (?,?,?,?)').bind(tokenHash,email,config.revision,new Date(Date.now()+900000).toISOString()).run();
     // The private reset nonce travels only in the recovery email's continue URL.
     // Firebase sends the email; the API never returns the nonce or an action link.
-    const response=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key='+encodeURIComponent(firebase.apiKey),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({requestType:'PASSWORD_RESET',email,continueUrl:'https://atelier-loja-mw96xrv3.savoryaccordion3.chatgpt.site/conta/acao?owner_reset='+token}),signal:AbortSignal.timeout(15000)});
+    const response=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key='+encodeURIComponent(firebase.apiKey),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({requestType:'PASSWORD_RESET',email,continueUrl:'https://mbdryfit.com.br/conta/acao?owner_reset='+token}),signal:AbortSignal.timeout(15000)});
     if(!response.ok){await env.DB.prepare('DELETE FROM owner_password_resets WHERE token_hash=?').bind(tokenHash).run();const error=await response.json().catch(()=>({}));if(error.error?.message==='EMAIL_NOT_FOUND')return ownerReply({ok:true});return ownerReply({error:'Não foi possível enviar o link agora. Tente novamente mais tarde.'},503)}
     return ownerReply({ok:true});
    }
