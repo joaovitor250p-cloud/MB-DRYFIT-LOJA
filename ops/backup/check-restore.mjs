@@ -33,9 +33,12 @@ async function command(binary,params,maxBytes=16*1024*1024){
  });
 }
 function safeTarMember(member){
- if(typeof member!=='string'||!member||member.startsWith('/')||member.includes('\\')||/[\x00-\x1f\x7f]/.test(member))return false;
+ // Rejeita também caminhos absolutos ou especiais do Windows (C:, ADS e
+ // nomes de dispositivos), antes de extrair TARs de origem não confiável.
+ if(typeof member!=='string'||!member||member.startsWith('/')||/[\\<>:"|?*\x00-\x1f\x7f]/.test(member))return false;
  const segments=member.replace(/^\.\/?/,'').replace(/\/$/,'').split('/');
- return segments.every(x=>x&&x!=='.'&&x!=='..'&&x!=='.git');
+ return segments.every(x=>x&&x!=='.'&&x!=='..'&&x!=='.git'&&
+  !/[. ]$/.test(x)&&!/^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\..*)?$/i.test(x));
 }
 async function validateTar(file){
  const listing=await command('tar',['-tf',file],64*1024*1024);
