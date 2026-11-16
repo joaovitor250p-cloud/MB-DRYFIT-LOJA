@@ -189,11 +189,44 @@ const chartTemplate=await env.DB.prepare('SELECT fit_chart,barcode_mode FROM pro
 const sqliteNoCase=v=>String(v??'').replace(/[A-Z]/g,c=>c.toLowerCase());
 const previousRows=(await env.DB.prepare('SELECT * FROM products WHERE name=? COLLATE NOCASE').bind(entries[0].name).all()).results;
 const previousByColorSize=new Map(previousRows.map(v=>[sqliteNoCase(v.color)+'|'+sqliteNoCase(v.size),v]));
-// Pré-carregamento de códigos para evitar até duas consultas de rede por variação.
-// A restrição UNIQUE do D1 continua a proteção final contra alterações concorrentes.
-const knownBarcodes=new Set((await env.DB.prepare('SELECT barcode FROM products UNION ALL SELECT barcode FROM product_barcodes').all()).results.map(v=>v.barcode));
-const existing=[];const statements=resolvedModel.legacy.map(id=>env.DB.prepare('UPDATE products SET model_id=? WHERE id=? AND model_id IS NULL').bind(modelId,id));const generated=new Set();let created=0,reused=0;
-for(const p of entries){const old=previousByColorSize.get(sqliteNoCase(p.color)+'|'+sqliteNoCase(p.size));if(old){if(p.stock!==0)return json({error:'Esta variação já existe. Informe estoque inicial zero e use Reposição para somar peças.'},409);statements.push(env.DB.prepare('UPDATE products SET model_id=?,main_photo=?,description=?,category=?,brand=?,price=?,extra_code=?,photo=?,active=?,published=CASE WHEN ?=1 AND ?>0 AND COALESCE(?,?) IS NOT NULL THEN published ELSE 0 END WHERE id=?').bind(modelId,input.main_photo||null,p.description,p.category,p.brand,p.price,p.extra_code,p.photo,p.active,p.active,p.price,input.main_photo||null,p.photo,old.id));if(input.barcode_mode){if(!['auto','manual'].includes(input.barcode_mode))return json({error:'Modo de código inválido.'},400);statements.push(env.DB.prepare('UPDATE products SET barcode_mode=? WHERE id=?').bind(input.barcode_mode,old.id))}existing.push({id:old.id,barcode:old.barcode,color:p.color,size:p.size});reused++;continue}const mode=p.requested_mode??chartTemplate?.barcode_mode??'auto';if(!['auto','manual'].includes(mode))return json({error:'Modo de código inválido.'},400);let code;if(mode==='manual'){code=p.requested_barcode;if(typeof code!=='string'||!/^[0-9A-Z][0-9A-Z .$/+%\-]{0,39}$/.test(code))return json({error:'Informe o código original em letras maiúsculas, números ou símbolos compatíveis, até 40 caracteres.'},400);if(generated.has(code)||knownBarcodes.has(code))return json({error:'Código '+code+' já identifica outra variação. Confira a etiqueta ou use um código exclusivo para esta cor e tamanho.'},409)}else{do{code=String(10000000+crypto.getRandomValues(new Uint32Array(1))[0]%90000000)}while(generated.has(code)||knownBarcodes.has(code))}generated.add(code);const id=crypto.randomUUID();statements.push(env.DB.prepare('INSERT INTO products (id,name,description,category,brand,price,stock,photo,active,created_at,barcode,extra_code,size,color,model_id,main_photo,fit_chart,barcode_mode) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(id,p.name,p.description,p.category,p.brand,p.price,p.stock,p.photo,p.active,new Date().toISOString(),code,p.extra_code,p.size,p.color,modelId,input.main_photo||null,chartTemplate?.fit_chart||'[]',mode));const canonical=v=>v.normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().replace(/\s+/g,' ').toLowerCase();statements.push(env.DB.prepare('INSERT INTO normalized_variant_claims(model_name_key,color_key,size,product_id) VALUES (?,?,?,?)').bind(canonical(p.name),canonical(p.color),p.size,id));existing.push({id,barcode:code,color:p.color,size:p.size});created++}
+// Planejar os códigos uma única vez e consultar colisões em lote, sem ler todos
+// os códigos do estoque. Isso reduz latência D1 e linhas lidas no plano gratuito.
+const generated=new Set(),pendingCodes=new Map();
+const createAutomaticCode=()=>String(10000000+crypto.getRandomValues(new Uint32Array(1))[0]%90000000);
+for(const p of entries){
+ const key=sqliteNoCase(p.color)+'|'+sqliteNoCase(p.size);
+ if(previousByColorSize.has(key))continue;
+ const mode=p.requested_mode??chartTemplate?.barcode_mode??'auto';
+ if(!['auto','manual'].includes(mode))return json({error:'Modo de código inválido.'},400);
+ let code;
+ if(mode==='manual'){
+  code=p.requested_barcode;
+  if(typeof code!=='string'||!/^[0-9A-Z][0-9A-Z .$/+%\\-]{0,39}$/.test(code))return json({error:'Informe o código original em letras maiúsculas, números ou símbolos compatíveis, até 40 caracteres.'},400);
+  if(generated.has(code))return json({error:'Código '+code+' repetido no mesmo cadastro.'},409);
+ }else do{code=createAutomaticCode()}while(generated.has(code));
+ generated.add(code);pendingCodes.set(key,{mode,code});
+}
+async function findCodeCollisions(codes){
+ if(!codes.length)return new Set();
+ const jsonCodes=JSON.stringify(codes);
+ const rows=(await env.DB.prepare('SELECT barcode FROM products WHERE barcode IN (SELECT value FROM json_each(?)) UNION SELECT barcode FROM product_barcodes WHERE barcode IN (SELECT value FROM json_each(?))').bind(jsonCodes,jsonCodes).all()).results;
+ return new Set(rows.map(row=>row.barcode));
+}
+let safeCodes=false;
+for(let attempt=0;attempt<6;attempt++){
+ const collisions=await findCodeCollisions([...generated]);
+ if(!collisions.size){safeCodes=true;break}
+ for(const info of pendingCodes.values()){
+  if(!collisions.has(info.code))continue;
+  if(info.mode==='manual')return json({error:'Código '+info.code+' já identifica outra variação. Confira a etiqueta ou use um código exclusivo para esta cor e tamanho.'},409);
+  generated.delete(info.code);
+  do{info.code=createAutomaticCode()}while(generated.has(info.code)||collisions.has(info.code));
+  generated.add(info.code);
+ }
+}
+if(!safeCodes)return json({error:'Não foi possível gerar códigos exclusivos. Tente novamente.'},409);
+const existing=[];const statements=resolvedModel.legacy.map(id=>env.DB.prepare('UPDATE products SET model_id=? WHERE id=? AND model_id IS NULL').bind(modelId,id));let created=0,reused=0;
+for(const p of entries){const old=previousByColorSize.get(sqliteNoCase(p.color)+'|'+sqliteNoCase(p.size));if(old){if(p.stock!==0)return json({error:'Esta variação já existe. Informe estoque inicial zero e use Reposição para somar peças.'},409);statements.push(env.DB.prepare('UPDATE products SET model_id=?,main_photo=?,description=?,category=?,brand=?,price=?,extra_code=?,photo=?,active=?,published=CASE WHEN ?=1 AND ?>0 AND COALESCE(?,?) IS NOT NULL THEN published ELSE 0 END WHERE id=?').bind(modelId,input.main_photo||null,p.description,p.category,p.brand,p.price,p.extra_code,p.photo,p.active,p.active,p.price,input.main_photo||null,p.photo,old.id));if(input.barcode_mode){if(!['auto','manual'].includes(input.barcode_mode))return json({error:'Modo de código inválido.'},400);statements.push(env.DB.prepare('UPDATE products SET barcode_mode=? WHERE id=?').bind(input.barcode_mode,old.id))}existing.push({id:old.id,barcode:old.barcode,color:p.color,size:p.size});reused++;continue}const {mode,code}=pendingCodes.get(sqliteNoCase(p.color)+'|'+sqliteNoCase(p.size));const id=crypto.randomUUID();statements.push(env.DB.prepare('INSERT INTO products (id,name,description,category,brand,price,stock,photo,active,created_at,barcode,extra_code,size,color,model_id,main_photo,fit_chart,barcode_mode) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(id,p.name,p.description,p.category,p.brand,p.price,p.stock,p.photo,p.active,new Date().toISOString(),code,p.extra_code,p.size,p.color,modelId,input.main_photo||null,chartTemplate?.fit_chart||'[]',mode));const canonical=v=>v.normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().replace(/\s+/g,' ').toLowerCase();statements.push(env.DB.prepare('INSERT INTO normalized_variant_claims(model_name_key,color_key,size,product_id) VALUES (?,?,?,?)').bind(canonical(p.name),canonical(p.color),p.size,id));existing.push({id,barcode:code,color:p.color,size:p.size});created++}
 // D1 batch is transactional: a failed variation never leaves a partial model.
 await env.DB.batch(statements);return json({model_id:modelId,created,reused,variants:existing},201);}
 
