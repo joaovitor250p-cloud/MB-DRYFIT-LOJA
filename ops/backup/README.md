@@ -46,6 +46,24 @@ Existe também uma ferramenta de **exportação autenticada** que pode ser execu
 
 Ela lê o D1 e o bucket R2 de **uma loja por vez**, confere a lista de objetos antes e depois da cópia, cria a relação de SHA-256, inclui o código rastreado pelo Git local e gera um `.mbbackup` cifrado. Não contém comandos de publicação, atualização nem remoção dos bancos ou buckets remotos.
 
+### Atalho para Windows: uma execução para cada loja
+
+Foi adicionado `ops/backup/backup-duas-lojas.ps1` para o computador Windows do dono. Ele mostra primeiro o plano e só executa a exportação depois de confirmação explícita, solicitando as credenciais de forma privada no terminal.
+
+Na pasta do repositório, sem conectar nem gravar nada:
+
+```powershell
+.\ops\backup\backup-duas-lojas.ps1
+```
+
+Para exportar ambas separadamente para um diretório privado do seu disco:
+
+```powershell
+.\ops\backup\backup-duas-lojas.ps1 -Execute -Destination 'D:\MB-Backups'
+```
+
+Nunca cole seus tokens, senhas ou chaves em mensagens, prints, repositórios ou arquivos `.ps1`. Use apenas um computador autorizado, com disco criptografado e permissões privadas. O atalho **não** testa restauração real, não publica sites e não faz operações de escrita no D1/R2. No PowerShell 5.1, a frase sigilosa permanece brevemente na memória do processo enquanto é fornecida aos comandos locais; feche o terminal ao terminar.
+
 ### Requisitos
 
 - Node.js 24 ou superior e `tar`;
