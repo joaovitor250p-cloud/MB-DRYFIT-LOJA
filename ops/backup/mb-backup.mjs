@@ -8,7 +8,7 @@ import { createReadStream, promises as fs } from 'node:fs';
 import { resolve, sep, dirname } from 'node:path';
 import { randomBytes, scryptSync, createCipheriv, createDecipheriv } from 'node:crypto';
 import { spawn } from 'node:child_process';
-import { Readable } from 'node:stream';
+import { Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 
 const MAGIC = Buffer.from('MBBACK01');
@@ -143,19 +143,16 @@ async function inspect(archiveArg) {
 
 async function verify(archive) {
   const { store, decrypted } = await inspect(archive);
-  const tar = tarProcess(['-tf', '-']);
-  const tarDone = exitStatus(tar, 'Verificação do tar');
-  tarDone.catch(() => {});
-  let tarError = '';
-  tar.stdout.resume();
-  tar.stderr.on('data', (chunk) => { tarError = (tarError + chunk.toString()).slice(-1000); });
+  // Apenas autenticação AES-GCM, sem gerar arquivos descriptografados temporários.
+  // A validação estrutural do TAR ocorre no comando unpack.
+  const sink = new Writable({
+    write(_chunk, _encoding, done) { done(); }
+  });
   try {
-    await pipeline(Readable.from(decrypted()), tar.stdin);
-    await tarDone;
-    console.log('Backup cifrado íntegro e TAR legível: ' + store);
+    await pipeline(Readable.from(decrypted()), sink);
+    console.log('Integridade criptográfica confirmada: ' + store);
   } catch (error) {
-    tar.kill();
-    throw new Error('Backup rejeitado: ' + (tarError || error.message));
+    throw new Error('Backup rejeitado: ' + error.message);
   }
 }
 
