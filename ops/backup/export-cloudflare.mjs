@@ -187,7 +187,7 @@ async function exportEncrypted(opt){
     join(root,'ops/backup/check-restore.mjs'),'--store',opt.store,'--archive',target
    ]));
    if(restored.status!=='LOCAL_RESTORE_CHECK_PASSED'||restored.store!==opt.store||
-      restored.missing_photo_references!==0)throw Error('Relatório de recuperação local inesperado.');
+      restored.provenance_verified!==true||restored.missing_photo_references!==0)throw Error('Relatório de recuperação local inesperado.');
   }catch(error){
    // Um pacote novo que falhou na recuperação local NÃO pode permanecer com
    // nome de backup utilizável no destino de longo prazo.
