@@ -93,7 +93,7 @@ const orderCheckout=u.pathname.match(/^\/api\/order-checkout\/([a-zA-Z0-9-]+)$/)
 }
 if(u.pathname.startsWith('/api/retail/'))return handleRetail(req,env,member);
 if(u.pathname.startsWith('/api/shop-admin/')){if(!owner)return json({error:'Acesso restrito ao dono.'},403);return handleShopAdmin(req,env)}
-if(u.pathname==='/api/me')return json({...member,auth:{...identity.auth,effective_role:member.role,store_key:env.MB_STORE_KEY||null,needs_login:!['owner','seller'].includes(member.role),reauth_url:'https://mbdryfit.com.br/dono?loja='+(env.MB_STORE_KEY==='her'?'her':'dryfit')}});
+if(u.pathname==='/api/me')return json({...member,photos_enabled:env.MB_PHOTOS_ENABLED!=='0'&&!!env.BUCKET,auth:{...identity.auth,effective_role:member.role,store_key:env.MB_STORE_KEY||null,needs_login:!['owner','seller'].includes(member.role),reauth_url:'https://mbdryfit.com.br/dono?loja='+(env.MB_STORE_KEY==='her'?'her':'dryfit')}});
 if(u.pathname==='/api/vendor-access'){
  if(!owner)return json({error:'Acesso restrito ao dono.'},403);
  if(req.method==='GET')return json({email:(await env.DB.prepare('SELECT email FROM vendor_access WHERE id=?').bind('shared').first())?.email||null});
@@ -144,7 +144,7 @@ if((!exact&&typeof input.published!=='boolean')||(ids!==undefined&&(!Array.isArr
 const selected=new Set(ids||[]),targets=exact?variants:ids?variants.filter(v=>selected.has(v.id)):variants;
 const online=exact?variants.filter(v=>selected.has(v.id)):input.published?targets.filter(v=>v.active):[];
 if(online.some(v=>v.archived_at))return json({error:'Modelos arquivados não podem ser publicados. Restaure-os primeiro.'},409);if((exact&&online.some(v=>!v.active))||(!exact&&input.published&&!online.length))return json({error:'Ative as variações selecionadas para publicar.'},400);
-if(online.some(v=>!v.main_photo&&!v.photo))return json({error:'Adicione uma foto principal ou foto de cada cor antes de publicar.'},400);
+if(env.MB_PHOTOS_ENABLED!=='0'&&online.some(v=>!v.main_photo&&!v.photo))return json({error:'Adicione uma foto principal ou foto de cada cor antes de publicar.'},400);
 if(online.some(v=>v.price<=0))return json({error:'Informe o preço de venda antes de publicar.'},400);
 const onlineIds=new Set(online.map(v=>v.id));if(targets.length)await env.DB.batch(targets.map(v=>env.DB.prepare('UPDATE products SET published=? WHERE id=?').bind(onlineIds.has(v.id)?1:0,v.id)));
 return json({published:input.published,variants:targets.length,online:online.length});}
