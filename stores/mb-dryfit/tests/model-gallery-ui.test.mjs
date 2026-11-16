@@ -7,7 +7,8 @@ import {parseHTML} from 'linkedom';
 function gallery(){
  const src=readFileSync('worker/page.html','utf8'),start=src.indexOf('let modelGalleryPhotos='),end=src.indexOf('const sizeOptions=',start);
  assert.ok(start>0&&end>start);
- const {document}=parseHTML('<html><body><div id="modelGalleryThumbs"></div><button id="saveModelGallery" disabled></button><p id="modelGalleryStatus"></p></body></html>');
+ const {document}=parseHTML('<html><body><dialog id="modelModal" open></dialog><div id="modelGalleryThumbs"></div><button id="saveModelGallery" disabled></button><p id="modelGalleryStatus"></p></body></html>');
+ document.querySelector('#modelModal').close=()=>document.querySelector('#modelModal').removeAttribute('open');
  const writes=[];
  const ctx={
   document,$:sel=>document.querySelector(sel),
@@ -52,4 +53,16 @@ test('catálogo abre as fotos extras sob demanda, sem colocar oito imagens em to
  assert.match(src,/class="details-gallery"/);
  const products=src.slice(src.indexOf('async function load(){'));
  assert.ok(!products.includes('Promise.all(products.map('),'Evitar baixar todas as galerias de uma vez.');
+});
+
+test('repetir apenas as fotos após uma falha parcial não cria o modelo outra vez',async()=>{
+ const g=gallery();
+ g.eval("modelGalleryPhotos=['/api/photos/foto-0'];modelGalleryReady=true;modelGalleryKey='modelo-criado';modelGalleryRevision=0;modelGalleryDirty=true;modelDataSaved=true;modelGalleryAutoSaving=false");
+ await g.ctx.saveModelGallery();
+ assert.equal(g.writes.length,1);
+ assert.equal(g.writes[0].path,'product-models/modelo-criado/gallery');
+ assert.equal(g.eval('modelDataSaved'),false);
+ assert.equal(g.document.querySelector('#modelModal').hasAttribute('open'),false);
+ const source=readFileSync('worker/page.html','utf8');
+ assert.match(source,/button\.disabled=modelDataSaved/,'Botão salvar modelo deve ficar desabilitado durante retry da galeria.');
 });
