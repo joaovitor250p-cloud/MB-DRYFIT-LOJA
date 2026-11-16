@@ -57,7 +57,13 @@ function assertCredentials(){
  if(process.env.MB_BACKUP_PASSPHRASE.length<16)throw Error('A frase de backup precisa ter pelo menos 16 caracteres.');
 }
 function assertObjectKey(key){
- if(typeof key!=='string'||!key||key.startsWith('/')||key.includes('\\')||/[\x00-\x1f\x7f]/.test(key)||key.split('/').some(part=>!part||part==='.'||part==='..'||part==='.git'))throw Error('Nome inseguro de objeto no R2. Exportação interrompida para evitar escrita fora da pasta.');
+ // AWS S3 aceita nomes incompatíveis com Windows (e NTFS alternate streams).
+ // Rejeitar ANTES do sync; nunca criar arquivos potencialmente perigosos no PC.
+ const invalid=typeof key!=='string'||!key||key.startsWith('/')||
+  /[\\<>:"|?*\x00-\x1f\x7f]/.test(key)||
+  key.split('/').some(part=>!part||part==='.'||part==='..'||part==='.git'||
+   /[. ]$/.test(part)||/^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\..*)?$/i.test(part));
+ if(invalid)throw Error('Nome inseguro de objeto no R2. Exportação interrompida para evitar escrita fora da pasta.');
 }
 async function enumerateObjects(bucket){
  const objects=new Map(),caseFolded=new Set();
