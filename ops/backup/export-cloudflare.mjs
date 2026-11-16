@@ -5,11 +5,11 @@
  * fornecidas exclusivamente no terminal do proprietário.
  * --plan não consulta a rede. --execute lê D1/R2; nunca faz deploy/import/delete.
  */
-import {promises as fs} from 'node:fs';
+import {promises as fs,createReadStream} from 'node:fs';
 import {join,resolve,relative,sep,dirname} from 'node:path';
 import {tmpdir} from 'node:os';
 import {fileURLToPath} from 'node:url';
-import {randomBytes} from 'node:crypto';
+import {randomBytes,createHash} from 'node:crypto';
 import {spawn} from 'node:child_process';
 import {createManifest,verifyManifest} from './mb-manifest.mjs';
 
@@ -94,11 +94,25 @@ async function localFiles(base){
  await walk(base);
  return files;
 }
-function assertObjectsMatch(remote,local){
+async function assertObjectsMatch(remote,local,base){
  if(remote.size!==local.size)throw Error('Quantidade de arquivos R2 diverge da listagem remota; backup NÃO foi concluído.');
+ let checksumMatches=0;
  for(const [key,info] of remote){
-  if(!local.has(key)||info.size!==local.get(key))throw Error('Objeto R2 ausente ou tamanho divergente. Backup NÃO foi concluído.');
+  if(!Number.isSafeInteger(info.size)||info.size<0||
+     !local.has(key)||info.size!==local.get(key))
+   throw Error('Objeto R2 ausente ou tamanho divergente. Backup NÃO foi concluído.');
+  // Um ETag S3 de parte única (32 caracteres hex) representa MD5 do objeto
+  // no R2. Para upload multipart, o ETag não é MD5 simples: não presumir hash.
+  const md5=typeof info.etag==='string'?info.etag.match(/^"?([a-f0-9]{32})"?$/i):null;
+  if(md5){
+   const hash=createHash('md5');
+   for await(const part of createReadStream(join(base,...key.split('/'))))hash.update(part);
+   if(hash.digest('hex')!==md5[1].toLowerCase())
+    throw Error('Checksum R2 divergente para arquivo baixado; backup NÃO foi concluído.');
+   checksumMatches++;
+  }
  }
+ return checksumMatches;
 }
 function assertNoRemoteChanges(a,b){
  if(a.size!==b.size)throw Error('O número de objetos R2 mudou durante a cópia. Refaça o backup.');
@@ -144,7 +158,8 @@ async function exportEncrypted(opt){
   // Sync somente lê o R2. Não usa --delete nem grava no bucket.
   await run(awsExecutable(),['s3','sync','s3://'+details.bucket,r2,'--endpoint-url',r2Endpoint(),'--only-show-errors','--no-progress']);
   const [local,objectsAfter]=await Promise.all([localFiles(r2),enumerateObjects(details.bucket)]);
-  assertObjectsMatch(objectsBefore,local);assertNoRemoteChanges(objectsBefore,objectsAfter);
+  const verifiedChecksums=await assertObjectsMatch(objectsBefore,local,r2);
+  assertNoRemoteChanges(objectsBefore,objectsAfter);
   // Apenas arquivos rastreados no commit local. Nunca copia .env ou working tree.
   const gitStatus=await run('git',['status','--porcelain','--untracked-files=all']);
   if(gitStatus.trim())throw Error('Há arquivos alterados ou não rastreados no repositório. Revise e faça commit somente do código apropriado antes de gerar o snapshot; nunca versione segredos.');
@@ -154,6 +169,7 @@ async function exportEncrypted(opt){
    store:opt.store,account_id:config.account_id,database:details.database_name,
    bucket:details.bucket,source_commit:revision,d1_sql_bytes:sqlStat.size,
    r2_objects:objectsBefore.size,r2_bytes:[...objectsBefore.values()].reduce((s,x)=>s+x.size,0),
+   r2_singlepart_md5_verified:verifiedChecksums,
    exported_at:new Date().toISOString(),
    completeness:'NOT_VERIFIED',
    notes:'Exportação somente leitura D1/R2. Não há snapshot transacional único entre os serviços; testar restauração em ambiente isolado.'
@@ -179,7 +195,7 @@ async function exportEncrypted(opt){
    throw Error('Recuperação local do backup falhou; pacote incompleto descartado. '+error.message);
   }
   console.log('Backup criptografado e RECUPERADO LOCALMENTE com sucesso: '+outputName);
-  console.log('Loja: '+opt.store+'; D1: '+sqlStat.size+' bytes; R2: '+objectsBefore.size+' objetos.');
+  console.log('Loja: '+opt.store+'; D1: '+sqlStat.size+' bytes; R2: '+objectsBefore.size+' objetos; MD5 R2 (ETag parte única): '+verifiedChecksums+'.');
   console.log('ATENÇÃO: ainda NÃO foi validada restauração real do D1 nem sincronismo transacional com R2.');
   console.log('Guarde uma cópia independente da Cloudflare e a senha em local separado.');
  }finally{
