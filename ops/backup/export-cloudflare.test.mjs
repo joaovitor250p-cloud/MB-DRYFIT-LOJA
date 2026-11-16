@@ -46,7 +46,7 @@ test('exportação simulada: D1, R2 e commit em backup cifrado; nenhuma escrita 
    'const args=process.argv.slice(2),command=path.basename(process.argv[1]);',
    'const note=path.join(process.env.MB_TEST_FIXTURE,"commands.log");',
    'fs.appendFileSync(note,JSON.stringify([command,...args])+String.fromCharCode(10));',
-   'if(command==="npx"){',
+   'if(command==="wrangler-test.cjs"){',
    ' if(!args.includes("d1")||!args.includes("export")||!args.includes("--remote"))process.exit(12);',
    ' const file=args[args.indexOf("--output")+1];',
    ' fs.mkdirSync(path.dirname(file),{recursive:true});',
@@ -63,8 +63,9 @@ test('exportação simulada: D1, R2 e commit em backup cifrado; nenhuma escrita 
    ' else process.exit(16);',
    '}else process.exit(18);'
   ].join(String.fromCharCode(10));
-  for(const name of ['npx','aws','git']){const p=join(bin,name);writeFileSync(p,tool);chmodSync(p,0o755)}
-  const env={...process.env,PATH:bin+delimiter+process.env.PATH,MB_TEST_FIXTURE:fixture,CLOUDFLARE_API_TOKEN:'dummy-token',
+  for(const name of ['aws','git']){const p=join(bin,name);writeFileSync(p,tool);chmodSync(p,0o755)}
+  const fakeWrangler=join(fixture,'wrangler-test.cjs');writeFileSync(fakeWrangler,tool);
+  const env={...process.env,PATH:bin+delimiter+process.env.PATH,MB_TEST_FIXTURE:fixture,MB_BACKUP_WRANGLER_CLI:fakeWrangler,CLOUDFLARE_API_TOKEN:'dummy-token',
    AWS_ACCESS_KEY_ID:'dummy-id',AWS_SECRET_ACCESS_KEY:'dummy-secret',MB_BACKUP_PASSPHRASE:'test-phrase-over-16-bytes'};
   const result=call(['--store','mb-for-her','--destination',dest,'--execute'],env);
   assert.equal(result.status,0,result.stderr);
@@ -74,7 +75,7 @@ test('exportação simulada: D1, R2 e commit em backup cifrado; nenhuma escrita 
   assert.ok(raw.subarray(0,8).equals(Buffer.from('MBBACK01')));
   assert.ok(!raw.includes(Buffer.from('0000000077')),'O conteúdo do banco deve estar cifrado.');
   const cmds=readFileSync(join(fixture,'commands.log'),'utf8').split('\n').filter(Boolean).map(JSON.parse);
-  assert.ok(cmds.find(x=>x[0]==='npx'&&x.includes('--remote')),'Exportação D1 precisa ser remota e somente leitura.');
+  assert.ok(cmds.find(x=>x[0]==='wrangler-test.cjs'&&x.includes('--remote')),'Exportação D1 precisa ser remota e somente leitura.');
   assert.ok(cmds.find(x=>x[0]==='aws'&&x.includes('sync')),'Precisa copiar R2.');
   assert.ok(cmds.find(x=>x[0]==='git'&&x.includes('archive')),'Precisa copiar o código rastreado.');
   assert.ok(cmds.every(x=>!x.includes('delete')&&!x.includes('import')&&!x.includes('deploy')),'Não executar operação destrutiva.');
