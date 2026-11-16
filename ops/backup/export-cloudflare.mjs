@@ -47,7 +47,7 @@ async function run(bin,args,options={}){
  });
 }
 function nodeExecutable(){return process.execPath}
-function npxExecutable(){return process.platform==='win32'?'npx.cmd':'npx'}
+function wranglerCli(){return resolve(process.env.MB_BACKUP_WRANGLER_CLI||join(root,'node_modules','wrangler','bin','wrangler.js'))}
 function awsExecutable(){return process.platform==='win32'?'aws.exe':'aws'}
 const cfEnv=()=>({...process.env,CLOUDFLARE_ACCOUNT_ID:config.account_id});
 function r2Endpoint(){return 'https://'+config.account_id+'.r2.cloudflarestorage.com'}
@@ -120,7 +120,7 @@ async function exportEncrypted(opt){
   await Promise.all([fs.mkdir(d1),fs.mkdir(r2),fs.mkdir(code)]);
   const sql=join(d1,'database.sql');
   // Wrangler exporta SELECT/DDL em SQL; opção --remote NÃO grava na produção.
-  await run(npxExecutable(),['--no-install','wrangler','d1','export',details.database_name,'--remote','--output',sql],{env:cfEnv()});
+  await run(nodeExecutable(),[wranglerCli(),'d1','export',details.database_name,'--remote','--output',sql],{env:cfEnv()});
   const sqlStat=await fs.stat(sql);
   if(!sqlStat.isFile()||sqlStat.size<50)throw Error('Exportação SQL D1 vazia ou incompleta; backup não gerado.');
   const objectsBefore=await enumerateObjects(details.bucket);
@@ -162,7 +162,7 @@ async function main(){
   console.log(JSON.stringify({mode:'PLAN_ONLY',store:opt.store,destination:opt.destination,
    cloudflare_account:config.account_id,database:db.database_name,bucket:db.bucket,
    steps:['Exportar D1 remoto via Wrangler (somente leitura)','Listar objetos R2 pelo endpoint S3','Baixar todos os objetos R2 em pasta temporária','Comparar contagens, bytes e ETags antes/depois','Exportar apenas commit Git local','Criar manifesto SHA-256 e arquivo cifrado por loja','Verificar criptografia e apagar pasta temporária'],
-   requires:['npx + Wrangler instalado','aws CLI','CLOUDFLARE_API_TOKEN','AWS_ACCESS_KEY_ID','AWS_SECRET_ACCESS_KEY','MB_BACKUP_PASSPHRASE'],
+   requires:['Wrangler instalado com npm ci','aws CLI','CLOUDFLARE_API_TOKEN','AWS_ACCESS_KEY_ID','AWS_SECRET_ACCESS_KEY','MB_BACKUP_PASSPHRASE'],
    warnings:['Não é restauração comprovada','Não garante snapshot transacional D1/R2','Não publica nem altera dados remotos','Não envia dados ou senhas ao GitHub']},null,2));
   return;
  }
