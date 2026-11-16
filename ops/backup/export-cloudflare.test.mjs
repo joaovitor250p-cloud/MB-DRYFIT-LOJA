@@ -62,7 +62,8 @@ test('exportação simulada: D1, R2 e commit em backup cifrado; nenhuma escrita 
    '  const counter=path.join(process.env.MB_TEST_FIXTURE,"r2-list-count");',
    '  const number=(Number(fs.existsSync(counter)?fs.readFileSync(counter,"utf8"):"0")+1);fs.writeFileSync(counter,String(number));',
    '  const etag=process.env.MB_TEST_R2_CHANGE==="1"&&number>1?"alterado":process.env.MB_TEST_BAD_ETAG==="1"?"00000000000000000000000000000000":"8827a41122a5028b9808c7bf84b9fcf6";',
-   '  console.log(JSON.stringify({IsTruncated:false,Contents:[{Key:"photos/foto-1",Size:6,ETag:etag,LastModified:"2026-01-01T00:00:00Z"}]}));',
+   '  const key=process.env.MB_TEST_BAD_R2_KEY==="1"?"photos/C:/foto-1":"photos/foto-1";',
+   '  console.log(JSON.stringify({IsTruncated:false,Contents:[{Key:key,Size:6,ETag:etag,LastModified:"2026-01-01T00:00:00Z"}]}));',
    ' }',
    ' else if(args.includes("sync")){',
    '  const target=args[args.indexOf("sync")+2];fs.mkdirSync(path.join(target,"photos"),{recursive:true});fs.writeFileSync(path.join(target,"photos","foto-1"),"ABCDEF");',
@@ -97,6 +98,13 @@ test('exportação simulada: D1, R2 e commit em backup cifrado; nenhuma escrita 
   assert.match(result.stdout,/RECUPERADO LOCALMENTE com sucesso/);
   assert.match(result.stdout,/NÃO foi validada restauração real/);
   assert.match(result.stdout,/MD5 R2 \(ETag parte única\): 1/);
+  // Nome de objeto R2 com caminho de drive/NTFS precisa ser rejeitado
+  // antes de qualquer download, inclusive no Windows.
+  const badKeyDest=join(fixture,'nome-r2-inseguro');
+  const badKey=call(['--store','mb-dryfit','--destination',badKeyDest,'--execute'],{...env,MB_TEST_BAD_R2_KEY:'1'});
+  assert.notEqual(badKey.status,0);
+  assert.match(badKey.stderr,/Nome inseguro de objeto no R2/);
+  assert.equal(existsSync(badKeyDest),false);
   // SQL e inventário íntegros não bastam: foto vinculada ausente deve descartar
   // o pacote recém-criado e impedir a mensagem de conclusão.
   const invalidPhotosDest=join(fixture,'foto-ausente');
