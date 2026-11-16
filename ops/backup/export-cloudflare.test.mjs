@@ -50,7 +50,9 @@ test('exportação simulada: D1, R2 e commit em backup cifrado; nenhuma escrita 
    ' if(!args.includes("d1")||!args.includes("export")||!args.includes("--remote"))process.exit(12);',
    ' const file=args[args.indexOf("--output")+1];',
    ' fs.mkdirSync(path.dirname(file),{recursive:true});',
-   ' fs.writeFileSync(file,["CREATE TABLE products(id TEXT PRIMARY KEY, barcode TEXT);","INSERT INTO products VALUES (\\u0027p\\u0027,\\u00270000000077\\u0027);"].join(String.fromCharCode(10)));',
+   ' const photo=process.env.MB_TEST_BAD_PHOTO==="1"?"/api/photos/inexistente":"/api/photos/foto-1";',
+   ' const q=String.fromCharCode(39);',
+   ' fs.writeFileSync(file,["CREATE TABLE products(id TEXT PRIMARY KEY, barcode TEXT, photo TEXT, main_photo TEXT);","INSERT INTO products VALUES ("+q+"p"+q+","+q+"0000000077"+q+","+q+photo+q+",NULL);"].join(String.fromCharCode(10)));',
    '}else if(command==="aws"){',
    ' if(args.includes("list-objects-v2")){',
    '  const counter=path.join(process.env.MB_TEST_FIXTURE,"r2-list-count");',
@@ -62,7 +64,7 @@ test('exportação simulada: D1, R2 e commit em backup cifrado; nenhuma escrita 
    '  const target=args[args.indexOf("sync")+2];fs.mkdirSync(path.join(target,"photos"),{recursive:true});fs.writeFileSync(path.join(target,"photos","foto-1"),"ABCDEF");',
    ' }else process.exit(14);',
    '}else if(command==="git"){',
-   ' if(args[0]==="archive"){const file=args[args.indexOf("--output")+1];fs.writeFileSync(file,"tracked code snapshot");}',
+   ' if(args[0]==="archive"){const file=args[args.indexOf("--output")+1],source=path.join(process.env.MB_TEST_FIXTURE,"fake-code");fs.mkdirSync(source,{recursive:true});fs.writeFileSync(path.join(source,"arquivo.txt"),"tracked code snapshot");require("node:child_process").execFileSync("tar",["-cf",file,"-C",source,"arquivo.txt"]);}',
    ' else if(args[0]==="rev-parse")console.log("fakesha123");',
    ' else if(args[0]==="status")console.log("");',
    ' else process.exit(16);',
@@ -86,7 +88,16 @@ test('exportação simulada: D1, R2 e commit em backup cifrado; nenhuma escrita 
   assert.ok(cmds.every(x=>!x.includes('delete')&&!x.includes('import')&&!x.includes('deploy')),'Não executar operação destrutiva.');
   const verify=spawnSync(process.execPath,[join(root,'ops/backup/mb-backup.mjs'),'verify',archive],{env,encoding:'utf8',timeout:30000});
   assert.equal(verify.status,0,verify.stderr);
+  assert.match(result.stdout,/RECUPERADO LOCALMENTE com sucesso/);
   assert.match(result.stdout,/NÃO foi validada restauração real/);
+  // SQL e inventário íntegros não bastam: foto vinculada ausente deve descartar
+  // o pacote recém-criado e impedir a mensagem de conclusão.
+  const invalidPhotosDest=join(fixture,'foto-ausente');
+  const bad=call(['--store','mb-dryfit','--destination',invalidPhotosDest,'--execute'],{...env,MB_TEST_BAD_PHOTO:'1'});
+  assert.notEqual(bad.status,0,'A restauração local deve detectar foto que não está no R2.');
+  assert.match(bad.stderr,/Recuperação local do backup falhou/);
+  assert.equal(readdirSync(invalidPhotosDest).filter(name=>name.endsWith('.mbbackup')).length,0);
+  assert.doesNotMatch(bad.stdout,/RECUPERADO LOCALMENTE com sucesso/);
   // Mudança remota entre a primeira e a segunda listagem deve falhar fechado.
   const counter=join(fixture,'r2-list-count');writeFileSync(counter,'0');
   const changedDest=join(fixture,'nao-exportado');
