@@ -88,6 +88,8 @@ test('exportação simulada: D1, R2 e commit em backup cifrado; nenhuma escrita 
   const cmds=readFileSync(join(fixture,'commands.log'),'utf8').split('\n').filter(Boolean).map(JSON.parse);
   assert.ok(cmds.find(x=>x[0]==='wrangler-test.cjs'&&x.includes('--remote')&&x.includes('--config')&&x.includes('DB')),'Exportação D1 precisa identificar o banco correto por configuração e ser somente leitura.');
   assert.ok(cmds.find(x=>x[0]==='aws'&&x.includes('sync')),'Precisa copiar R2.');
+  assert.ok(cmds.filter(x=>x[0]==='aws').every(x=>x.includes('--region')&&x[x.indexOf('--region')+1]==='auto'),
+    'Todas as consultas e transferências ao R2 devem usar região auto explicitamente.');
   assert.ok(cmds.find(x=>x[0]==='git'&&x.includes('archive')),'Precisa copiar o código rastreado.');
   assert.ok(cmds.every(x=>!x.includes('delete')&&!x.includes('import')&&!x.includes('deploy')),'Não executar operação destrutiva.');
   const verify=spawnSync(process.execPath,[join(root,'ops/backup/mb-backup.mjs'),'verify',archive],{env,encoding:'utf8',timeout:30000});
