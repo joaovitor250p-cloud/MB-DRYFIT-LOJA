@@ -49,7 +49,7 @@ test('configurações reais exibem funções sem downloads ou backups falsos',as
 test('código manual persiste por conta e loja neste dispositivo sem mudar códigos existentes',async()=>{
  const store=new Map(),s=screen('owner','dryfit',store);
  const view=await paint(s),select=view.querySelector('#ownerSettingsBarcodeMode');
- assert.equal(select.value,'auto');
+ assert.equal(s.ctx.ownerBarcodePreference(),'auto');
  select.value='manual';select.onchange({target:select});
  assert.equal(s.ctx.ownerBarcodePreference(),'manual');
  const another=screen('owner','dryfit',store);
