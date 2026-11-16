@@ -1,5 +1,5 @@
 import {shopRequestIdentity,customerSession,authDigest} from "./customer-auth.js";
-export const STAFF_STORES=[{key:'dryfit',name:'MB Dryfit',origin:'https://atelier-loja-mw96xrv3.savoryaccordion3.chatgpt.site'},{key:'her',name:'MB For Her',origin:'https://mb-for-her.savoryaccordion3.chatgpt.site'}];
+export const STAFF_STORES=[{key:'dryfit',name:'MB Dryfit',origin:'https://mbdryfit.com.br'},{key:'her',name:'MB For Her',origin:'https://forher.mbdryfit.com.br'}];
 const staffReply=(body,status=200,headers={})=>Response.json(body,{status,headers:{'Cache-Control':'no-store',...headers}});
 const staffClear='__Host-mb_staff=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax';
 const staffToken=req=>req.headers.get('Cookie')?.match(/(?:^|;\s*)__Host-mb_staff=([a-f0-9]{64})(?:;|$)/)?.[1];
