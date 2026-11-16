@@ -145,8 +145,23 @@ async function exportEncrypted(opt){
   await verifyManifest(opt.store,staging);
   await fs.mkdir(opt.destination,{recursive:true,mode:0o700});
   await run(nodeExecutable(),[join(root,'ops/backup/mb-backup.mjs'),'pack',opt.store,staging,target]);
-  await run(nodeExecutable(),[join(root,'ops/backup/mb-backup.mjs'),'verify',target]);
-  console.log('Backup criptografado localmente e conferido: '+outputName);
+  // Teste de recuperação LOCAL obrigatório: detectar SQL ilegível, fotos referenciadas
+  // ausentes e inventário errado antes de declarar a exportação concluída.
+  // Não acessa nem modifica D1/R2 remotos. Restauração remota segue pendente.
+  try{
+   await run(nodeExecutable(),[join(root,'ops/backup/mb-backup.mjs'),'verify',target]);
+   const restored=JSON.parse(await run(nodeExecutable(),[
+    join(root,'ops/backup/check-restore.mjs'),'--store',opt.store,'--archive',target
+   ]));
+   if(restored.status!=='LOCAL_RESTORE_CHECK_PASSED'||restored.store!==opt.store||
+      restored.missing_photo_references!==0)throw Error('Relatório de recuperação local inesperado.');
+  }catch(error){
+   // Um pacote novo que falhou na recuperação local NÃO pode permanecer com
+   // nome de backup utilizável no destino de longo prazo.
+   await fs.rm(target,{force:true});
+   throw Error('Recuperação local do backup falhou; pacote incompleto descartado. '+error.message);
+  }
+  console.log('Backup criptografado e RECUPERADO LOCALMENTE com sucesso: '+outputName);
   console.log('Loja: '+opt.store+'; D1: '+sqlStat.size+' bytes; R2: '+objectsBefore.size+' objetos.');
   console.log('ATENÇÃO: ainda NÃO foi validada restauração real do D1 nem sincronismo transacional com R2.');
   console.log('Guarde uma cópia independente da Cloudflare e a senha em local separado.');
