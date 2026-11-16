@@ -70,15 +70,13 @@ test('armazenamento R2 desativado bloqueia gravação e não anuncia fotos públ
  }finally{d.sql.close()}
 });
 
-test('catálogo com fotos desligadas não consulta índice de galeria ainda não migrado',async()=>{
+test('catálogo sem índice 0042 mantém foto não publicada como 404, sem erro D1',async()=>{
  const d=setup();
  try{
   d.env.MB_PHOTOS_ENABLED='0';
   d.env.BUCKET=null;
   d.sql.exec('DROP TABLE product_model_gallery_photo_index');
   const response=await worker.fetch(new Request('https://mb.test/catalogo/fotos/qualquer-foto'),d.env);
-  assert.equal(response.status,200,'Deve usar imagem substituta, não tentar consultar tabela ausente.');
-  assert.match(response.headers.get('Content-Type')||'',/image\/svg\+xml/);
-  assert.match(await response.text(),/Foto em breve/);
+  assert.equal(response.status,404,'Fotos não publicadas devem permanecer privadas, sem erro por índice ausente.');
  }finally{d.sql.close()}
 });
