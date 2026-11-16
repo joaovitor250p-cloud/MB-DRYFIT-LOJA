@@ -27,6 +27,18 @@
 - Estoque e modelos: o painel monta inicialmente **60 cartões** e oferece `Mostrar mais modelos`, evitando inserir todas as peças no DOM em um só instante. Busca e filtro continuam disponíveis.
 - Catálogo público: começa com **60 cartões** e oferece `Mostrar mais peças`. Carrega fotos complementares apenas sob demanda, com imagens de miniatura preguiçosas (lazy loading).
 
+## Testes automatizados
+
+Última execução com resultado aprovado: https://github.com/joaovitor250p-cloud/MB-DRYFIT-LOJA/actions/runs/43889467113
+
+- **444 testes MB Dryfit**
+- **391 testes MB For Her**
+- **3 testes de hospedagem**
+- **1 suíte do backup criptografado**
+- **4 testes de segurança do repositório**
+
+**Total: 843 testes aprovados, nenhuma falha; builds concluídos.** Os testes novos cobrem o acesso privado do dono, limite de fotos, verificação no R2, conflito de revisão, preservação de itens arquivados, foto no catálogo apenas quando publicada, galeria com carregamento sob demanda, ordenação, recuperação após falha parcial e renderização inicial de até 60 cartões. A rotina que permite retomar o salvamento da galeria após criar o modelo impede tentar cadastrar novamente a peça já salva.
+
 ## O que não foi medido
 
 Os testes automatizados conferem integridade, permissões, links, ordenação, limites e funcionamento das interações. **Não são uma medição do tempo real de carregamento** em aparelhos Android/iPhone. Antes da publicação, medir com centenas de modelos, 4–8 fotos por modelo, internet móvel, leitura de códigos e impressora Elgin.
