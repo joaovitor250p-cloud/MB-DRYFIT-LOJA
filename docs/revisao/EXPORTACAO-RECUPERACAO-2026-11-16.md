@@ -55,7 +55,7 @@ A revisão foi executada pelo GitHub Actions:
 - 7 testes de recuperação SQLite, fotos, origem e caminhos TAR;
 - 4 testes de guardião de segurança.
 
-**859 testes aprovados**, builds concluídos e nenhuma falha na execução verificada em https://github.com/joaovitor250p-cloud/MB-DRYFIT-LOJA/actions/runs/43903100879 .
+**859 testes aprovados**, builds concluídos e nenhuma falha na execução verificada em https://github.com/joaovitor250p-cloud/MB-DRYFIT-LOJA/actions/runs/43904111745 .
 
 Esse resultado valida a revisão do código e os serviços simulados, **não** mede a velocidade real em Android/iPhone, não confirma quotas/custos da Cloudflare e não comprova restauração remota.
 
