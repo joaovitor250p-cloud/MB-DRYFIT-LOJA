@@ -21,6 +21,17 @@ jobs:
         with:
           ref: cff723e5b8384fccb3d134d8a9da30bdfb62b61f
           persist-credentials: false
+      - name: Buscar apenas os catálogos atualizados
+        uses: actions/checkout@v4
+        with:
+          ref: 3505f22d265ae388c82bbb7ac43cb0103182379f
+          path: catalogos-atuais
+          persist-credentials: false
+      - name: Incorporar somente os layouts e seus testes
+        run: |
+          cp catalogos-atuais/stores/mb-dryfit/worker/storefront.html stores/mb-dryfit/worker/storefront.html
+          cp catalogos-atuais/stores/mb-for-her/worker/storefront.html stores/mb-for-her/worker/storefront.html
+          cp catalogos-atuais/stores/mb-for-her/tests/brand-media.test.mjs stores/mb-for-her/tests/brand-media.test.mjs
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -67,6 +78,17 @@ jobs:
         with:
           ref: cff723e5b8384fccb3d134d8a9da30bdfb62b61f
           persist-credentials: false
+      - name: Buscar apenas os catálogos atualizados
+        uses: actions/checkout@v4
+        with:
+          ref: 3505f22d265ae388c82bbb7ac43cb0103182379f
+          path: catalogos-atuais
+          persist-credentials: false
+      - name: Incorporar somente os layouts e seus testes
+        run: |
+          cp catalogos-atuais/stores/mb-dryfit/worker/storefront.html stores/mb-dryfit/worker/storefront.html
+          cp catalogos-atuais/stores/mb-for-her/worker/storefront.html stores/mb-for-her/worker/storefront.html
+          cp catalogos-atuais/stores/mb-for-her/tests/brand-media.test.mjs stores/mb-for-her/tests/brand-media.test.mjs
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
