@@ -47,7 +47,11 @@ test('exportação simulada: D1, R2 e commit em backup cifrado; nenhuma escrita 
    'const note=path.join(process.env.MB_TEST_FIXTURE,"commands.log");',
    'fs.appendFileSync(note,JSON.stringify([command,...args])+String.fromCharCode(10));',
    'if(command==="wrangler-test.cjs"){',
-   ' if(!args.includes("d1")||!args.includes("export")||!args.includes("--remote"))process.exit(12);',
+   ' if(!args.includes("d1")||!args.includes("export")||!args.includes("--remote")||!args.includes("--config")||!args.includes("DB"))process.exit(12);',
+   ' const cfg=JSON.parse(fs.readFileSync(args[args.indexOf("--config")+1],"utf8"));',
+   ' const ids={"mb-dryfit-db":"4550e9b3-16af-47c9-99d8-b65594ad5553","mb-for-her-db":"9d35dce4-4f58-4a00-9578-574e23bb13f1"};',
+   ' const db=cfg.d1_databases?.[0];',
+   ' if(cfg.account_id!=="d7a2b42a954796ce0ba8c2b6cccf1265"||cfg.d1_databases.length!==1||db.binding!=="DB"||ids[db.database_name]!==db.database_id)process.exit(13);',
    ' const file=args[args.indexOf("--output")+1];',
    ' fs.mkdirSync(path.dirname(file),{recursive:true});',
    ' const photo=process.env.MB_TEST_BAD_PHOTO==="1"?"/api/photos/inexistente":"/api/photos/foto-1";',
@@ -82,7 +86,7 @@ test('exportação simulada: D1, R2 e commit em backup cifrado; nenhuma escrita 
   assert.ok(raw.subarray(0,8).equals(Buffer.from('MBBACK01')));
   assert.ok(!raw.includes(Buffer.from('0000000077')),'O conteúdo do banco deve estar cifrado.');
   const cmds=readFileSync(join(fixture,'commands.log'),'utf8').split('\n').filter(Boolean).map(JSON.parse);
-  assert.ok(cmds.find(x=>x[0]==='wrangler-test.cjs'&&x.includes('--remote')),'Exportação D1 precisa ser remota e somente leitura.');
+  assert.ok(cmds.find(x=>x[0]==='wrangler-test.cjs'&&x.includes('--remote')&&x.includes('--config')&&x.includes('DB')),'Exportação D1 precisa identificar o banco correto por configuração e ser somente leitura.');
   assert.ok(cmds.find(x=>x[0]==='aws'&&x.includes('sync')),'Precisa copiar R2.');
   assert.ok(cmds.find(x=>x[0]==='git'&&x.includes('archive')),'Precisa copiar o código rastreado.');
   assert.ok(cmds.every(x=>!x.includes('delete')&&!x.includes('import')&&!x.includes('deploy')),'Não executar operação destrutiva.');
