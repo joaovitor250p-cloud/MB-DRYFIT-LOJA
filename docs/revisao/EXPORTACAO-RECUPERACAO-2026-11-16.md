@@ -16,7 +16,8 @@ O programa:
 - inclui o código **rastreado e commitado** da árvore Git ativa (rejeita alterações locais não commitadas ou arquivos desconhecidos);
 - cria `origem.json` e `manifesto.json`, com hashes SHA-256;
 - gera arquivos `.mbbackup` cifrados em AES-256-GCM com senha do proprietário;
-- autentica o arquivo cifrado com o comando `verify` e apaga a pasta temporária.
+- autentica o arquivo cifrado com o comando `verify` e testa automaticamente a **recuperação LOCAL** do SQL, manifesto, TAR e referências de fotos antes de anunciar conclusão; se falhar, descarta o pacote recém-gerado e informa o erro;
+- apaga a pasta temporária após o processo.
 - não coloca senhas, fotos reais, arquivos comerciais ou backup no GitHub.
 
 O script é compatível com Windows: executa o CLI do Wrangler pelo Node sem depender de `npx.cmd`. Foi adicionado `ops/backup/backup-duas-lojas.ps1`, que mostra o plano e permite rodar as duas lojas, separadamente, após confirmação e entrada privada das chaves no terminal.
