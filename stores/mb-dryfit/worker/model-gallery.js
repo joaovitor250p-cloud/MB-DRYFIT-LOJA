@@ -66,9 +66,15 @@ export async function handlePublicModelGallery(req,env){
  return answer({photos:gallery.photos.map(p=>p.replace('/api/photos/','/catalogo/fotos/'))});
 }
 export async function isPublishedProductPhoto(db,photo){
- const row=await db.prepare(
-  'SELECT p.id FROM products p WHERE p.active=1 AND p.published=1 AND p.archived_at IS NULL AND '+
-  '(p.photo=? OR p.main_photo=? OR EXISTS(SELECT 1 FROM product_model_gallery g,json_each(g.photos) j WHERE g.model_key=COALESCE(p.model_id,p.id) AND j.value=?)) LIMIT 1'
- ).bind(photo,photo,photo).first();
- return !!row;
+ // Consultas indexadas: não varrer a tabela completa de produtos nem JSON
+ // de todas as galerias a cada requisição de imagem do catálogo público.
+ const direct=await db.prepare(
+  'SELECT id FROM products WHERE published=1 AND active=1 AND archived_at IS NULL AND (photo=? OR main_photo=?) LIMIT 1'
+ ).bind(photo,photo).first();
+ if(direct)return true;
+ const extra=await db.prepare(
+  'SELECT p.id FROM product_model_gallery_photo_index i JOIN products p ON COALESCE(p.model_id,p.id)=i.model_key '+
+  'WHERE i.photo=? AND p.published=1 AND p.active=1 AND p.archived_at IS NULL LIMIT 1'
+ ).bind(photo).first();
+ return !!extra;
 }
