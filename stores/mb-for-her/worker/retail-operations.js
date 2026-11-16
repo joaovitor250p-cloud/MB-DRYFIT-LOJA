@@ -38,6 +38,12 @@ function returnAmount(sale,already,quantity){const net=BigInt(sale.quantity*sale
 async function returnRows(env,id){return (await env.DB.prepare('SELECT ri.*,COALESCE(s.product_name,p.name) AS name,COALESCE(s.product_color,p.color) AS color,COALESCE(s.product_size,p.size) AS size,COALESCE(s.product_photo,p.photo,p.main_photo) AS photo FROM sale_return_items ri JOIN sales s ON s.id=ri.sale_id LEFT JOIN products p ON p.id=s.product_id WHERE ri.return_id=?').bind(id).all()).results}
 export async function handleRetail(req,env,member){
  const u=new URL(req.url),path=u.pathname;try{if(!['owner','seller'].includes(member.role))return retailReply({error:'Acesso restrito à equipe.'},403);const recovery=path.match(/^\/api\/retail\/order-recovery\/([a-zA-Z0-9-]+)$/);if(recovery&&req.method==='POST')return issueOrderRecovery(req,env,member,recovery[1]);
+ if(path==='/api/retail/settings'){
+  if(member.role!=='owner')return retailReply({error:'Acesso restrito ao dono.'},403);
+  if(req.method!=='GET')return retailReply({error:'Método não permitido.'},405);
+  const row=await env.DB.prepare("SELECT minimum_stock FROM inventory_preferences WHERE id='store'").first();
+  return retailReply({minimum_stock:row?.minimum_stock??4,photos_enabled:!!env.BUCKET&&env.MB_PHOTOS_ENABLED!=='0'});
+ }
  if(path==='/api/retail/stock-alerts'){
   if(member.role!=='owner')throw retailError('Acesso restrito ao dono.',403);
   if(req.method==='POST'){const d=await req.json(),minimum=d.minimum;if(d.product_id){if(minimum!==null&&(!Number.isInteger(minimum)||minimum<0||minimum>999999))throw retailError('Informe mínimo válido.');const updated=await env.DB.prepare('UPDATE products SET minimum_stock=? WHERE id=?').bind(minimum,String(d.product_id)).run();if(!updated.meta.changes)throw retailError('Produto não encontrado.',404)}else{if(!Number.isInteger(minimum)||minimum<0||minimum>999999)throw retailError('Informe mínimo válido.');await env.DB.prepare("INSERT INTO inventory_preferences(id,minimum_stock) VALUES ('store',?) ON CONFLICT(id) DO UPDATE SET minimum_stock=excluded.minimum_stock").bind(minimum).run()}return retailReply({ok:true})}
