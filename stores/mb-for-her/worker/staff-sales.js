@@ -50,4 +50,58 @@ function editSalesAgent(agent=null){
  let dialog=$('#salesAgentDialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='salesAgentDialog';document.body.append(dialog)}dialog.innerHTML='<div class="modal-head"><h2>'+(agent?'Editar vendedor':'Adicionar vendedor')+'</h2><button type="button" id="closeSalesAgent" aria-label="Fechar">✕</button></div><form id="salesAgentForm" class="form-grid"><label class="wide">Nome<input name="name" required maxlength="80" value="'+esc(agent?.name||'')+'"></label><label class="wide">WhatsApp com DDD<input name="phone" type="tel" inputmode="tel" maxlength="24" placeholder="(11) 99999-9999" value="'+esc(agent?.phone?sellerPhone(agent.phone):'')+'"></label><label class="wide">Foto do vendedor (opcional)<input name="photo" type="file" accept="image/jpeg,image/png,image/webp"></label><p class="help wide">Os vendedores usam o login compartilhado da loja. Na venda, basta escolher o nome do responsável.</p><label class="wide seller-checkbox"><input name="whatsapp_enabled" type="checkbox" '+(!agent||agent.whatsapp_enabled?'checked':'')+'> Mostrar na lista do WhatsApp</label><p id="salesAgentError" class="wide" role="alert"></p><div class="actions wide"><button class="primary">Salvar vendedor</button></div></form>';$('#closeSalesAgent').onclick=()=>dialog.close();$('#salesAgentForm').onsubmit=async event=>{event.preventDefault();const form=event.target,button=form.querySelector('button');button.disabled=true;try{let photo=agent?.photo||null;const file=form.querySelector('[name=photo]')?.files?.[0];if(file){const r=await ownerWriteFetch('/api/upload',{method:'POST',headers:{'Content-Type':file.type},body:file});const data=await r.json();if(!r.ok)throw Error(data.error||'Não foi possível enviar a foto.');photo=data.photo}await api('sales-agents'+(agent?'/'+agent.id:''),agent?'PUT':'POST',{name:form.elements.name.value,phone:form.elements.phone.value,whatsapp_enabled:form.elements.whatsapp_enabled.checked,photo});dialog.close();toast('Vendedor salvo. WhatsApp e vendas atualizados.');renderSalesAgents()}catch(error){$('#salesAgentError').textContent=error.message}finally{button.disabled=false}};dialog.showModal();
 }
 
-async function renderVendorAccess(){if(!owner())return;$('#view').innerHTML='<div class="heading"><h2>Configurações</h2></div>'}
+function ownerBarcodePreferenceKey(){
+ const store=typeof currentStaffStore!=='undefined'&&currentStaffStore==='her'?'her':'dryfit';
+ const account=typeof me!=='undefined'&&me?me.id||me.email||'owner':'owner';
+ return 'mb-owner-barcode-mode-v1:'+store+':'+encodeURIComponent(String(account));
+}
+function ownerBarcodePreference(){
+ try{return localStorage.getItem(ownerBarcodePreferenceKey())==='manual'?'manual':'auto'}catch{return 'auto'}
+}
+function setOwnerBarcodePreference(mode){
+ if(!['auto','manual'].includes(mode))throw Error('Modo de código inválido.');
+ localStorage.setItem(ownerBarcodePreferenceKey(),mode);
+}
+async function renderVendorAccess(){
+ if(!owner())return;
+ const view=$('#view'),store=typeof currentStaffStore!=='undefined'&&currentStaffStore==='her'?'her':'dryfit',
+ name=store==='her'?'MB For Her':'MB Dryfit',account=typeof me!=='undefined'&&me?me.email||'Conta do dono':'Conta do dono';
+ view.innerHTML='<style>.owner-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:18px}.owner-setting{border:1px solid var(--line,#e7e8ec);border-radius:16px;padding:20px;background:var(--panel,#fff);min-width:0}.owner-setting h3{margin:0 0 9px;font-size:18px}.owner-setting p{margin:0 0 14px;line-height:1.55;color:var(--muted,#666)}.owner-setting label{display:grid;gap:8px;font-weight:650}.owner-setting input,.owner-setting select{max-width:100%;width:100%;min-height:42px}.owner-setting .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.owner-setting .help{font-size:12px;line-height:1.5}.owner-settings-status{min-height:20px;font-size:12px;margin:7px 0}.owner-settings-grid .wide{grid-column:1/-1}@media(max-width:760px){.owner-settings-grid{grid-template-columns:1fr}.owner-setting{padding:16px}}</style>'+
+ '<div class="heading"><div><span class="eyebrow">CENTRAL DO DONO · '+esc(name)+'</span><h2>Configurações</h2><p class="sub">Opções da loja selecionada. Seus produtos, caixa e vendedores continuam separados por loja.</p></div></div>'+
+ '<div class="owner-settings-grid">'+
+ '<section class="owner-setting"><h3>🏪 Loja e catálogo</h3><p>Editar textos, banners, cores e vitrine desta loja pelo editor já existente.</p><button class="secondary" type="button" data-owner-settings-go="appearance">Personalizar catálogo</button></section>'+
+ '<section class="owner-setting"><h3>🏷️ Produtos e códigos</h3><label for="ownerSettingsBarcodeMode">Código padrão para novos modelos<select id="ownerSettingsBarcodeMode"><option value="auto">Gerar automaticamente</option><option value="manual">Informar código manual</option></select></label><p class="help">A escolha é lembrada nesta conta e neste aparelho. Códigos já cadastrados nunca são trocados.</p><p class="owner-settings-status" id="ownerSettingsBarcodeStatus" role="status"></p><button class="secondary" type="button" data-owner-settings-go="create">Cadastrar modelo</button></section>'+
+ '<section class="owner-setting"><h3>📦 Estoque mínimo</h3><p>Defina o alerta padrão de reposição. Valores individuais continuam disponíveis na tela de estoque baixo.</p><form id="ownerSettingsStockForm"><label for="ownerSettingsStockMinimum">Peças por variação<input id="ownerSettingsStockMinimum" type="number" min="0" max="999999" step="1" required disabled></label><div class="actions"><button class="primary" id="ownerSettingsStockSave" disabled>Salvar mínimo</button><button type="button" class="secondary" data-owner-settings-go="lowStock">Ver alertas</button></div></form><p class="owner-settings-status" id="ownerSettingsStockStatus" role="status">Carregando configuração…</p></section>'+
+ '<section class="owner-setting"><h3>🖨️ Etiquetas</h3><p>Elgin L42PRO FULL · 40 × 25 mm · duas colunas. Ajustes finos permanecem na área de etiquetas.</p><button class="secondary" type="button" data-owner-settings-go="labels">Abrir configurações de impressão</button></section>'+
+ '<section class="owner-setting"><h3>🛒 Pedidos e vendas</h3><p>Ver pedidos, opções de venda, cupons e caixa sem configurar pagamentos fictícios.</p><div class="actions"><button type="button" class="secondary" data-owner-settings-go="orders">Pedidos</button><button type="button" class="secondary" data-owner-settings-go="commerce">Cupons</button><button type="button" class="secondary" data-owner-settings-go="cash">Caixa</button></div></section>'+
+ '<section class="owner-setting"><h3>👥 Equipe e segurança</h3><p>Gerencie vendedores na área existente. Acesso de dono permanece protegido no servidor.</p><div class="actions"><button type="button" class="secondary" data-owner-settings-go="agents">Vendedores</button><a class="secondary" href="/dono">Acesso do dono</a></div><p class="help">Conta atual: '+esc(account)+'</p></section>'+
+ '<section class="owner-setting wide"><h3>🔒 Backup e recuperação</h3><p>MB Dryfit e MB For Her precisam de backups <b>separados</b> dos bancos D1, fotos R2 e arquivos de recuperação. A ferramenta criptografada local está em revisão; download completo no painel ainda não está conectado.</p><p class="help">Nenhum botão falso: somente será habilitado após exportação real, cópia externa, verificação e teste de restauração.</p><p class="owner-settings-status" id="ownerSettingsBackupStatus">Configuração de backup em preparação — dados não exportados por esta página.</p></section>'+
+ '</div>';
+ view.querySelector('#ownerSettingsBarcodeMode').value=ownerBarcodePreference();
+ view.querySelector('#ownerSettingsBarcodeMode').onchange=e=>{
+  try{setOwnerBarcodePreference(e.target.value);view.querySelector('#ownerSettingsBarcodeStatus').textContent='Preferência salva neste aparelho para '+name+'.'}
+  catch{view.querySelector('#ownerSettingsBarcodeStatus').textContent='Não foi possível salvar neste aparelho. Verifique o armazenamento do navegador.'}
+ };
+ view.querySelectorAll('[data-owner-settings-go]').forEach(button=>button.onclick=()=>{
+  const target=button.dataset.ownerSettingsGo;
+  if(typeof workspaceGo==='function')workspaceGo(target);
+  else if(typeof page!=='undefined'&&typeof render==='function'){page=target;render()}
+ });
+ const form=view.querySelector('#ownerSettingsStockForm'),minimum=view.querySelector('#ownerSettingsStockMinimum'),status=view.querySelector('#ownerSettingsStockStatus'),save=view.querySelector('#ownerSettingsStockSave');
+ form.onsubmit=async event=>{
+  event.preventDefault();if(!owner()||save.disabled)return;
+  const value=Number(minimum.value);
+  if(!Number.isInteger(value)||value<0||value>999999){status.textContent='Informe uma quantidade válida.';return}
+  save.disabled=true;status.textContent='Salvando…';
+  try{await api('retail/stock-alerts','POST',{minimum:value});status.textContent='Mínimo salvo para '+name+'.'}
+  catch(error){status.textContent=error.message||'Não foi possível salvar.'}
+  finally{if(view.querySelector('#ownerSettingsStockSave')===save)save.disabled=false}
+ };
+ try{
+  const data=await api('retail/settings');
+  if(!view.isConnected||view.querySelector('#ownerSettingsStockMinimum')!==minimum)return;
+  minimum.value=data.minimum_stock;
+  minimum.disabled=false;save.disabled=false;
+  status.textContent=data.photos_enabled?'Armazenamento de fotos disponível nesta loja.':'Fotos aguardam configuração do armazenamento nesta loja.';
+ }catch(error){if(view.querySelector('#ownerSettingsStockStatus')===status)status.textContent='Não foi possível consultar: '+(error.message||'erro de rede')}
+}
