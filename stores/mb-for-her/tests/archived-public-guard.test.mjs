@@ -18,6 +18,11 @@ test('archived variants are never sold or shown even with stale active/published
   assert.equal(quote.items[0].issue,'Esta peça saiu do catálogo. Retire-a do carrinho para continuar.');
   const good=await buildCatalogQuote(d.env,{items:[{id:'NEW-001',quantity:1}]});
   assert.equal(good.ready,true);
+  await d.request('team','POST',{email:'seller@test.com',role:'seller'});
+  assert.equal((await d.request('scan?barcode=0000000077','GET',null,'seller')).status,404);
+  assert.equal((await d.request('sales','POST',{barcode:'0000000077',quantity:1},'seller')).status,404);
+  assert.equal((await d.request('products/OLD-001/publication','POST',{published:true})).status,409);
+  assert.equal((await d.request('scan?barcode=0000000088','GET',null,'seller')).status,200);
   const archivedImage=await worker.fetch(new Request('https://mb.test/catalogo/fotos/archivedimg'),d.env);
   assert.equal(archivedImage.status,404);
  }finally{d.sql.close()}
