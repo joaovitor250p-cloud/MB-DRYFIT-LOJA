@@ -30,7 +30,7 @@ Foi adicionado `ops/backup/check-restore.mjs`, que:
 - confere SHA-256 do inventário, loja e contagem de arquivos R2;
 - reconstrói o SQL exportado em banco SQLite local;
 - executa `PRAGMA integrity_check` e `foreign_key_check`;
-- confere tipos de códigos de barras e fotos referenciadas por produtos, galeria, vendedores e editor da vitrine;
+- confere tipos de códigos de barras e fotos referenciadas por produtos, galeria, **vendas históricas, itens de pedidos**, vendedores e editor da vitrine;
 - rejeita fotos ausentes, sem alterar o backup existente;
 - informa apenas contagens e alertas, sem exibir informações pessoais.
 
