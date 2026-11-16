@@ -64,7 +64,7 @@ async function enumerateObjects(bucket){
  let cursor,rounds=0;
  do{
   if(++rounds>1000000)throw Error('Muitas páginas R2 na listagem.');
-  const args=['s3api','list-objects-v2','--no-paginate','--output','json','--bucket',bucket,'--endpoint-url',r2Endpoint(),'--max-keys','1000'];
+  const args=['s3api','list-objects-v2','--no-paginate','--output','json','--bucket',bucket,'--endpoint-url',r2Endpoint(),'--max-keys','1000','--region','auto'];
   if(cursor)args.push('--continuation-token',cursor);
   const result=JSON.parse(await run(awsExecutable(),args));
   for(const o of result.Contents||[]){
@@ -156,7 +156,7 @@ async function exportEncrypted(opt){
   if(!sqlStat.isFile()||sqlStat.size<50)throw Error('Exportação SQL D1 vazia ou incompleta; backup não gerado.');
   const objectsBefore=await enumerateObjects(details.bucket);
   // Sync somente lê o R2. Não usa --delete nem grava no bucket.
-  await run(awsExecutable(),['s3','sync','s3://'+details.bucket,r2,'--endpoint-url',r2Endpoint(),'--only-show-errors','--no-progress']);
+  await run(awsExecutable(),['s3','sync','s3://'+details.bucket,r2,'--endpoint-url',r2Endpoint(),'--only-show-errors','--no-progress','--region','auto']);
   const [local,objectsAfter]=await Promise.all([localFiles(r2),enumerateObjects(details.bucket)]);
   const verifiedChecksums=await assertObjectsMatch(objectsBefore,local,r2);
   assertNoRemoteChanges(objectsBefore,objectsAfter);
@@ -209,7 +209,7 @@ async function main(){
  if(opt.mode==='plan'){
   console.log(JSON.stringify({mode:'PLAN_ONLY',store:opt.store,destination:opt.destination,
    cloudflare_account:config.account_id,database:db.database_name,bucket:db.bucket,
-   steps:['Exportar D1 remoto via Wrangler (somente leitura)','Listar objetos R2 pelo endpoint S3','Baixar todos os objetos R2 em pasta temporária','Comparar contagens, bytes e ETags antes/depois','Exportar apenas commit Git local','Criar manifesto SHA-256 e arquivo cifrado por loja','Verificar criptografia e apagar pasta temporária'],
+   steps:['Exportar D1 remoto via Wrangler (somente leitura)','Listar objetos R2 pelo endpoint S3','Baixar todos os objetos R2 em pasta temporária','Comparar contagens, bytes, ETags e MD5 de objetos de parte única','Exportar apenas commit Git local','Criar manifesto SHA-256 e arquivo cifrado por loja','Verificar criptografia, procedência e recuperação SQLite local; apagar temporários'],
    requires:['Wrangler instalado com npm ci','aws CLI','CLOUDFLARE_API_TOKEN','AWS_ACCESS_KEY_ID','AWS_SECRET_ACCESS_KEY','MB_BACKUP_PASSPHRASE'],
    warnings:['Não é restauração comprovada','Não garante snapshot transacional D1/R2','Não publica nem altera dados remotos','Não envia dados ou senhas ao GitHub']},null,2));
   return;
