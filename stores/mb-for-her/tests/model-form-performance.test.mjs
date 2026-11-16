@@ -40,7 +40,7 @@ test('alterar uma cor mantém o DOM e os dados das demais cores',()=>{
  assert.equal(nextBlue.querySelector('[data-qty-color="azul"]'),quantity);
  assert.equal(quantity.value,'8');
  assert.equal(document.querySelectorAll('[data-color-row]').length,2);
- assert.ok(document.querySelector('[data-color-row="preto"] [data-size-color="preto"][data-size="P"]').checked);
+ assert.ok(document.querySelector('[data-color-row="preto"] [data-size-color="preto"][data-size="P"]').hasAttribute('checked'));
 });
 test('alterar uma foto de uma cor mantém a outra intacta',()=>{
  const {ctx,document}=setupGrid();
