@@ -46,6 +46,7 @@ test('exportação simulada: D1, R2 e commit em backup cifrado; nenhuma escrita 
    'const args=process.argv.slice(2),command=path.basename(process.argv[1]);',
    'const note=path.join(process.env.MB_TEST_FIXTURE,"commands.log");',
    'fs.appendFileSync(note,JSON.stringify([command,...args])+String.fromCharCode(10));',
+   'fs.appendFileSync(path.join(process.env.MB_TEST_FIXTURE,"environments.log"),JSON.stringify({command,cf:!!process.env.CLOUDFLARE_API_TOKEN,aws:!!process.env.AWS_ACCESS_KEY_ID,pass:!!process.env.MB_BACKUP_PASSPHRASE})+String.fromCharCode(10));',
    'if(command==="wrangler-test.cjs"){',
    ' if(!args.includes("d1")||!args.includes("export")||!args.includes("--remote")||!args.includes("--config")||!args.includes("DB"))process.exit(12);',
    ' const cfg=JSON.parse(fs.readFileSync(args[args.indexOf("--config")+1],"utf8"));',
@@ -93,6 +94,13 @@ test('exportação simulada: D1, R2 e commit em backup cifrado; nenhuma escrita 
     'Todas as consultas e transferências ao R2 devem usar região auto explicitamente.');
   assert.ok(cmds.find(x=>x[0]==='git'&&x.includes('archive')),'Precisa copiar o código rastreado.');
   assert.ok(cmds.every(x=>!x.includes('delete')&&!x.includes('import')&&!x.includes('deploy')),'Não executar operação destrutiva.');
+  const envLog=readFileSync(join(fixture,'environments.log'),'utf8').split('\n').filter(Boolean).map(JSON.parse);
+  assert.ok(envLog.some(x=>x.command==='wrangler-test.cjs'&&x.cf&&!x.aws&&!x.pass),
+    'Wrangler recebe token Cloudflare, mas não recebe chave R2 nem senha de backup.');
+  assert.ok(envLog.some(x=>x.command==='aws'&&!x.cf&&x.aws&&!x.pass),
+    'AWS recebe chave R2, mas não recebe token Cloudflare nem senha de backup.');
+  assert.ok(envLog.some(x=>x.command==='git'&&!x.cf&&!x.aws&&!x.pass),
+    'Git não recebe credenciais Cloudflare/R2 nem senha do backup.');
   const verify=spawnSync(process.execPath,[join(root,'ops/backup/mb-backup.mjs'),'verify',archive],{env,encoding:'utf8',timeout:30000});
   assert.equal(verify.status,0,verify.stderr);
   assert.match(result.stdout,/RECUPERADO LOCALMENTE com sucesso/);
