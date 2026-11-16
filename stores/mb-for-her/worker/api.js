@@ -39,7 +39,7 @@ if(req.method==='GET'&&!u.pathname.startsWith('/api/')&&env.MB_CANONICAL_ORIGIN)
 if(env.MB_OWNER_SETUP_JSON&&(u.pathname.startsWith('/api/')||u.pathname==='/gestao'||u.pathname==='/dono'))await bootstrapOwnerCredentials(env);
 if(u.pathname==='/')return Response.redirect(u.origin+'/catalogo',302);
 if(u.pathname==='/acesso'||u.pathname==='/acesso/'){
- if(unifiedStaffEnabled(env)&&env.MB_STORE_KEY==='her'){const target=new URL('https://atelier-loja-mw96xrv3.savoryaccordion3.chatgpt.site/acesso');const mode=u.searchParams.get('modo');if(mode==='dono'||mode==='vendedor')target.searchParams.set('modo',mode);target.searchParams.set('loja','her');return Response.redirect(target.href,302)}
+ if(unifiedStaffEnabled(env)&&env.MB_STORE_KEY==='her'){const target=new URL('https://mbdryfit.com.br/acesso');const mode=u.searchParams.get('modo');if(mode==='dono'||mode==='vendedor')target.searchParams.set('modo',mode);target.searchParams.set('loja','her');return Response.redirect(target.href,302)}
  return new Response(STAFF_HUB,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow'}});
 }
 if(env.MB_INITIAL_VENDOR_EMAIL&&(u.pathname==='/vendedor'||u.pathname==='/acesso/continuar'||u.pathname.startsWith('/api/account/')||u.pathname==='/api/vendor-access'||u.pathname.startsWith('/api/staff-access/')))await bootstrapVendorAccess(env);
@@ -56,7 +56,7 @@ if(u.pathname==='/vendor/three.min.js')return new Response('Não encontrado',{st
 if(u.pathname==='/vendor/zxing-browser.min.js')return new Response(ZXING_SOURCE,{headers:{'Content-Type':'text/javascript; charset=utf-8','Cache-Control':'private, max-age=86400'}});
 if(u.pathname==='/vendor/qz-tray.js')return new Response(QZ_SOURCE,{headers:{'Content-Type':'text/javascript; charset=utf-8','Cache-Control':'private, max-age=3600'}});
 if(u.pathname.startsWith('/brand-assets/'))return serveBrandAsset(req,BRAND_ASSETS[u.pathname.slice('/brand-assets/'.length)]);
-if(u.pathname==='/dono'&&unifiedStaffEnabled(env)&&env.MB_STORE_KEY==='her')return Response.redirect('https://atelier-loja-mw96xrv3.savoryaccordion3.chatgpt.site/dono?loja=her',302);
+if(u.pathname==='/dono'&&unifiedStaffEnabled(env)&&env.MB_STORE_KEY==='her')return Response.redirect('https://mbdryfit.com.br/dono?loja=her',302);
 if(u.pathname==='/dono'){const access=await env.DB.prepare("SELECT email FROM store_owner_access WHERE id='primary'").first();return new Response(staffLoginHTML(OWNER_LOGIN,access?.email||'mbdryfit78@gmail.com'),{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow'}})}
 if(u.pathname==='/catalogo'||u.pathname==='/catalogo/')return new Response(STOREFRONT,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}});
 if(u.pathname==='/api/catalog/products'){
@@ -68,7 +68,7 @@ if(!await env.DB.prepare('SELECT id FROM products WHERE active=1 AND published=1
 if(!u.pathname.startsWith('/api/')){
 const identity=await staffRequestIdentity(req,env),user=identity.uid,email=identity.email;
 if(!unifiedStaffEnabled(env))await bootstrapStoreOwner(env,identity);
-if(user&&email){const person=await env.DB.prepare('SELECT * FROM members WHERE id=?').bind(user).first(),invite=person?null:await env.DB.prepare('SELECT role,shared_seller FROM invitations WHERE email=?').bind(email).first();const effective=await resolveOwnerAccess(req,env,identity,person||{id:user,email,role:invite?.role||'customer',shared_seller:invite?.shared_seller||0});if(u.pathname==='/vendedor'&&effective.role==='owner'&&unifiedStaffEnabled(env))return Response.redirect('https://atelier-loja-mw96xrv3.savoryaccordion3.chatgpt.site/acesso?modo=vendedor&loja='+env.MB_STORE_KEY,302);if(effective.role==='owner'||effective.role==='seller'&&u.pathname!=='/gestao')return new Response(HTML,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}});if(u.pathname==='/gestao')return Response.redirect(u.origin+'/dono',302)}
+if(user&&email){const person=await env.DB.prepare('SELECT * FROM members WHERE id=?').bind(user).first(),invite=person?null:await env.DB.prepare('SELECT role,shared_seller FROM invitations WHERE email=?').bind(email).first();const effective=await resolveOwnerAccess(req,env,identity,person||{id:user,email,role:invite?.role||'customer',shared_seller:invite?.shared_seller||0});if(u.pathname==='/vendedor'&&effective.role==='owner'&&unifiedStaffEnabled(env))return Response.redirect('https://mbdryfit.com.br/acesso?modo=vendedor&loja='+env.MB_STORE_KEY,302);if(effective.role==='owner'||effective.role==='seller'&&u.pathname!=='/gestao')return new Response(HTML,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}});if(u.pathname==='/gestao')return Response.redirect(u.origin+'/dono',302)}
 if(u.pathname==='/vendedor'){const access=await env.DB.prepare("SELECT email FROM vendor_access WHERE id='shared'").first();return new Response(staffLoginHTML(VENDOR_LOGIN,access?.email||(env.MB_STORE_KEY==='her'?'mbdryfit79@gmail.com':'mbdryfit78@gmail.com')),{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}})}
 if(u.pathname==='/gestao')return new Response(TEAM_LOGIN,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}});return Response.redirect(u.origin+'/catalogo',302);}
 
@@ -80,7 +80,7 @@ if(!uid||!email)return authorizationFailure(req,env,identity,null,'authenticatio
 let member=await env.DB.prepare('SELECT * FROM members WHERE id=?').bind(uid).first();
 if(!member){const invite=await env.DB.prepare('SELECT role,shared_seller FROM invitations WHERE email=?').bind(email).first();await env.DB.prepare('INSERT INTO members (id,email,role,shared_seller) VALUES (?,?,?,?)').bind(uid,email,invite?.role||'customer',invite?.shared_seller||0).run();member=await env.DB.prepare('SELECT * FROM members WHERE id=?').bind(uid).first();}
 member=await resolveOwnerAccess(req,env,identity,member);
-if(unifiedStaffEnabled(env)&&env.MB_STORE_KEY==='her'&&(u.pathname==='/api/owner-access'||u.pathname==='/api/owner-access/unlock')){if(member.role!=='owner')return json({error:'Use a entrada única do dono.'},403);if(req.method==='GET')return json({email:member.email,configured:true,unified:true,manage_url:'https://atelier-loja-mw96xrv3.savoryaccordion3.chatgpt.site/acesso?modo=dono&loja=dryfit'});return json({error:'O acesso do dono é único. Altere o e-mail ou a senha na MB Dryfit.'},409)}
+if(unifiedStaffEnabled(env)&&env.MB_STORE_KEY==='her'&&(u.pathname==='/api/owner-access'||u.pathname==='/api/owner-access/unlock')){if(member.role!=='owner')return json({error:'Use a entrada única do dono.'},403);if(req.method==='GET')return json({email:member.email,configured:true,unified:true,manage_url:'https://mbdryfit.com.br/acesso?modo=dono&loja=dryfit'});return json({error:'O acesso do dono é único. Altere o e-mail ou a senha na MB Dryfit.'},409)}
 if(u.pathname==='/api/owner-access'||u.pathname.startsWith('/api/owner-access/'))return handleOwnerAccess(req,env,identity,member);
 const owner=member.role==='owner';const staff=owner||member.role==='seller';
 const orderCheckout=u.pathname.match(/^\/api\/order-checkout\/([a-zA-Z0-9-]+)$/);if(orderCheckout&&req.method==='POST'){
@@ -93,7 +93,7 @@ const orderCheckout=u.pathname.match(/^\/api\/order-checkout\/([a-zA-Z0-9-]+)$/)
 }
 if(u.pathname.startsWith('/api/retail/'))return handleRetail(req,env,member);
 if(u.pathname.startsWith('/api/shop-admin/')){if(!owner)return json({error:'Acesso restrito ao dono.'},403);return handleShopAdmin(req,env)}
-if(u.pathname==='/api/me')return json({...member,auth:{...identity.auth,effective_role:member.role,store_key:env.MB_STORE_KEY||null,needs_login:!['owner','seller'].includes(member.role),reauth_url:'https://atelier-loja-mw96xrv3.savoryaccordion3.chatgpt.site/dono?loja='+(env.MB_STORE_KEY==='her'?'her':'dryfit')}});
+if(u.pathname==='/api/me')return json({...member,auth:{...identity.auth,effective_role:member.role,store_key:env.MB_STORE_KEY||null,needs_login:!['owner','seller'].includes(member.role),reauth_url:'https://mbdryfit.com.br/dono?loja='+(env.MB_STORE_KEY==='her'?'her':'dryfit')}});
 if(u.pathname==='/api/vendor-access'){
  if(!owner)return json({error:'Acesso restrito ao dono.'},403);
  if(req.method==='GET')return json({email:(await env.DB.prepare('SELECT email FROM vendor_access WHERE id=?').bind('shared').first())?.email||null});
