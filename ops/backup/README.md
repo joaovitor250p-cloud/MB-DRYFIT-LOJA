@@ -160,6 +160,18 @@ Teste automatizado sem acesso a contas:
 node --test ops/backup/check-restore.test.mjs
 ```
 
+## Proteções adicionais desta revisão
+
+- **Identidade D1:** o exportador escolhe o banco de cada loja por `database_id` explícito, via configuração temporária do Wrangler; nunca usa um binding implícito do computador.
+- **Região R2:** todos os comandos AWS usam `--region auto` e o endpoint específico da conta, sem fazer operações de escrita.
+- **Integridade de fotos:** além de comparar listagens, bytes e ETags antes/depois, o exportador confere o MD5 de arquivos cujo ETag R2 é um MD5 de upload simples (32 dígitos hexadecimais). **ETags de uploads multipart não comprovam MD5 do conteúdo**; nesses casos só o SHA-256 do arquivo baixado é guardado no inventário local, sem alegar comparação com o hash remoto.
+- **Procedência:** a recuperação local confere conta Cloudflare, banco D1, bucket R2 e tamanhos de SQL/R2 com os metadados exportados. Pacotes legados manuais sem esses campos são identificados como sem proveniência verificada. A exportação automática exige proveniência verificada.
+- **Caminhos portáveis:** rejeita chaves R2 com nomes especiais do Windows, caminhos com drive, nomes reservados e TARs com entradas perigosas, antes da extração.
+- **Menor privilégio:** Wrangler só recebe o token Cloudflare, AWS só recebe credenciais R2, Git não recebe segredos e os verificadores de criptografia recebem a senha do backup sem tokens dos serviços. Os testes simulam os processos e conferem esse isolamento.
+- **Verificação de recuperação:** SQL, hashes, vínculos de fotos em vendas/pedidos, inventário, TAR e proveniência são testados antes de anunciar sucesso. Uma falha descarta o pacote recém-gerado.
+
+Essas verificações são **locais e simuladas no CI**. Não significam que a Cloudflare real foi acessada, que o conteúdo exportado representa um snapshot único ou que a restauração remota foi concluída.
+
 ## O que ainda falta para o requisito completo
 
 - Acesso autorizado às duas contas/bancos D1 e buckets R2 de produção.
