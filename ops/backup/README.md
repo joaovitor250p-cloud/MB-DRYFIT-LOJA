@@ -49,7 +49,7 @@ Ela lê o D1 e o bucket R2 de **uma loja por vez**, confere a lista de objetos a
 ### Requisitos
 
 - Node.js 24 ou superior e `tar`;
-- Dependências do projeto instaladas com `npm ci` (o script usa `npx --no-install wrangler`, sem instalar ferramentas pela internet durante a exportação);
+- Dependências do projeto instaladas com `npm ci` (o script executa diretamente o CLI do Wrangler pelo Node.js, inclusive no Windows, sem instalar pacotes durante a exportação);
 - AWS CLI no PATH para acesso S3 de leitura ao Cloudflare R2;
 - Variáveis de ambiente locais **CLOUDFLARE_API_TOKEN**, **AWS_ACCESS_KEY_ID**, **AWS_SECRET_ACCESS_KEY** e **MB_BACKUP_PASSPHRASE**;
 - Token Cloudflare com permissão mínima de **ler/exportar o D1** e credenciais R2 que possam **listar e baixar objetos somente** dos buckets corretos. Nunca disponibilizar permissão de escrita se não for necessária;
