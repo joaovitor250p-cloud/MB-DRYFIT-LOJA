@@ -4,6 +4,7 @@ import { mkdtemp, mkdir, writeFile, readFile, copyFile, rm, symlink } from 'node
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { createManifest, verifyManifest } from './mb-manifest.mjs';
 
 const cli = resolve('ops/backup/mb-backup.mjs');
 const PASS = 'uma-frase-de-recuperacao-forte-para-testes';
@@ -30,6 +31,15 @@ test('backups separados cifram, verificam e restauram códigos e fotos', async (
 
     const dryEncrypted = join(temp, 'dry.mbbackup');
     const herEncrypted = join(temp, 'her.mbbackup');
+    // Falhar sem inventário: nunca anunciar um backup de exportação não verificada.
+    assert.throws(() => run(['pack', 'mb-dryfit', dry, dryEncrypted]), /Command failed|Status|failed|Error/);
+    const mDry = await createManifest('mb-dryfit', dry);
+    const mHer = await createManifest('mb-for-her', her);
+    assert.equal(mDry.coverage.d1_files, 1);
+    assert.equal(mDry.coverage.r2_files, 1);
+    assert.equal(mHer.coverage.r2_files, 0);
+    assert.equal((await verifyManifest('mb-dryfit', dry)).store, 'mb-dryfit');
+    await assert.rejects(verifyManifest('mb-for-her', dry), /Inventário divergente/);
     assert.match(run(['pack', 'mb-dryfit', dry, dryEncrypted]), /mb-dryfit/);
     assert.match(run(['pack', 'mb-for-her', her, herEncrypted]), /mb-for-her/);
     assert.match(run(['verify', dryEncrypted]), /mb-dryfit/);
@@ -43,6 +53,7 @@ test('backups separados cifram, verificam e restauram códigos e fotos', async (
     await mkdir(extracted);
     execFileSync('tar', ['-xf', resultTar, '-C', extracted]);
     assert.match(await readFile(join(extracted, 'd1', 'produtos.sql'), 'utf8'), /0000000077/);
+    assert.equal((await verifyManifest('mb-dryfit', extracted)).files.length, mDry.files.length);
     assert.deepEqual(await readFile(join(extracted, 'r2', 'imagens', 'foto.webp')), Buffer.from([82, 73, 70, 70, 18, 0, 0, 0]));
     await assert.rejects(readFile(join(extracted, 'd1', 'for-her.sql')));
 
@@ -57,6 +68,10 @@ test('backups separados cifram, verificam e restauram códigos e fotos', async (
     const oldBytes = await readFile(dryEncrypted);
     assert.throws(() => run(['pack', 'mb-dryfit', dry, dryEncrypted]), /Command failed|Status|failed|Error/);
     assert.deepEqual(await readFile(dryEncrypted), oldBytes, 'Um backup existente nunca deve ser apagado.');
+    await writeFile(join(dry, 'd1', 'produtos.sql'), "INSERT INTO codigos VALUES ('0000000088');\\n");
+    await assert.rejects(verifyManifest('mb-dryfit', dry), /Inventário divergente/);
+    assert.throws(() => run(['pack', 'mb-dryfit', dry, join(temp, 'tampered-source.mbbackup')]), /Command failed|Status|failed|Error/);
+    assert.deepEqual(await readFile(dryEncrypted), oldBytes);
     await writeFile(join(temp, 'nao-substituir.tar'), 'NAO APAGAR');
     assert.throws(() => run(['unpack', dryEncrypted, join(temp, 'nao-substituir.tar')]), /Command failed|Status|failed|Error/);
     assert.equal(await readFile(join(temp, 'nao-substituir.tar'), 'utf8'), 'NAO APAGAR');
@@ -64,6 +79,7 @@ test('backups separados cifram, verificam e restauram códigos e fotos', async (
     const badInput = join(temp, 'nao-permitir-links');
     await mkdir(badInput);
     await symlink(join(dry, 'd1', 'produtos.sql'), join(badInput, 'link.sql'));
+    await assert.rejects(createManifest('mb-dryfit', badInput), /Link simbólico/);
     assert.throws(() => run(['pack', 'mb-dryfit', badInput, join(temp, 'link.mbbackup')]), /Command failed|Status|failed|Error/);
   } finally {
     await rm(temp, { recursive: true, force: true });
