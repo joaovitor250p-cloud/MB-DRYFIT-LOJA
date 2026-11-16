@@ -23,3 +23,6 @@ cloudflare.config.json
 private-exports/
 ops/backup/exports/
 ops/backup/restored/
+
+# Inventários de exportações reais não devem ir ao repositório
+**/manifesto.json
