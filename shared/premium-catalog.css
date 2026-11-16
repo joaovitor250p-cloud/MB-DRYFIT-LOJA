@@ -610,3 +610,290 @@ html body .contact-section{padding-top:clamp(35px,5vw,68px);padding-bottom:clamp
  html body .mb-landing-2026 .hero-actions .hero-secondary{display:none}
  html body .mb-landing-dryfit .mb-editorial-orange strong{font-size:28px}
 }
+
+
+/* ===== CAMPAIGN ELITE: typography-first art direction for both storefronts.
+   Only the presentation shell is changed. Product cards & selectors untouched. ===== */
+html body .mb-hero.mb-campaign-elite{
+ display:grid!important;grid-template-columns:minmax(0,46%) minmax(0,54%)!important;
+ grid-template-rows:auto minmax(0,1fr) auto!important;
+ gap:0!important;padding:0!important;position:relative;isolation:isolate;
+ min-height:clamp(540px,69svh,740px)!important;width:100%;
+ max-width:none;overflow:hidden!important;border:0!important;border-radius:0!important;
+}
+html body .mb-campaign-elite .hero-topline{
+ grid-column:1/-1;grid-row:1;z-index:5;
+ padding:11px clamp(22px,4.5vw,76px)!important;
+ background:#11151b!important;color:#f2f4f6!important;border:0!important;
+ display:flex;align-items:center;justify-content:space-between;
+ height:auto;min-height:44px;
+ font:800 10px/1.3 Inter,Arial,sans-serif;letter-spacing:.14em;
+}
+html body .mb-campaign-elite .hero-topline i{background:#ff6800}
+html body .mb-campaign-elite .mb-hero-season{color:#afb3b7!important;font-size:9px!important;letter-spacing:.15em}
+html body .mb-campaign-elite .mb-hero-copy{
+ grid-column:1;grid-row:2;z-index:3;align-self:stretch;
+ margin:0!important;padding:clamp(38px,5.3vw,90px) clamp(24px,4.5vw,76px)!important;
+ width:100%!important;max-width:none!important;
+ background:#11151b!important;color:#fff!important;
+ display:flex;flex-direction:column;justify-content:center;align-items:flex-start;
+}
+html body .mb-campaign-elite .mb-hero-copy .hero-eyebrow{
+ color:#f5a16b!important;font-size:10px!important;font-weight:800!important;letter-spacing:.16em!important;
+}
+html body .mb-campaign-elite .mb-hero-copy h1{
+ color:white!important;font-family:Inter,'Arial Black',Arial,sans-serif!important;
+ font-weight:950!important;font-size:clamp(54px,5.2vw,102px)!important;
+ letter-spacing:-.077em!important;line-height:.965!important;
+ text-transform:uppercase!important;margin:22px 0 24px!important;
+ max-width:none!important;overflow-wrap:normal!important;
+}
+html body .mb-campaign-elite .mb-hero-copy h1 em{
+ color:#ff6900!important;font-style:normal!important;
+}
+html body .mb-campaign-elite .mb-hero-copy>p{
+ color:#c4c9cf!important;max-width:450px!important;margin:0 0 30px!important;
+ font-size:clamp(14px,1.14vw,17px)!important;line-height:1.7!important;
+}
+html body .mb-campaign-elite .hero-actions{display:flex;flex-wrap:wrap;align-items:center;gap:14px!important}
+html body .mb-campaign-elite .hero-actions .solid-cta{
+ min-height:54px!important;border-radius:2px!important;padding:16px 23px!important;
+ background:#ff6900!important;color:#11151b!important;
+ font-weight:900!important;font-size:11px!important;letter-spacing:.065em!important;
+ box-shadow:none!important;transition:transform .16s,background .16s!important;
+}
+html body .mb-campaign-elite .hero-actions .solid-cta:hover{background:#ff8124!important;transform:translateY(-2px)}
+html body .mb-campaign-elite .hero-actions .hero-secondary{
+ min-height:52px!important;padding:14px 3px!important;color:#f3f5f6!important;
+ font-weight:700!important;font-size:11px!important;letter-spacing:.05em!important;
+}
+html body .mb-campaign-elite .mb-campaign-line{
+ display:flex;align-items:center;gap:9px;margin-top:44px;
+ font:800 9px/1.3 Inter,Arial,sans-serif;color:#a7adb3;letter-spacing:.13em;
+}
+html body .mb-campaign-elite .mb-campaign-line-dot{width:7px;height:7px;border-radius:50%;background:#ff6900}
+html body .mb-campaign-elite .hero-curation{
+ grid-column:2;grid-row:2;z-index:2;align-self:stretch;
+ display:block!important;position:relative!important;
+ min-height:0;height:100%!important;width:100%!important;
+ margin:0!important;padding:0!important;max-width:none!important;
+ overflow:hidden!important;background:#262c33!important;
+}
+html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-dryfit{
+ display:block!important;
+}
+html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-photo{
+ position:absolute!important;inset:0;z-index:0;width:100%;height:100%;
+ border:0!important;border-radius:0!important;overflow:hidden;
+}
+html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-photo::after{
+ background:linear-gradient(180deg,#12151a08 18%,#11151a8d 100%)!important;
+}
+html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-photo img.hero-backdrop{
+ position:absolute;inset:0;display:block!important;width:100%;height:100%;
+ object-fit:cover;object-position:center;opacity:1!important;
+ filter:saturate(.80) contrast(1.05);
+}
+html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-photo-caption{
+ left:clamp(20px,3vw,48px);bottom:27px;color:#fff;
+ font-size:10px!important;letter-spacing:.15em;
+}
+html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange{
+ position:absolute;top:20px;right:20px;z-index:2;
+ width:clamp(138px,17vw,220px);height:clamp(180px,24vw,290px);min-height:0;
+ display:flex!important;flex-direction:column;justify-content:space-between;
+ padding:16px!important;background:#ff6900!important;color:#11151b!important;
+ border-radius:0!important;box-shadow:0 18px 45px #0002;
+}
+html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange strong{
+ font:950 clamp(28px,3.2vw,49px)/.89 Inter,Arial,sans-serif!important;
+ letter-spacing:-.08em!important;color:#10141b;
+}
+html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange strong span{color:#fff}
+html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange-top{font-size:9px}
+html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange-bottom{font-size:8px}
+html body .mb-campaign-elite .hero-bottom{
+ grid-row:3;grid-column:1/-1;z-index:5;
+ background:#fff!important;border:0!important;border-bottom:1px solid #e8e9ec!important;
+ display:flex;align-items:center;justify-content:space-between;
+ padding:14px clamp(22px,4.5vw,76px)!important;
+ margin:0!important;min-height:58px!important;gap:12px!important;
+}
+html body .mb-campaign-elite .hero-bottom>span{
+ color:#3d444d;font:800 10px/1.3 Inter,Arial,sans-serif;letter-spacing:.10em;
+}
+html body .mb-campaign-elite .hero-category-links{display:flex;align-items:center;gap:8px}
+html body .mb-campaign-elite .hero-category-links button{
+ font:800 10px/1 Inter,Arial,sans-serif!important;letter-spacing:.04em!important;
+ color:#252b32!important;background:#f4f5f6!important;border:1px solid transparent!important;
+ padding:12px 16px!important;border-radius:3px!important;min-height:39px!important;
+}
+html body .mb-campaign-elite .hero-category-links button:hover{background:#ff6900!important;color:#111!important}
+/* For Her is a different fashion editorial, not the menswear layout recolored. */
+html body .mb-campaign-elite.mb-landing-her{
+ min-height:clamp(565px,71svh,760px)!important;
+ grid-template-columns:minmax(0,49%) minmax(0,51%)!important;
+ background:#fef8fb!important;
+}
+html body .mb-campaign-elite.mb-landing-her .hero-topline{
+ background:#f6e6ed!important;color:#6f354e!important;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-hero-season{color:#995c75!important}
+html body .mb-campaign-elite.mb-landing-her .hero-topline i{background:#b93369}
+html body .mb-campaign-elite.mb-landing-her .mb-hero-copy{
+ background:linear-gradient(120deg,#fff 0%,#fff9fc 72%,#f8e6ed 100%)!important;
+ color:#2c2030!important;padding-right:25px!important;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-hero-copy .hero-eyebrow{color:#b23c72!important}
+html body .mb-campaign-elite.mb-landing-her .mb-hero-copy h1{
+ font:400 clamp(51px,5.45vw,105px)/.97 Georgia,'Times New Roman',serif!important;
+ letter-spacing:-.064em!important;text-transform:none!important;
+ color:#342132!important;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-hero-copy h1 em{
+ color:#b9366b!important;font-style:italic!important;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-hero-copy>p{
+ color:#705d6a!important;font-size:clamp(14px,1.2vw,18px)!important;
+}
+html body .mb-campaign-elite.mb-landing-her .hero-actions .solid-cta{
+ background:#b9366b!important;color:#fff!important;border-radius:100px!important;
+}
+html body .mb-campaign-elite.mb-landing-her .hero-actions .solid-cta:hover{background:#9b2856!important}
+html body .mb-campaign-elite.mb-landing-her .hero-actions .hero-secondary{color:#6b3c54!important}
+html body .mb-campaign-elite.mb-landing-her .mb-campaign-line{color:#9d7186}
+html body .mb-campaign-elite.mb-landing-her .mb-campaign-line-dot{background:#b9366b}
+html body .mb-campaign-elite.mb-landing-her .hero-curation{
+ background:radial-gradient(circle at 77% 14%,#fff9fb,#f4d4e3 57%,#d38baa 100%)!important;
+ display:flex!important;justify-content:center;align-items:center;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-her-editorial-scene{
+ position:relative;width:min(78%,460px)!important;height:min(88%,550px)!important;
+ padding:clamp(18px,2.4vw,38px)!important;
+ border-radius:48% 48% 5px 5px/39% 39% 5px 5px!important;
+ background:linear-gradient(130deg,#f9d9e5,#d48aaa 60%,#c66894)!important;
+ border:1px solid #f9dce9!important;
+ box-shadow:17px 17px 0 #fff5!important;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-her-editorial-scene::after{
+ background:linear-gradient(140deg,#fff9 0%,#ffffff08 50%,#fff7 100%);
+}
+html body .mb-campaign-elite.mb-landing-her .mb-her-editorial-center{
+ margin:18px auto!important;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-her-outline{
+ color:#fff9!important;font:italic 400 clamp(74px,8vw,145px)/.9 Georgia,serif!important;
+ letter-spacing:-.07em!important;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-her-editorial-center strong{
+ color:#5f2544!important;font:italic 400 clamp(60px,6.8vw,106px)/.92 Georgia,serif!important;
+ letter-spacing:-.065em!important;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-her-editorial-caption{
+ color:#5f2544!important;letter-spacing:.17em!important;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-her-editorial-top,
+html body .mb-campaign-elite.mb-landing-her .mb-her-editorial-foot{
+ color:#4d273d!important;font-size:9px!important;
+}
+html body .mb-campaign-elite.mb-landing-her .mb-her-side-label{
+ font:800 10px/1.2 Inter,Arial,sans-serif;color:#88476a;
+}
+html body .mb-campaign-elite.mb-landing-her .hero-bottom{
+ background:#fff7fa!important;border-bottom-color:#efd8e3!important;
+}
+html body .mb-campaign-elite.mb-landing-her .hero-category-links button{
+ background:#fce9f1!important;color:#85415e!important;border-radius:100px!important;
+}
+html body .mb-campaign-elite.mb-landing-her .hero-category-links button:hover{
+ background:#b9366b!important;color:white!important;
+}
+html body:has(.mb-campaign-elite.mb-landing-her) .mb-brand-strip{background:#fff!important}
+html body:has(.mb-campaign-elite.mb-landing-her) .mb-brand-strip .brand-tile{border-radius:100px!important}
+/* Compact brand strip uses the actual bundled trademark artwork as small icons. */
+html body .mb-brand-strip .brand-tile .brand-symbol{
+ display:block!important;position:relative!important;z-index:0!important;
+ inset:auto!important;width:22px!important;height:20px!important;
+ flex:0 0 22px;background-image:var(--brand-mark);background-repeat:no-repeat;
+ background-position:center;background-size:contain;
+ opacity:.75!important;filter:grayscale(1) brightness(.25)!important;
+ transform:none!important;mix-blend-mode:normal!important;
+}
+html body .mb-brand-strip .brand-tile{
+ display:inline-flex!important;flex-direction:row!important;align-items:center!important;
+ gap:7px!important;
+}
+html body .mb-brand-strip .brand-tile:hover .brand-symbol{opacity:1!important}
+html body .mb-brand-strip{scroll-margin-top:82px}
+/* Laptop and phone: single focal area, touch-friendly category shortcuts. */
+@media(max-width:1150px){
+ html body .mb-hero.mb-campaign-elite{grid-template-columns:minmax(0,50%) minmax(0,50%)!important}
+ html body .mb-campaign-elite .mb-hero-copy h1{font-size:clamp(48px,5.4vw,74px)!important}
+ html body .mb-campaign-elite.mb-landing-her .mb-hero-copy h1{font-size:clamp(46px,5.8vw,76px)!important}
+ html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange{width:160px;height:220px}
+ html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange strong{font-size:34px!important}
+}
+@media(max-width:780px){
+ html body .mb-hero.mb-campaign-elite,
+ html body .mb-hero.mb-campaign-elite.mb-landing-her{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:auto auto auto auto!important;
+  min-height:0!important;
+ }
+ html body .mb-campaign-elite .hero-topline{grid-column:1;grid-row:1;padding:10px 18px!important}
+ html body .mb-campaign-elite .mb-hero-season{display:none}
+ html body .mb-campaign-elite .mb-hero-copy{
+  grid-column:1;grid-row:2;padding:clamp(32px,6vw,55px) 20px!important;
+ }
+ html body .mb-campaign-elite .mb-hero-copy h1{font-size:clamp(47px,9.5vw,77px)!important;margin:17px 0!important}
+ html body .mb-campaign-elite.mb-landing-her .mb-hero-copy h1{font-size:clamp(48px,9.6vw,77px)!important}
+ html body .mb-campaign-elite .mb-hero-copy>p{font-size:14px!important;margin-bottom:22px!important}
+ html body .mb-campaign-elite .mb-campaign-line{margin-top:26px}
+ html body .mb-campaign-elite .hero-curation{
+  grid-column:1;grid-row:3;min-height:285px;height:clamp(285px,68vw,460px)!important;
+ }
+ html body .mb-campaign-elite .hero-bottom{grid-column:1;grid-row:4;padding:12px 16px!important}
+ html body .mb-campaign-elite.mb-landing-her .mb-her-editorial-scene{
+  height:88%!important;width:min(70%,410px)!important;
+ }
+ html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange{
+  width:clamp(135px,30vw,190px);height:clamp(170px,37vw,240px);
+ }
+}
+@media(max-width:520px){
+ html body .mb-campaign-elite .hero-topline{font-size:9px}
+ html body .mb-campaign-elite .mb-hero-copy{padding:31px 17px 34px!important}
+ html body .mb-campaign-elite .mb-hero-copy h1{
+  font-size:clamp(44px,11.2vw,61px)!important;
+ }
+ html body .mb-campaign-elite.mb-landing-her .mb-hero-copy h1{
+  font-size:clamp(45px,11vw,62px)!important;
+ }
+ html body .mb-campaign-elite .hero-actions .solid-cta{padding:13px 18px!important;min-height:48px!important}
+ html body .mb-campaign-elite .hero-actions .hero-secondary{font-size:10px!important}
+ html body .mb-campaign-elite .hero-curation{height:clamp(240px,65vw,340px)!important;min-height:240px}
+ html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange{
+  right:12px;top:12px;width:125px;height:158px;padding:11px!important;
+ }
+ html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange strong{font-size:27px!important}
+ html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange-top{font-size:7px!important}
+ html body .mb-campaign-elite.mb-landing-dryfit .mb-editorial-orange-bottom{font-size:7px!important}
+ html body .mb-campaign-elite.mb-landing-her .mb-her-editorial-scene{width:min(78%,300px)!important}
+ html body .mb-campaign-elite.mb-landing-her .mb-her-outline{font-size:clamp(67px,15vw,92px)!important}
+ html body .mb-campaign-elite.mb-landing-her .mb-her-editorial-center strong{font-size:clamp(56px,14vw,87px)!important}
+ html body .mb-campaign-elite .hero-bottom>span{display:none!important}
+ html body .mb-campaign-elite .hero-bottom .hero-category-links{
+  width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;
+ }
+ html body .mb-campaign-elite .hero-category-links button{font-size:9px!important;padding:12px 4px!important}
+}
+@media(max-width:365px){
+ html body .mb-campaign-elite .mb-hero-copy h1{font-size:41px!important}
+ html body .mb-campaign-elite.mb-landing-her .mb-hero-copy h1{font-size:42px!important}
+ html body .mb-campaign-elite .hero-actions .hero-secondary{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+ html body .mb-campaign-elite *,html body .mb-campaign-elite *::before,html body .mb-campaign-elite *::after{
+  transition:none!important;animation:none!important;
+ }
+}
