@@ -81,8 +81,20 @@ async function examineDatabase(sqlPath,rootDir,manifest){
    }
   }
   if(invalidBarcodes)throw Error('Existem '+invalidBarcodes+' códigos EAN não textuais no banco recuperado. Revise os dados antes de considerar a restauração válida.');
-  if(tables.has('sales_agents')){
-   for(const row of db.prepare('SELECT photo FROM sales_agents WHERE photo IS NOT NULL').all()){
+  // Fotos do histórico também fazem parte dos vínculos que devem ser
+  // recuperáveis: um pedido ou uma venda antiga não pode perder sua imagem.
+  // Conferir colunas efetivamente existentes mantém compatibilidade com
+  // exportações de esquemas legados, sem acessar serviços remotos.
+  for(const [table,column] of [
+   ['sales','product_photo'],
+   ['shop_order_items','photo'],
+   ['sales_agents','photo']
+  ]){
+   if(!tables.has(table))continue;
+   const columns=new Set(db.prepare('PRAGMA table_info("'+table+'")').all().map(row=>row.name));
+   if(!columns.has(column))continue;
+   const cursor=db.prepare('SELECT "'+column+'" AS photo FROM "'+table+'" WHERE "'+column+'" IS NOT NULL');
+   for(const row of cursor.iterate()){
     const path=referencedPhoto(row.photo);if(path)images.add(path);
    }
   }
