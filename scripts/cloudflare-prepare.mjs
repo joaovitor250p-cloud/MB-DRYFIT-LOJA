@@ -27,6 +27,15 @@ export async function prepare(config,{root=process.cwd(),output=resolve(root,'cl
   if(old.some(origin=>worker.includes(origin)))throw Error('Restaram endereços antigos no pacote.');
   const migrations=(await readdir(resolve(source,'drizzle'))).filter(f=>f.endsWith('.sql')).sort(),numbers=new Set();
   for(const migration of migrations){const number=migration.split('_')[0];if(numbers.has(number))throw Error('Migrações conflitantes: '+number);numbers.add(number)}
+  // O branch antigo possui 0034 e depois 0042, enquanto 0035–0041 fazem
+  // parte de trabalho posterior ainda não conciliado. Nunca preparar pacote
+  // Cloudflare que possa aplicar migrações fora de sequência.
+  const ids=[...numbers].map(Number).sort((a,b)=>a-b);
+  const missing=[];
+  for(let number=0;number<=ids.at(-1);number++){
+   if(!numbers.has(String(number).padStart(4,'0')))missing.push(String(number).padStart(4,'0'));
+  }
+  if(missing.length)throw Error('Migrações ausentes em '+key+': '+missing.join(', ')+'. Recupere a versão mais recente antes de publicar.');
   await mkdir(resolve(dest,'migrations'),{recursive:true});await writeFile(resolve(dest,'worker.js'),worker);
   for(const migration of migrations)await copyFile(resolve(source,'drizzle',migration),resolve(dest,'migrations',migration));
   const origin=new URL(store.origin),custom=!origin.hostname.endsWith('.workers.dev');const manifest={name:store.worker,account_id:config.account_id,main:'worker.js',compatibility_date:'2026-11-01',workers_dev:true,...(custom?{routes:[{pattern:origin.hostname,custom_domain:true}]}:{}),vars:{MB_STORE_KEY:key,MB_UNIFIED_STAFF:'1',MB_PHOTOS_ENABLED:config.photos_enabled===false?'0':'1',...(custom?{MB_CANONICAL_ORIGIN:origin.origin}:{})},d1_databases:[{binding:'DB',database_name:store.database_name,database_id:store.database_id,migrations_dir:'migrations'}],...(config.photos_enabled===false?{}:{r2_buckets:[{binding:'BUCKET',bucket_name:store.bucket}]})};
