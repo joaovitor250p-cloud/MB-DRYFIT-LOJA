@@ -4,11 +4,10 @@
  * NÃO exporta D1/R2 automaticamente e NÃO acessa produção.
  * Node.js >= 24 e tar no PATH. Apenas arquivos previamente exportados.
  */
-import { createReadStream, createWriteStream, promises as fs } from 'node:fs';
+import { createReadStream, promises as fs } from 'node:fs';
 import { resolve, sep, dirname } from 'node:path';
 import { randomBytes, scryptSync, createCipheriv, createDecipheriv } from 'node:crypto';
 import { spawn } from 'node:child_process';
-import { once } from 'node:events';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 
@@ -44,9 +43,13 @@ async function checkInput(root) {
   return total;
 }
 
-async function exitStatus(child, label) {
-  const [code, signal] = await once(child, 'close');
-  if (code !== 0) throw new Error(label + ' falhou (' + (signal || code) + ').');
+function exitStatus(child, label) {
+  return new Promise((resolve, reject) => {
+    child.once('error', reject);
+    child.once('close', (code, signal) =>
+      code === 0 ? resolve() : reject(new Error(label + ' falhou (' + (signal || code) + ').'))
+    );
+  });
 }
 
 function tarProcess(args) {
@@ -70,7 +73,10 @@ async function pack(store, inputArg, outputArg) {
   const key = keyFromEnv(salt);
   const cipher = createCipheriv('aes-256-gcm', key, iv);
   const header = Buffer.concat([MAGIC, Buffer.from([IDS.get(store)]), salt, iv]);
+  const outputHandle = await fs.open(output, 'wx', 0o600);
   const tar = tarProcess(['-C', input, '-cf', '-', '.']);
+  const tarDone = exitStatus(tar, 'tar');
+  tarDone.catch(() => {}); // Erros serão aguardados depois do pipeline
   tar.stdin.end();
   let tarError = '';
   tar.stderr.on('data', (chunk) => { tarError = (tarError + chunk.toString()).slice(-1000); });
@@ -86,8 +92,8 @@ async function pack(store, inputArg, outputArg) {
     yield cipher.getAuthTag();
   }
   try {
-    await pipeline(Readable.from(encrypted()), createWriteStream(output, { flags: 'wx', mode: 0o600 }));
-    await exitStatus(tar, 'tar');
+    await pipeline(Readable.from(encrypted()), outputHandle.createWriteStream({ autoClose: false }));
+    await tarDone;
     console.log('Backup local cifrado criado: ' + store + ' (' + fileCount + ' arquivos).');
     console.log('Arquivo: ' + output);
     if (tarError) console.warn('Aviso tar: ' + tarError);
@@ -95,6 +101,8 @@ async function pack(store, inputArg, outputArg) {
     tar.kill();
     await fs.rm(output, { force: true });
     throw error;
+  } finally {
+    await outputHandle.close();
   }
 }
 
@@ -136,12 +144,14 @@ async function inspect(archiveArg) {
 async function verify(archive) {
   const { store, decrypted } = await inspect(archive);
   const tar = tarProcess(['-tf', '-']);
+  const tarDone = exitStatus(tar, 'Verificação do tar');
+  tarDone.catch(() => {});
   let tarError = '';
   tar.stdout.resume();
   tar.stderr.on('data', (chunk) => { tarError = (tarError + chunk.toString()).slice(-1000); });
   try {
     await pipeline(Readable.from(decrypted()), tar.stdin);
-    await exitStatus(tar, 'Verificação do tar');
+    await tarDone;
     console.log('Backup cifrado íntegro e TAR legível: ' + store);
   } catch (error) {
     tar.kill();
@@ -154,16 +164,21 @@ async function unpack(archive, targetArg) {
   const { store, decrypted } = await inspect(archive);
   const target = resolve(targetArg);
   if (target === resolve(archive)) throw new Error('A saída não pode sobrescrever o backup.');
+  const targetHandle = await fs.open(target, 'wx', 0o600);
   try {
-    await pipeline(Readable.from(decrypted()), createWriteStream(target, { flags: 'wx', mode: 0o600 }));
+    await pipeline(Readable.from(decrypted()), targetHandle.createWriteStream({ autoClose: false }));
+    await targetHandle.close();
     const listing = tarProcess(['-tf', target]);
+    const listingDone = exitStatus(listing, 'Verificação do tar restaurado');
+    listingDone.catch(() => {});
     listing.stdin.end();
     listing.stdout.resume();
     listing.stderr.resume();
-    await exitStatus(listing, 'Verificação do tar restaurado');
+    await listingDone;
     console.log('Arquivo TAR recuperado e validado para ' + store + ': ' + target);
     console.log('Inspecione-o antes da extração em ambiente isolado. Nenhum banco foi alterado.');
   } catch (error) {
+    await targetHandle.close().catch(() => {});
     await fs.rm(target, { force: true });
     throw error;
   }
