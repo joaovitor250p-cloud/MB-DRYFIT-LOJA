@@ -17,7 +17,8 @@ function screen(role='owner',store='dryfit',storage=new Map()){
   },
   api:async(path,method='GET',body)=>{
    calls.push({path,method,body});
-   if(path==='retail/settings')return {minimum_stock:6,photos_enabled:false};
+   if(path==='retail/settings'&&method==='GET')return {minimum_stock:6,photos_enabled:false,barcode_mode:'auto',preferences_revision:0,preferences_saved:false};
+   if(path==='retail/settings'&&method==='POST')return {barcode_mode:body.barcode_mode,preferences_revision:body.expected_revision+1,preferences_saved:true};
    if(path==='retail/stock-alerts'&&method==='POST')return {ok:true};
    throw Error('Unexpected API '+path);
   },
@@ -50,7 +51,7 @@ test('código manual persiste por conta e loja neste dispositivo sem mudar códi
  const store=new Map(),s=screen('owner','dryfit',store);
  const view=await paint(s),select=view.querySelector('#ownerSettingsBarcodeMode');
  assert.equal(s.ctx.ownerBarcodePreference(),'auto');
- select.onchange({target:{value:'manual'}});
+ await select.onchange({target:{value:'manual'}});
  assert.equal(s.ctx.ownerBarcodePreference(),'manual');
  const another=screen('owner','dryfit',store);
  assert.equal(another.ctx.ownerBarcodePreference(),'manual');
