@@ -10,6 +10,7 @@ import { randomBytes, scryptSync, createCipheriv, createDecipheriv } from 'node:
 import { spawn } from 'node:child_process';
 import { Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
+import { verifyManifest } from './mb-manifest.mjs';
 
 const MAGIC = Buffer.from('MBBACK01');
 const HEADER_SIZE = MAGIC.length + 1 + 16 + 12;
@@ -65,6 +66,7 @@ async function pack(store, inputArg, outputArg) {
   const input = resolve(inputArg);
   const output = resolve(outputArg);
   if (output === input || output.startsWith(input + sep)) throw new Error('O backup deve ficar fora da pasta de entrada.');
+  const manifest = await verifyManifest(store, input);
   const fileCount = await checkInput(input);
   await fs.mkdir(dirname(output), { recursive: true });
 
@@ -95,6 +97,7 @@ async function pack(store, inputArg, outputArg) {
     await pipeline(Readable.from(encrypted()), outputHandle.createWriteStream({ autoClose: false }));
     await tarDone;
     console.log('Backup local cifrado criado: ' + store + ' (' + fileCount + ' arquivos).');
+    console.log('Manifesto SHA-256 conferido: ' + manifest.files.length + ' arquivos. Completude da nuvem NÃO verificada.');
     console.log('Arquivo: ' + output);
     if (tarError) console.warn('Aviso tar: ' + tarError);
   } catch (error) {
