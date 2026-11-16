@@ -58,7 +58,7 @@ test('código manual persiste por conta e loja neste dispositivo sem mudar códi
  another.ctx.me.id='other-owner';
  assert.equal(another.ctx.ownerBarcodePreference(),'auto');
  assert.equal(store.size,1);
- assert.match(view.querySelector('#ownerSettingsBarcodeStatus').textContent,/salva neste aparelho/);
+ assert.match(view.querySelector('#ownerSettingsBarcodeStatus').textContent,/salva para .* em todos os aparelhos/);
 });
 test('somente dono acessa preferências e mínimo é salvo pela API protegida',async()=>{
  const denied=screen('seller');
