@@ -72,9 +72,17 @@ export async function isPublishedProductPhoto(db,photo){
   'SELECT id FROM products WHERE published=1 AND active=1 AND archived_at IS NULL AND (photo=? OR main_photo=?) LIMIT 1'
  ).bind(photo,photo).first();
  if(direct)return true;
- const extra=await db.prepare(
-  'SELECT p.id FROM product_model_gallery_photo_index i JOIN products p ON COALESCE(p.model_id,p.id)=i.model_key '+
-  'WHERE i.photo=? AND p.published=1 AND p.active=1 AND p.archived_at IS NULL LIMIT 1'
- ).bind(photo).first();
- return !!extra;
+ try{
+  const extra=await db.prepare(
+   'SELECT p.id FROM product_model_gallery_photo_index i JOIN products p ON COALESCE(p.model_id,p.id)=i.model_key '+
+   'WHERE i.photo=? AND p.published=1 AND p.active=1 AND p.archived_at IS NULL LIMIT 1'
+  ).bind(photo).first();
+  return !!extra;
+ }catch(error){
+  // Durante atualização gradual pode existir Worker novo antes da migração
+  // 0042. Nunca tornar fotos não publicadas acessíveis nem retornar erro 500
+  // somente pela ausência do índice adicional; outros erros continuam visíveis.
+  if(/no such table:\s*product_model_gallery_photo_index/i.test(String(error?.message)))return false;
+  throw error;
+ }
 }
