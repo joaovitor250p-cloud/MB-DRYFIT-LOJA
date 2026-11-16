@@ -169,6 +169,7 @@ node --test ops/backup/check-restore.test.mjs
 - **Caminhos portáveis:** rejeita chaves R2 com nomes especiais do Windows, caminhos com drive, nomes reservados e TARs com entradas perigosas, antes da extração.
 - **Menor privilégio:** Wrangler só recebe o token Cloudflare, AWS só recebe credenciais R2, Git não recebe segredos e os verificadores de criptografia recebem a senha do backup sem tokens dos serviços. Os testes simulam os processos e conferem esse isolamento.
 - **Verificação de recuperação:** SQL, hashes, vínculos de fotos em vendas/pedidos, inventário, TAR e proveniência são testados antes de anunciar sucesso. Uma falha descarta o pacote recém-gerado.
+- **Arquivo parcial no Windows:** o empacotador usa fechamento automático do fluxo antes da limpeza e rejeita falhas do `tar`, apagando a saída recém-criada quando não foi concluída. Há teste que simula falha do `tar` após abrir a saída.
 
 Essas verificações são **locais e simuladas no CI**. Não significam que a Cloudflare real foi acessada, que o conteúdo exportado representa um snapshot único ou que a restauração remota foi concluída.
 
