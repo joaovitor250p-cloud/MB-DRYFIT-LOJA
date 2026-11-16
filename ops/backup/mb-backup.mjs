@@ -75,7 +75,10 @@ async function pack(store, inputArg, outputArg) {
   const key = keyFromEnv(salt);
   const cipher = createCipheriv('aes-256-gcm', key, iv);
   const header = Buffer.concat([MAGIC, Buffer.from([IDS.get(store)]), salt, iv]);
+  // O stream é proprietário do handle e fecha o descritor ao terminar.
+  // pipeline() espera o fechamento; importante para remoção no Windows/NTFS.
   const outputHandle = await fs.open(output, 'wx', 0o600);
+  const outputStream = outputHandle.createWriteStream({ autoClose: true });
   const tar = tarProcess(['-C', input, '-cf', '-', '.']);
   const tarDone = exitStatus(tar, 'tar');
   tarDone.catch(() => {}); // Erros serão aguardados depois do pipeline
@@ -95,16 +98,14 @@ async function pack(store, inputArg, outputArg) {
   }
   let packError;
   try {
-    await pipeline(Readable.from(encrypted()), outputHandle.createWriteStream({ autoClose: false }));
+    await pipeline(Readable.from(encrypted()), outputStream);
     await tarDone;
   } catch (error) {
     packError = error;
     tar.kill();
   } finally {
-    // Windows/NTFS pode impedir remoção de um arquivo ainda aberto.
-    // Fechar o handle ANTES de descartar um pacote parcial.
-    try { await outputHandle.close(); }
-    catch (error) { packError ??= error; }
+    // O pipeline aguarda o encerramento automático do stream e libera o
+    // handle antes da exclusão do arquivo parcial, inclusive no Windows.
     if (packError) {
       try { await fs.rm(output, { force: true }); }
       catch (error) {
