@@ -44,7 +44,7 @@ Existe também uma ferramenta de **exportação autenticada** que pode ser execu
 
 `ops/backup/export-cloudflare.mjs`
 
-Ela lê o D1 e o bucket R2 de **uma loja por vez**, confere a lista de objetos antes e depois da cópia, cria a relação de SHA-256, inclui o código rastreado pelo Git local e gera um `.mbbackup` cifrado. Não contém comandos de publicação, atualização nem remoção dos bancos ou buckets remotos.
+Ela lê o D1 e o bucket R2 de **uma loja por vez**, confere a lista de objetos antes e depois da cópia, cria a relação de SHA-256, inclui o código rastreado pelo Git local e gera um `.mbbackup` cifrado. **Antes de anunciar sucesso, executa automaticamente a recuperação LOCAL isolada** (`check-restore.mjs`) e valida SQL, hashes, TAR e referências de fotos. Se essa conferência falhar, apaga o pacote recém-gerado e informa erro. Não contém comandos de publicação, atualização nem remoção dos bancos ou buckets remotos.
 
 ### Atalho para Windows: uma execução para cada loja
 
