@@ -22,3 +22,20 @@ test('packaging changes only output links, keeps store bindings isolated and ref
 });
 
 test('explicit photo-free setup accepts no bucket and never configures an R2 binding',()=>{const c=config();c.photos_enabled=false;delete c.dryfit.bucket;delete c.her.bucket;assert.equal(validateConfig(c),c)});
+
+test('publicação é bloqueada se migrações D1 intermediárias não foram recuperadas',async()=>{
+ const root=await mkdtemp(join(tmpdir(),'mb-release-gap-'));
+ try{
+  for(const store of ['mb-dryfit','mb-for-her']){
+   const dir=join(root,'stores',store);
+   await mkdir(join(dir,'dist','server'),{recursive:true});
+   await mkdir(join(dir,'drizzle'),{recursive:true});
+   await writeFile(join(dir,'dist','server','index.js'),'export default {fetch(){return new Response("ok")}}');
+   await writeFile(join(dir,'drizzle','0000_initial.sql'),'CREATE TABLE t(id INTEGER);');
+  }
+  // A versão existente possui salto real de 0034 para 0042: não deve
+  // existir forma silenciosa de preparar o pacote antes de conciliar o Codex.
+  await writeFile(join(root,'stores','mb-dryfit','drizzle','0002_missing_middle.sql'),'SELECT 1;');
+  await assert.rejects(prepare(config(),{root}),/Migrações ausentes em dryfit: 0001/);
+ }finally{await rm(root,{recursive:true,force:true})}
+});
