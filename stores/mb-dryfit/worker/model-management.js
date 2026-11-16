@@ -63,7 +63,7 @@ export async function handleModelManagement(req,env,member,validate){const path=
  for(const [index,{old,p,published}] of changes.entries()){
   const code=old?.barcode||pendingCodes.get(index)?.code,id=old?.id||crypto.randomUUID();
   if(published===null)throw modelProblem('Situação de publicação inválida.');
-  const canPublish=p.active&&p.price>0&&!!(p.photo||data.main_photo);
+  const canPublish=p.active&&p.price>0&&(env.MB_PHOTOS_ENABLED==='0'||!!(p.photo||data.main_photo));
   if(published&&!canPublish&&data.colors.some(c=>c.sizes.some(v=>v.id===id&&v.published===true)))throw modelProblem('Para publicar, ative a variação e informe preço e foto.');
   const online=canPublish?published:0;
   if(!old)statements.push(env.DB.prepare('INSERT INTO products(id,name,description,category,brand,price,stock,photo,active,created_at,barcode,extra_code,size,color,model_id,main_photo,fit_chart,barcode_mode,published) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(id,name,p.description,p.category,p.brand,p.price,p.stock,p.photo,p.active,new Date().toISOString(),code,p.extra_code,p.size,p.color,modelId,data.main_photo||null,group.seed.fit_chart,mode,online));
