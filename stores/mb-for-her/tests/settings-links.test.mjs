@@ -50,7 +50,7 @@ test('código manual persiste por conta e loja neste dispositivo sem mudar códi
  const store=new Map(),s=screen('owner','dryfit',store);
  const view=await paint(s),select=view.querySelector('#ownerSettingsBarcodeMode');
  assert.equal(s.ctx.ownerBarcodePreference(),'auto');
- select.value='manual';select.onchange({target:select});
+ select.onchange({target:{value:'manual'}});
  assert.equal(s.ctx.ownerBarcodePreference(),'manual');
  const another=screen('owner','dryfit',store);
  assert.equal(another.ctx.ownerBarcodePreference(),'manual');
