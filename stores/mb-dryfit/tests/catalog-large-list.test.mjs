@@ -28,15 +28,15 @@ const fake=(id,model)=>({
  id:'var-'+id,model_id:'model-'+model,name:'Modelo '+model,category:'Camisa',color:'Preto',size:'M',
  price:6900,stock:5,active:1,published:0,barcode:'000000'+id,extra_code:'REF'+id,photo:null,main_photo:null
 });
-test('130 modelos carregam apenas 60 cartões inicialmente e exibem mais sob demanda',()=>{
+test('130 modelos exibem somente 24 cartões de início e carregam outros em pequenos lotes',()=>{
  const g=mock(),items=Array.from({length:130},(_,i)=>fake(i,i));
  g.ctx.products=items;g.ctx.cards(items);
- assert.equal(g.document.querySelectorAll('[data-catalog]').length,60);
- assert.match(g.document.querySelector('#loadMoreModels').textContent,/70 restantes/);
- g.document.querySelector('#loadMoreModels').onclick();
- assert.equal(g.document.querySelectorAll('[data-catalog]').length,120);
- g.document.querySelector('#loadMoreModels').onclick();
- assert.equal(g.document.querySelectorAll('[data-catalog]').length,130);
+ assert.equal(g.document.querySelectorAll('[data-catalog]').length,24);
+ assert.match(g.document.querySelector('#loadMoreModels').textContent,/106 restantes/);
+ for(let n=2;n<=6;n++){
+  g.document.querySelector('#loadMoreModels').onclick();
+  assert.equal(g.document.querySelectorAll('[data-catalog]').length,Math.min(130,n*24));
+ }
  assert.equal(g.document.querySelector('#loadMoreModels'),null);
 });
 test('agrupamento linear mantém as variações vinculadas ao modelo correto',()=>{
