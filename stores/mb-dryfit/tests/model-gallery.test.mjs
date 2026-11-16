@@ -69,3 +69,16 @@ test('armazenamento R2 desativado bloqueia gravação e não anuncia fotos públ
   assert.equal(d.sql.prepare('SELECT COUNT(*) n FROM product_model_gallery').get().n,0);
  }finally{d.sql.close()}
 });
+
+test('catálogo com fotos desligadas não consulta índice de galeria ainda não migrado',async()=>{
+ const d=setup();
+ try{
+  d.env.MB_PHOTOS_ENABLED='0';
+  d.env.BUCKET=null;
+  d.sql.exec('DROP TABLE product_model_gallery_photo_index');
+  const response=await worker.fetch(new Request('https://mb.test/catalogo/fotos/qualquer-foto'),d.env);
+  assert.equal(response.status,200,'Deve usar imagem substituta, não tentar consultar tabela ausente.');
+  assert.match(response.headers.get('Content-Type')||'',/image\/svg\+xml/);
+  assert.match(await response.text(),/Foto em breve/);
+ }finally{d.sql.close()}
+});
