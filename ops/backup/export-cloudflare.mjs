@@ -49,7 +49,17 @@ async function run(bin,args,options={}){
 function nodeExecutable(){return process.execPath}
 function wranglerCli(){return resolve(process.env.MB_BACKUP_WRANGLER_CLI||join(root,'node_modules','wrangler','bin','wrangler.js'))}
 function awsExecutable(){return process.platform==='win32'?'aws.exe':'aws'}
-const cfEnv=()=>({...process.env,CLOUDFLARE_ACCOUNT_ID:config.account_id});
+// Menor privilégio: não repassar senha do pacote nem credenciais de outro
+// serviço aos processos Git, AWS CLI ou Wrangler.
+function envWithout(names){
+ const env={...process.env};
+ for(const name of names)delete env[name];
+ return env;
+}
+const cfEnv=()=>({...envWithout(['AWS_ACCESS_KEY_ID','AWS_SECRET_ACCESS_KEY','AWS_SESSION_TOKEN','MB_BACKUP_PASSPHRASE']),CLOUDFLARE_ACCOUNT_ID:config.account_id});
+const r2Env=()=>({...envWithout(['CLOUDFLARE_API_TOKEN','MB_BACKUP_PASSPHRASE']),AWS_REGION:'auto',AWS_DEFAULT_REGION:'auto'});
+const gitEnv=()=>envWithout(['CLOUDFLARE_API_TOKEN','AWS_ACCESS_KEY_ID','AWS_SECRET_ACCESS_KEY','AWS_SESSION_TOKEN','MB_BACKUP_PASSPHRASE']);
+const backupEnv=()=>envWithout(['CLOUDFLARE_API_TOKEN','AWS_ACCESS_KEY_ID','AWS_SECRET_ACCESS_KEY','AWS_SESSION_TOKEN']);
 function r2Endpoint(){return 'https://'+config.account_id+'.r2.cloudflarestorage.com'}
 function assertCredentials(){
  const missing=['CLOUDFLARE_API_TOKEN','AWS_ACCESS_KEY_ID','AWS_SECRET_ACCESS_KEY','MB_BACKUP_PASSPHRASE'].filter(x=>!process.env[x]);
@@ -72,7 +82,7 @@ async function enumerateObjects(bucket){
   if(++rounds>1000000)throw Error('Muitas páginas R2 na listagem.');
   const args=['s3api','list-objects-v2','--no-paginate','--output','json','--bucket',bucket,'--endpoint-url',r2Endpoint(),'--max-keys','1000','--region','auto'];
   if(cursor)args.push('--continuation-token',cursor);
-  const result=JSON.parse(await run(awsExecutable(),args));
+  const result=JSON.parse(await run(awsExecutable(),args,{env:r2Env()}));
   for(const o of result.Contents||[]){
    assertObjectKey(o.Key);
    const folded=o.Key.toLowerCase();
@@ -162,15 +172,15 @@ async function exportEncrypted(opt){
   if(!sqlStat.isFile()||sqlStat.size<50)throw Error('Exportação SQL D1 vazia ou incompleta; backup não gerado.');
   const objectsBefore=await enumerateObjects(details.bucket);
   // Sync somente lê o R2. Não usa --delete nem grava no bucket.
-  await run(awsExecutable(),['s3','sync','s3://'+details.bucket,r2,'--endpoint-url',r2Endpoint(),'--only-show-errors','--no-progress','--region','auto']);
+  await run(awsExecutable(),['s3','sync','s3://'+details.bucket,r2,'--endpoint-url',r2Endpoint(),'--only-show-errors','--no-progress','--region','auto'],{env:r2Env()});
   const [local,objectsAfter]=await Promise.all([localFiles(r2),enumerateObjects(details.bucket)]);
   const verifiedChecksums=await assertObjectsMatch(objectsBefore,local,r2);
   assertNoRemoteChanges(objectsBefore,objectsAfter);
   // Apenas arquivos rastreados no commit local. Nunca copia .env ou working tree.
-  const gitStatus=await run('git',['status','--porcelain','--untracked-files=all']);
+  const gitStatus=await run('git',['status','--porcelain','--untracked-files=all'],{env:gitEnv()});
   if(gitStatus.trim())throw Error('Há arquivos alterados ou não rastreados no repositório. Revise e faça commit somente do código apropriado antes de gerar o snapshot; nunca versione segredos.');
-  await run('git',['archive','--format=tar','--output',join(code,'fonte.tar'),'HEAD']);
-  const revision=(await run('git',['rev-parse','HEAD'])).trim();
+  await run('git',['archive','--format=tar','--output',join(code,'fonte.tar'),'HEAD'],{env:gitEnv()});
+  const revision=(await run('git',['rev-parse','HEAD'],{env:gitEnv()})).trim();
   await fs.writeFile(join(staging,'origem.json'),JSON.stringify({
    store:opt.store,account_id:config.account_id,database:details.database_name,
    bucket:details.bucket,source_commit:revision,d1_sql_bytes:sqlStat.size,
@@ -183,15 +193,15 @@ async function exportEncrypted(opt){
   await createManifest(opt.store,staging);
   await verifyManifest(opt.store,staging);
   await fs.mkdir(opt.destination,{recursive:true,mode:0o700});
-  await run(nodeExecutable(),[join(root,'ops/backup/mb-backup.mjs'),'pack',opt.store,staging,target]);
+  await run(nodeExecutable(),[join(root,'ops/backup/mb-backup.mjs'),'pack',opt.store,staging,target],{env:backupEnv()});
   // Teste de recuperação LOCAL obrigatório: detectar SQL ilegível, fotos referenciadas
   // ausentes e inventário errado antes de declarar a exportação concluída.
   // Não acessa nem modifica D1/R2 remotos. Restauração remota segue pendente.
   try{
-   await run(nodeExecutable(),[join(root,'ops/backup/mb-backup.mjs'),'verify',target]);
+   await run(nodeExecutable(),[join(root,'ops/backup/mb-backup.mjs'),'verify',target],{env:backupEnv()});
    const restored=JSON.parse(await run(nodeExecutable(),[
     join(root,'ops/backup/check-restore.mjs'),'--store',opt.store,'--archive',target
-   ]));
+   ],{env:backupEnv()}));
    if(restored.status!=='LOCAL_RESTORE_CHECK_PASSED'||restored.store!==opt.store||
       restored.provenance_verified!==true||restored.missing_photo_references!==0)throw Error('Relatório de recuperação local inesperado.');
   }catch(error){
