@@ -59,6 +59,10 @@ async function examineDatabase(sqlPath,rootDir,manifest){
  const db=new DatabaseSync(dbFile);
  try{
   db.exec(sql);
+  const integrity=db.prepare('PRAGMA integrity_check').all();
+  if(!integrity.length||integrity.some(row=>Object.values(row)[0]!=='ok'))throw Error('Banco SQL recuperado apresenta falha de integridade.');
+  const foreignKeys=db.prepare('PRAGMA foreign_key_check').all();
+  if(foreignKeys.length)throw Error('Banco SQL recuperado apresenta '+foreignKeys.length+' vínculos estrangeiros inválidos.');
   const tables=new Set(db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map(row=>row.name));
   if(!tables.has('products'))throw Error('A exportação D1 não contém a tabela de produtos.');
   const count=table=>tables.has(table)?db.prepare('SELECT COUNT(*) AS n FROM "'+table+'"').get().n:null;
@@ -76,9 +80,22 @@ async function examineDatabase(sqlPath,rootDir,manifest){
     for(const p of arr){const path=referencedPhoto(p);if(path)images.add(path)}
    }
   }
+  if(invalidBarcodes)throw Error('Existem '+invalidBarcodes+' códigos EAN não textuais no banco recuperado. Revise os dados antes de considerar a restauração válida.');
   if(tables.has('sales_agents')){
    for(const row of db.prepare('SELECT photo FROM sales_agents WHERE photo IS NOT NULL').all()){
     const path=referencedPhoto(row.photo);if(path)images.add(path);
+   }
+  }
+  if(tables.has('storefront_settings')){
+   const cols=new Set(db.prepare('PRAGMA table_info(storefront_settings)').all().map(v=>v.name));
+   const selects=['draft','published'].filter(name=>cols.has(name));
+   if(selects.length){
+    for(const row of db.prepare('SELECT '+selects.join(',')+' FROM storefront_settings').all()){
+     for(const value of Object.values(row)){
+      if(typeof value!=='string')continue;
+      for(const match of value.matchAll(/\/(?:api\/photos|catalogo\/fotos)\/([A-Za-z0-9-]+)/g))images.add('r2/photos/'+match[1]);
+     }
+    }
    }
   }
   const files=new Set(manifest.files.map(file=>file.path));
