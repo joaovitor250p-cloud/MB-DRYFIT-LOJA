@@ -129,8 +129,8 @@ async function exportEncrypted(opt){
   const [local,objectsAfter]=await Promise.all([localFiles(r2),enumerateObjects(details.bucket)]);
   assertObjectsMatch(objectsBefore,local);assertNoRemoteChanges(objectsBefore,objectsAfter);
   // Apenas arquivos rastreados no commit local. Nunca copia .env ou working tree.
-  const gitStatus=await run('git',['status','--porcelain','--untracked-files=no']);
-  if(gitStatus.trim())throw Error('Há alterações de código não commitadas. Faça commit antes de exportar o snapshot.');
+  const gitStatus=await run('git',['status','--porcelain','--untracked-files=all']);
+  if(gitStatus.trim())throw Error('Há arquivos alterados ou não rastreados no repositório. Revise e faça commit somente do código apropriado antes de gerar o snapshot; nunca versione segredos.');
   await run('git',['archive','--format=tar','--output',join(code,'fonte.tar'),'HEAD']);
   const revision=(await run('git',['rev-parse','HEAD'])).trim();
   await fs.writeFile(join(staging,'origem.json'),JSON.stringify({
