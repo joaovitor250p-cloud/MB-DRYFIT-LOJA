@@ -61,7 +61,7 @@ test('exportação simulada: D1, R2 e commit em backup cifrado; nenhuma escrita 
    ' if(args.includes("list-objects-v2")){',
    '  const counter=path.join(process.env.MB_TEST_FIXTURE,"r2-list-count");',
    '  const number=(Number(fs.existsSync(counter)?fs.readFileSync(counter,"utf8"):"0")+1);fs.writeFileSync(counter,String(number));',
-   '  const etag=process.env.MB_TEST_R2_CHANGE==="1"&&number>1?"alterado":"abc";',
+   '  const etag=process.env.MB_TEST_R2_CHANGE==="1"&&number>1?"alterado":process.env.MB_TEST_BAD_ETAG==="1"?"00000000000000000000000000000000":"8827a41122a5028b9808c7bf84b9fcf6";',
    '  console.log(JSON.stringify({IsTruncated:false,Contents:[{Key:"photos/foto-1",Size:6,ETag:etag,LastModified:"2026-01-01T00:00:00Z"}]}));',
    ' }',
    ' else if(args.includes("sync")){',
@@ -94,6 +94,7 @@ test('exportação simulada: D1, R2 e commit em backup cifrado; nenhuma escrita 
   assert.equal(verify.status,0,verify.stderr);
   assert.match(result.stdout,/RECUPERADO LOCALMENTE com sucesso/);
   assert.match(result.stdout,/NÃO foi validada restauração real/);
+  assert.match(result.stdout,/MD5 R2 \(ETag parte única\): 1/);
   // SQL e inventário íntegros não bastam: foto vinculada ausente deve descartar
   // o pacote recém-criado e impedir a mensagem de conclusão.
   const invalidPhotosDest=join(fixture,'foto-ausente');
@@ -102,6 +103,13 @@ test('exportação simulada: D1, R2 e commit em backup cifrado; nenhuma escrita 
   assert.match(bad.stderr,/Recuperação local do backup falhou/);
   assert.equal(readdirSync(invalidPhotosDest).filter(name=>name.endsWith('.mbbackup')).length,0);
   assert.doesNotMatch(bad.stdout,/RECUPERADO LOCALMENTE com sucesso/);
+  // Mesmo com tamanho correto, o conteúdo baixado deve coincidir com o
+  // checksum MD5 que o bucket informa por ETag de upload simples.
+  const corruptDest=join(fixture,'checksum-invalido');
+  const checksum=call(['--store','mb-dryfit','--destination',corruptDest,'--execute'],{...env,MB_TEST_BAD_ETAG:'1'});
+  assert.notEqual(checksum.status,0);
+  assert.match(checksum.stderr,/Checksum R2 divergente/);
+  assert.equal(existsSync(corruptDest),false);
   // Mudança remota entre a primeira e a segunda listagem deve falhar fechado.
   const counter=join(fixture,'r2-list-count');writeFileSync(counter,'0');
   const changedDest=join(fixture,'nao-exportado');
