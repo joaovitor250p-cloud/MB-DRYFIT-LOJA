@@ -137,13 +137,55 @@ html[data-theme=dark] .mb-hero{background:#211a25;color:#fcf5fa}html[data-theme=
 @media(max-width:700px){.mb-hero{grid-template-columns:minmax(0,1fr);min-height:0;padding:18px 22px 0}.mb-hero h1{font-size:clamp(68px,17.5vw,115px);letter-spacing:-1.2px;line-height:.92}.mb-hero-copy{padding:36px 0 25px}.mb-hero-copy>p{font-size:12px}.hero-curation{padding:5px 0 32px}.her-brand-disc{width:230px}.hero-curation-heading{margin-top:23px}.hero-curation:has(.hero-product-grid:not([hidden])) .her-brand-disc{display:none}.hero-product-grid{height:190px}.hero-topline>span{font-size:6px}.campaign-header .logo{font-size:24px}.campaign-header .logo small{font-size:5px}.hero-curation>p{margin-top:12px}.her-manifesto{padding:60px 22px}.her-manifesto h2{font-size:52px}.her-about-mark{aspect-ratio:1}.hero-bottom{min-height:65px}.brand-selection-heading h2{font-size:29px}.announcement{font-size:6px;letter-spacing:.8px}.announcement a{font-size:6px}.shop-header-tools{gap:3px}}
 @media(prefers-reduced-motion:reduce){.her-brand-disc,.her-aura{animation:none}}
 
+
+/* For Her 2026: cinematic storefront, restrained editorial styling. Product cards remain unchanged. */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+.mb-hero{min-height:620px;display:flex;flex-direction:column;justify-content:space-between;gap:0;padding:26px clamp(22px,6vw,100px) 0;background:#0b0b0d;color:#fff;isolation:isolate}
+.mb-hero:before,html[data-theme=dark] .mb-hero:before{background:linear-gradient(90deg,rgba(8,8,11,.92) 0%,rgba(8,8,11,.7) 44%,rgba(8,8,11,.22) 100%),linear-gradient(0deg,rgba(8,8,11,.72),transparent 40%);z-index:-2}
+.mb-hero .her-aura,.mb-hero .hero-gridlines,.mb-hero .hero-curation{display:none}
+.mb-hero .hero-motion-video{position:absolute;inset:0;z-index:-3;width:100%;height:100%;object-fit:cover;object-position:center;opacity:.77}
+.mb-hero .hero-topline{border-color:#ffffff2c;color:#fff9;letter-spacing:2px}
+.mb-hero .hero-topline button{color:#fffc}
+.mb-hero .mb-hero-copy{margin:auto 0;padding:66px 0 72px;max-width:660px;animation:none}
+.mb-hero .mb-hero-copy>.hero-eyebrow{font:700 11px 'DM Sans',Inter,sans-serif;letter-spacing:3px;color:#fff9}
+.mb-hero h1{font:800 clamp(58px,7.7vw,115px)/.96 'DM Sans',Inter,sans-serif;letter-spacing:-.065em;margin:22px 0 25px;color:#fff}
+.mb-hero h1 em,html[data-theme=dark] .mb-hero h1 em{color:#ff2a87;font-style:normal}
+.mb-hero .mb-hero-copy>p{font:400 clamp(14px,1.3vw,18px)/1.65 'DM Sans',Inter,sans-serif;max-width:380px;color:#fffce0;margin-bottom:30px}
+.mb-hero .solid-cta{border-radius:4px;padding:17px 25px;background:#ea1677;color:#fff;font:700 12px 'DM Sans',Inter,sans-serif;letter-spacing:.015em;min-height:50px;gap:28px}
+.mb-hero .solid-cta:hover{background:#f13b92}
+.mb-hero .hero-secondary{font:600 11px 'DM Sans',Inter,sans-serif;letter-spacing:.025em;color:#fff}
+.mb-hero .hero-bottom{border-color:#ffffff30;min-height:74px}
+.mb-hero .hero-bottom>span{color:#fffc}
+.mb-hero .hero-bottom>span b{color:#fff}
+.mb-hero .hero-category-links button{color:#fff;font:600 11px 'DM Sans',Inter,sans-serif;letter-spacing:.03em}
+.mb-hero .hero-category-links button span{color:#f42b88}
+.mb-hero .hero-scroll{color:#fff9}
+.brand-selection{background:#faf8f9;padding-top:34px;padding-bottom:40px}
+.brand-selection-heading h2{font:700 clamp(25px,3vw,36px)/1.15 'DM Sans',Inter,sans-serif;letter-spacing:-.04em}
+.brand-tile{min-height:100px;border-radius:8px}
+@media(max-width:700px){
+ .mb-hero{min-height:580px;padding:16px 20px 0}
+ .mb-hero .mb-hero-copy{padding:85px 0 72px}
+ .mb-hero h1{font-size:clamp(46px,11vw,72px);letter-spacing:-.06em;line-height:1.01;margin:16px 0 20px}
+ .mb-hero .mb-hero-copy>p{font-size:14px;line-height:1.6;max-width:270px}
+ .mb-hero .hero-motion-video{object-position:65% center;opacity:.6}
+ .mb-hero:before,html[data-theme=dark] .mb-hero:before{background:linear-gradient(90deg,#08080ce8 0%,#08080c8c 58%,#08080c33 100%),linear-gradient(0deg,#08080cdd,transparent 52%)}
+ .mb-hero .hero-bottom{min-height:75px}
+ .mb-hero .hero-bottom>span,.mb-hero .hero-scroll{display:none}
+ .mb-hero .hero-category-links{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ .mb-hero .hero-category-links button{font-size:10px;text-align:center;border:1px solid #ffffff45;border-radius:4px;padding:10px 3px}
+ .mb-hero .hero-category-links button span{margin-left:3px}
+ .brand-tile{min-height:85px}
+}
+@media(prefers-reduced-motion:reduce){.mb-hero .hero-motion-video{display:none}}
+
 </style></head><body><div class="announcement"><span>MB FOR HER / SEU MOVIMENTO. SUA ESSÊNCIA.</span><a href="#colecao">CONHEÇA A COLEÇÃO <span>↗</span></a></div>
 <header class="campaign-header" id="siteHeader"><a class="logo" href="/catalogo" aria-label="MB For Her início">MB <b>FOR HER</b><small>FITNESS & LIFESTYLE</small></a><nav class="main-nav" aria-label="Navegação principal"><a href="#colecao">Coleção</a><a href="#marcas">Marcas</a><a href="#sobre">Sobre a MB</a></nav><div class="shop-header-tools"><button class="shop-tool theme-tool" data-shop-theme aria-label="Alternar tema">☾</button><button class="shop-tool" data-open-favorites aria-label="Ver favoritos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg></button><button class="shop-tool notification-tool" data-open-notifications aria-label="Ver notificações"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM9 21h6"/></svg><b data-notification-count hidden>0</b></button><button type="button" class="shop-cart-open" data-open-cart><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14l1 14H4L5 7Zm3 0V5a4 4 0 0 1 8 0v2"/></svg><span>Carrinho</span><b data-cart-count>0</b></button></div></header>
 <section class="mb-hero" aria-label="Coleção MB For Her">
-<div class="her-aura" aria-hidden="true"></div>
+<video class="hero-motion-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="https://mbdryfit.com.br/brand-assets/mb-gym-motion.mp4" type="video/mp4"></video><div class="her-aura" aria-hidden="true"></div>
 <div class="hero-gridlines" aria-hidden="true"></div>
 <div class="hero-topline"><span><i></i> MB FOR HER / FITNESS &amp; LIFESTYLE</span><button type="button" data-hero-motion aria-pressed="false" aria-label="Pausar animações da abertura">Ⅱ <span>Pausar movimento</span></button></div>
-<div class="mb-hero-copy"><span class="hero-eyebrow">MB FOR HER / FEITO PARA VOCÊ.</span><h1>FORÇA SUA.<br><em>ESTILO SEU.</em></h1><p>Seu treino. Seu tempo. Sua essência.<br>Vista o movimento do seu jeito.</p><div class="hero-actions"><a class="solid-cta" href="#colecao">ENCONTRE SEU MODELO <span>↗</span></a><a class="hero-secondary" href="#marcas">EXPLORE AS MARCAS <span>↗</span></a></div></div>
+<div class="mb-hero-copy"><span class="hero-eyebrow">MB FOR HER / FEITO PARA VOCÊ.</span><h1>SEU RITMO.<br><em>SEU ESTILO.</em></h1><p>Moda fitness para acompanhar todos os seus movimentos.</p><div class="hero-actions"><a class="solid-cta" href="#colecao">VER A COLEÇÃO <span>↗</span></a><a class="hero-secondary" href="#marcas">EXPLORE AS MARCAS <span>↗</span></a></div></div>
 <div class="hero-curation"><div class="her-brand-disc"><img src="/brand-assets/mb-for-her-mark.svg" alt="MB For Her" fetchpriority="high"></div><div class="hero-curation-heading"><span>ESCOLHAS DA MB</span><span>DO TREINO PARA A VIDA ↙</span></div><div class="hero-product-grid" id="heroProducts" hidden></div><p>Seu modelo. Sua cor. Seu tamanho.</p></div>
 <div class="hero-bottom"><span>DO TREINO<br><b>PARA A VIDA.</b></span><div class="hero-category-links"><button type="button" data-hero-category="Top">TOPS <span>↗</span></button><button type="button" data-hero-category="Legging">LEGGINGS <span>↗</span></button><button type="button" data-hero-category="Conjunto">CONJUNTOS <span>↗</span></button></div><a href="#colecao" class="hero-scroll" aria-label="Explorar a coleção">EXPLORE <span>↓</span></a></div>
 </section>
