@@ -25,3 +25,39 @@ html[data-theme=dark] .editor-actionbar{background:#17212e}html[data-theme=dark]
 @media(prefers-reduced-motion:reduce){.staff-workspace dialog[open],.staff-workspace .operations-shortcuts button,.editor-tool-nav button{animation:none!important;transition:none!important;transform:none!important}}
 #appearanceStatus[data-state=warning]{border-color:#ebd3a0;color:#8b651e;background:#fffaf0}
 @media(max-width:700px){.staff-workspace .topbar{display:grid;grid-template-columns:42px minmax(0,1fr) 40px;gap:10px;padding:12px 15px}.staff-workspace .topbar>.sidebar-toggle{grid-column:1;grid-row:1;min-width:40px;padding:10px}.staff-workspace .topbar>div:not(.profile){grid-column:2;grid-row:1;min-width:0}.staff-workspace .topbar #breadcrumb{font-size:12px;line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.staff-workspace .topbar .store-switch-trigger{font-size:10px;max-width:100%;white-space:nowrap}.staff-workspace .topbar .workspace-search-trigger{position:static!important;grid-column:3;grid-row:1;width:40px;min-width:40px;max-width:40px;margin:0;padding:10px}.staff-workspace .topbar .workspace-search-trigger span{display:none}.staff-workspace .topbar .profile{grid-column:1/-1;grid-row:2;max-width:none;width:100%;margin:0;display:flex;flex-wrap:nowrap;justify-content:space-between;padding-top:8px;border-top:1px solid var(--line)}.staff-workspace .topbar .profile>div{text-align:left!important;min-width:0}.staff-workspace .topbar .profile small{font-size:9px}.staff-workspace .topbar .profile #identity{overflow:hidden;text-overflow:ellipsis;max-width:180px;white-space:nowrap}.staff-workspace .topbar .profile #vendorLogout{margin-left:auto;min-height:35px}.staff-workspace .topbar .profile .avatar{display:none}}
+
+
+/* Desempenho do editor de modelos: o backdrop-filter causa repintura de
+   toda a página sob o formulário enquanto a grade é rolada, sobretudo
+   em Windows/Chrome com aceleração gráfica limitada. Manter contraste
+   com overlay sem blur e isolar a renderização das cores fora da tela. */
+.staff-workspace #modelModal::backdrop{
+  background:rgba(15,23,42,.50);
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  animation:none!important;
+}
+.staff-workspace #modelModal[open]{
+  animation:none!important;
+  transform:none!important;
+  box-shadow:0 14px 34px #11182724;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+.staff-workspace #modelModal .color-builder{
+  animation:none!important;
+  transition:none!important;
+  content-visibility:auto;
+  contain-intrinsic-size:auto 320px;
+}
+.staff-workspace.mb-model-editing .topbar{
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+.staff-workspace.mb-model-editing #view,
+.staff-workspace.mb-model-editing #view .card,
+.staff-workspace.mb-model-editing #view .hero-art,
+.staff-workspace.mb-model-editing #view .pill{
+  animation-play-state:paused!important;
+  transition:none!important;
+}
