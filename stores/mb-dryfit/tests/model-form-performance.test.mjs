@@ -66,3 +66,30 @@ test('envio de fotos executa no máximo dois uploads simultâneos e preserva a o
  assert.deepEqual(Array.from(result),entries.map(c=>'/api/photos/'+c.file.name));
  assert.equal(max,2);
 });
+
+test('incluir cor acrescenta apenas uma linha e preserva os controles já preenchidos',()=>{
+ const {ctx,document}=setupGrid();
+ const preto=document.querySelector('[data-color-row="preto"]');
+ const azul=document.querySelector('[data-color-row="azul"]');
+ const preco=preto.querySelector('[data-qty-color="preto"]');
+ preco.value='37';
+ ctx.modelColors.push({key:'verde',name:'Verde',photo:null,file:null,sizes:{P:5},existing:{},variants:{}});
+ ctx.drawModelColors('verde');
+ assert.equal(document.querySelectorAll('[data-color-row]').length,3);
+ assert.equal(document.querySelector('[data-color-row="preto"]'),preto,'Cor anterior não deve ser recriada ao adicionar outra.');
+ assert.equal(document.querySelector('[data-color-row="azul"]'),azul,'Outra cor anterior não deve ser recriada.');
+ assert.equal(document.querySelector('[data-color-row="preto"] [data-qty-color="preto"]'),preco);
+ assert.equal(preco.value,'37');
+ assert.equal(document.querySelector('[data-color-row="verde"] [data-qty-color="verde"]').value,'5');
+});
+test('editor de modelos desliga blur de fundo e animações enquanto o formulário está aberto',()=>{
+ const styles=readFileSync('../../shared/premium-admin.css','utf8');
+ const page=readFileSync('worker/page.html','utf8');
+ assert.match(styles,/#modelModal::backdrop\s*\{/);
+ assert.match(styles,/backdrop-filter:none!important/);
+ assert.match(styles,/#modelModal\[open\][\s\S]*?animation:none!important/);
+ assert.match(styles,/content-visibility:auto/);
+ assert.match(page,/classList\.add\('mb-model-editing'\)/);
+ assert.match(page,/classList\.remove\('mb-model-editing'\)/);
+ assert.match(page,/dialog\.scrollTop=0/);
+});
