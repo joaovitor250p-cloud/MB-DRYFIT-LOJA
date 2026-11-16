@@ -143,7 +143,7 @@ O comando `unpack` **não restaura banco nenhum**, apenas recupera e verifica um
 
 ## Verificar recuperação LOCAL do conteúdo cifrado
 
-Após gerar os dois pacotes, use o comando de restauração de teste **sem conectar à Cloudflare**. Ele abre o arquivo cifrado em uma pasta temporária privada, confere os hashes do manifesto, executa o SQL em um SQLite local isolado, examina códigos de barras como TEXTO, verifica fotos referenciadas e valida o código-fonte em TAR.
+Após gerar os dois pacotes, use o comando de restauração de teste **sem conectar à Cloudflare**. Ele abre o arquivo cifrado em uma pasta temporária privada, confere os hashes do manifesto, executa o SQL em um SQLite local isolado, examina códigos de barras como TEXTO, verifica fotos referenciadas em **produtos, galerias, vendas, itens dos pedidos, vendedores e editor da vitrine** e valida o código-fonte em TAR.
 
 ```sh
 node ops/backup/check-restore.mjs --store mb-dryfit --archive /backups/mb-dryfit-ARQUIVO.mbbackup
