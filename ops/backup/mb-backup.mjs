@@ -93,20 +93,30 @@ async function pack(store, inputArg, outputArg) {
     if (last.length) yield last;
     yield cipher.getAuthTag();
   }
+  let packError;
   try {
     await pipeline(Readable.from(encrypted()), outputHandle.createWriteStream({ autoClose: false }));
     await tarDone;
-    console.log('Backup local cifrado criado: ' + store + ' (' + fileCount + ' arquivos).');
-    console.log('Manifesto SHA-256 conferido: ' + manifest.files.length + ' arquivos. Completude da nuvem NÃO verificada.');
-    console.log('Arquivo: ' + output);
-    if (tarError) console.warn('Aviso tar: ' + tarError);
   } catch (error) {
+    packError = error;
     tar.kill();
-    await fs.rm(output, { force: true });
-    throw error;
   } finally {
-    await outputHandle.close();
+    // Windows/NTFS pode impedir remoção de um arquivo ainda aberto.
+    // Fechar o handle ANTES de descartar um pacote parcial.
+    try { await outputHandle.close(); }
+    catch (error) { packError ??= error; }
+    if (packError) {
+      try { await fs.rm(output, { force: true }); }
+      catch (error) {
+        throw new Error('Empacotamento falhou e o arquivo parcial não pôde ser excluído: ' + output, { cause: error });
+      }
+    }
   }
+  if (packError) throw packError;
+  console.log('Backup local cifrado criado: ' + store + ' (' + fileCount + ' arquivos).');
+  console.log('Manifesto SHA-256 conferido: ' + manifest.files.length + ' arquivos. Completude da nuvem NÃO verificada.');
+  console.log('Arquivo: ' + output);
+  if (tarError) console.warn('Aviso tar: ' + tarError);
 }
 
 async function inspect(archiveArg) {
