@@ -368,3 +368,31 @@ body.favorites-page .mb-hero.mb-landing-2026{display:none!important}
   html body .mb-landing-2026 *,html body .mb-landing-2026 *::before,
   html body .mb-landing-2026 *::after{animation:none!important;transition:none!important}
 }
+
+
+/* Brand chrome and uploaded/custom background media compatibility. */
+html:not([data-theme=dark]) body[data-premium-brand=her] .mb-hero.mb-landing-her{
+  background:linear-gradient(115deg,#fff 0%,#fffdfd 44%,#fdf2f6 100%)!important;
+}
+html body .mb-landing-her .mb-her-editorial-texture.hero-backdrop{
+  display:block;position:absolute;z-index:-1;inset:0;width:100%;height:100%;
+  object-fit:cover;opacity:.09;pointer-events:none;animation:none;
+}
+html body .mb-landing-her .mb-her-editorial-scene img[hidden],
+html body .mb-landing-dryfit .mb-editorial-photo img[hidden]{display:none!important}
+html:not([data-theme=dark]) body .campaign-header{
+  box-shadow:0 4px 24px #19212b06;
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+}
+html:not([data-theme=dark]) body .announcement{
+  background:#fff8f1;border-color:#fce8d8;color:#9d4707;
+}
+html:not([data-theme=dark]) body[data-premium-brand=her] .announcement{
+  background:#fff3f8;border-color:#f6dce7;color:#91375e;
+}
+html:not([data-theme=dark]) body .campaign-header .shop-cart-open{
+  border-radius:9px;
+}
+@media(max-width:780px){
+  html body .mb-landing-her .mb-her-editorial-texture.hero-backdrop{object-position:center}
+}
