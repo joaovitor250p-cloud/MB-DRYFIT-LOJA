@@ -40,9 +40,23 @@ export async function handleRetail(req,env,member){
  const u=new URL(req.url),path=u.pathname;try{if(!['owner','seller'].includes(member.role))return retailReply({error:'Acesso restrito à equipe.'},403);const recovery=path.match(/^\/api\/retail\/order-recovery\/([a-zA-Z0-9-]+)$/);if(recovery&&req.method==='POST')return issueOrderRecovery(req,env,member,recovery[1]);
  if(path==='/api/retail/settings'){
   if(member.role!=='owner')return retailReply({error:'Acesso restrito ao dono.'},403);
+  if(req.method==='POST'){
+    const data=await req.json();
+    if(!data||typeof data!=='object'||!['auto','manual'].includes(data.barcode_mode)||!Number.isInteger(data.expected_revision)||data.expected_revision<0||Object.keys(data).some(k=>!['barcode_mode','expected_revision'].includes(k)))return retailReply({error:'Confira o modo de código e atualize suas preferências.'},400);
+    const now=new Date().toISOString(),json=JSON.stringify({barcode_mode:data.barcode_mode});
+    // Id isolado: não modifica a configuração publicada nem as versões do catálogo.
+    const result=await env.DB.prepare("INSERT INTO storefront_settings(id,draft,published,revision,updated_at,updated_by) SELECT 'owner_preferences',?,'{}',1,?,? WHERE ?=0 ON CONFLICT(id) DO UPDATE SET draft=excluded.draft,revision=storefront_settings.revision+1,updated_at=excluded.updated_at,updated_by=excluded.updated_by WHERE storefront_settings.revision=?").bind(json,now,member.id,data.expected_revision,data.expected_revision).run();
+    if(!result.meta.changes)return retailReply({error:'As preferências foram alteradas em outro aparelho. Atualize e tente novamente.'},409);
+    return retailReply({barcode_mode:data.barcode_mode,preferences_revision:data.expected_revision+1,preferences_saved:true});
+  }
   if(req.method!=='GET')return retailReply({error:'Método não permitido.'},405);
-  const row=await env.DB.prepare("SELECT minimum_stock FROM inventory_preferences WHERE id='store'").first();
-  return retailReply({minimum_stock:row?.minimum_stock??4,photos_enabled:!!env.BUCKET&&env.MB_PHOTOS_ENABLED!=='0'});
+  const [row,preferences]=await Promise.all([
+    env.DB.prepare("SELECT minimum_stock FROM inventory_preferences WHERE id='store'").first(),
+    env.DB.prepare("SELECT draft,revision FROM storefront_settings WHERE id='owner_preferences'").first()
+  ]);
+  let barcodeMode='auto';
+  try{const parsed=JSON.parse(preferences?.draft||'{}');if(['auto','manual'].includes(parsed.barcode_mode))barcodeMode=parsed.barcode_mode}catch{}
+  return retailReply({minimum_stock:row?.minimum_stock??4,photos_enabled:!!env.BUCKET&&env.MB_PHOTOS_ENABLED!=='0',barcode_mode:barcodeMode,preferences_revision:preferences?.revision??0,preferences_saved:!!preferences});
  }
  if(path==='/api/retail/stock-alerts'){
   if(member.role!=='owner')throw retailError('Acesso restrito ao dono.',403);
