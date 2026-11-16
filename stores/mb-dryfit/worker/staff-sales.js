@@ -62,6 +62,27 @@ function setOwnerBarcodePreference(mode){
  if(!['auto','manual'].includes(mode))throw Error('Modo de código inválido.');
  localStorage.setItem(ownerBarcodePreferenceKey(),mode);
 }
+let ownerPreferencesRevision=0,ownerPreferencesKnown=false;
+function adoptOwnerPreferences(data){
+ if(!data||!Number.isInteger(data.preferences_revision))return;
+ ownerPreferencesRevision=data.preferences_revision;
+ ownerPreferencesKnown=true;
+ if(data.preferences_saved&&['auto','manual'].includes(data.barcode_mode))try{setOwnerBarcodePreference(data.barcode_mode)}catch{}
+}
+async function hydrateOwnerPreferences(){
+ if(!owner())return null;
+ const data=await api('retail/settings');
+ adoptOwnerPreferences(data);
+ return data;
+}
+async function saveOwnerBarcodeMode(mode){
+ if(!owner())throw Error('Acesso restrito ao dono.');
+ if(!ownerPreferencesKnown)await hydrateOwnerPreferences();
+ const data=await api('retail/settings','POST',{barcode_mode:mode,expected_revision:ownerPreferencesRevision});
+ adoptOwnerPreferences(data);
+ try{setOwnerBarcodePreference(mode)}catch{}
+ return data;
+}
 async function renderVendorAccess(){
  if(!owner())return;
  const view=$('#view'),store=typeof currentStaffStore!=='undefined'&&currentStaffStore==='her'?'her':'dryfit',
@@ -70,17 +91,23 @@ async function renderVendorAccess(){
  '<div class="heading"><div><span class="eyebrow">CENTRAL DO DONO · '+esc(name)+'</span><h2>Configurações</h2><p class="sub">Opções da loja selecionada. Seus produtos, caixa e vendedores continuam separados por loja.</p></div></div>'+
  '<div class="owner-settings-grid">'+
  '<section class="owner-setting"><h3>🏪 Loja e catálogo</h3><p>Editar textos, banners, cores e vitrine desta loja pelo editor já existente.</p><button class="secondary" type="button" data-owner-settings-go="appearance">Personalizar catálogo</button></section>'+
- '<section class="owner-setting"><h3>🏷️ Produtos e códigos</h3><label for="ownerSettingsBarcodeMode">Código padrão para novos modelos<select id="ownerSettingsBarcodeMode"><option value="auto">Gerar automaticamente</option><option value="manual">Informar código manual</option></select></label><p class="help">A escolha é lembrada nesta conta e neste aparelho. Códigos já cadastrados nunca são trocados.</p><p class="owner-settings-status" id="ownerSettingsBarcodeStatus" role="status"></p><button class="secondary" type="button" data-owner-settings-go="create">Cadastrar modelo</button></section>'+
+ '<section class="owner-setting"><h3>🏷️ Produtos e códigos</h3><label for="ownerSettingsBarcodeMode">Código padrão para novos modelos<select id="ownerSettingsBarcodeMode"><option value="auto">Gerar automaticamente</option><option value="manual">Informar código manual</option></select></label><p class="help">A escolha é sincronizada entre aparelhos desta loja. Códigos já cadastrados nunca são trocados.</p><p class="owner-settings-status" id="ownerSettingsBarcodeStatus" role="status"></p><button class="secondary" type="button" data-owner-settings-go="create">Cadastrar modelo</button></section>'+
  '<section class="owner-setting"><h3>📦 Estoque mínimo</h3><p>Defina o alerta padrão de reposição. Valores individuais continuam disponíveis na tela de estoque baixo.</p><form id="ownerSettingsStockForm"><label for="ownerSettingsStockMinimum">Peças por variação<input id="ownerSettingsStockMinimum" type="number" min="0" max="999999" step="1" required disabled></label><div class="actions"><button class="primary" id="ownerSettingsStockSave" disabled>Salvar mínimo</button><button type="button" class="secondary" data-owner-settings-go="lowStock">Ver alertas</button></div></form><p class="owner-settings-status" id="ownerSettingsStockStatus" role="status">Carregando configuração…</p></section>'+
  '<section class="owner-setting"><h3>🖨️ Etiquetas</h3><p>Elgin L42PRO FULL · 40 × 25 mm · duas colunas. Ajustes finos permanecem na área de etiquetas.</p><button class="secondary" type="button" data-owner-settings-go="labels">Abrir configurações de impressão</button></section>'+
  '<section class="owner-setting"><h3>🛒 Pedidos e vendas</h3><p>Ver pedidos, opções de venda, cupons e caixa sem configurar pagamentos fictícios.</p><div class="actions"><button type="button" class="secondary" data-owner-settings-go="orders">Pedidos</button><button type="button" class="secondary" data-owner-settings-go="commerce">Cupons</button><button type="button" class="secondary" data-owner-settings-go="cash">Caixa</button></div></section>'+
  '<section class="owner-setting"><h3>👥 Equipe e segurança</h3><p>Gerencie vendedores na área existente. Acesso de dono permanece protegido no servidor.</p><div class="actions"><button type="button" class="secondary" data-owner-settings-go="agents">Vendedores</button><a class="secondary" href="/dono">Acesso do dono</a></div><p class="help">Conta atual: '+esc(account)+'</p></section>'+
  '<section class="owner-setting wide"><h3>🔒 Backup e recuperação</h3><p>MB Dryfit e MB For Her precisam de backups <b>separados</b> dos bancos D1, fotos R2 e arquivos de recuperação. A ferramenta criptografada local está em revisão; download completo no painel ainda não está conectado.</p><p class="help">Nenhum botão falso: somente será habilitado após exportação real, cópia externa, verificação e teste de restauração.</p><p class="owner-settings-status" id="ownerSettingsBackupStatus">Configuração de backup em preparação — dados não exportados por esta página.</p></section>'+
  '</div>';
- view.querySelector('#ownerSettingsBarcodeMode').value=ownerBarcodePreference();
- view.querySelector('#ownerSettingsBarcodeMode').onchange=e=>{
-  try{setOwnerBarcodePreference(e.target.value);view.querySelector('#ownerSettingsBarcodeStatus').textContent='Preferência salva neste aparelho para '+name+'.'}
-  catch{view.querySelector('#ownerSettingsBarcodeStatus').textContent='Não foi possível salvar neste aparelho. Verifique o armazenamento do navegador.'}
+ const barcodeSelect=view.querySelector('#ownerSettingsBarcodeMode'),barcodeStatus=view.querySelector('#ownerSettingsBarcodeStatus');
+ barcodeSelect.value=ownerBarcodePreference();
+ barcodeSelect.disabled=true;
+ barcodeStatus.textContent='Carregando preferência da loja…';
+ barcodeSelect.onchange=async e=>{
+  const mode=e.target.value;
+  barcodeSelect.disabled=true;barcodeStatus.textContent='Sincronizando preferência…';
+  try{await saveOwnerBarcodeMode(mode);if(barcodeSelect.isConnected)barcodeStatus.textContent='Preferência salva para '+name+' em todos os aparelhos.';}
+  catch(error){if(barcodeSelect.isConnected){barcodeSelect.value=ownerBarcodePreference();barcodeStatus.textContent=error.message||'Não foi possível sincronizar a preferência.'}}
+  finally{if(barcodeSelect.isConnected)barcodeSelect.disabled=false}
  };
  view.querySelectorAll('[data-owner-settings-go]').forEach(button=>button.onclick=()=>{
   const target=button.dataset.ownerSettingsGo;
@@ -98,10 +125,12 @@ async function renderVendorAccess(){
   finally{if(view.querySelector('#ownerSettingsStockSave')===save)save.disabled=false}
  };
  try{
-  const data=await api('retail/settings');
+  const data=await hydrateOwnerPreferences();
   if(!view.isConnected||view.querySelector('#ownerSettingsStockMinimum')!==minimum)return;
+  barcodeSelect.value=ownerBarcodePreference();barcodeSelect.disabled=false;
+  barcodeStatus.textContent=data.preferences_saved?'Preferência sincronizada com a loja.':'Preferência padrão. Escolha e salve para sincronizar entre aparelhos.';
   minimum.value=data.minimum_stock;
   minimum.disabled=false;save.disabled=false;
   status.textContent=data.photos_enabled?'Armazenamento de fotos disponível nesta loja.':'Fotos aguardam configuração do armazenamento nesta loja.';
- }catch(error){if(view.querySelector('#ownerSettingsStockStatus')===status)status.textContent='Não foi possível consultar: '+(error.message||'erro de rede')}
+ }catch(error){if(view.querySelector('#ownerSettingsStockStatus')===status){status.textContent='Não foi possível consultar: '+(error.message||'erro de rede');barcodeStatus.textContent='Não foi possível sincronizar. Confira sua conexão.'}}
 }
