@@ -27,39 +27,84 @@ jobs:
           ref: main
           path: catalogos-atuais
           persist-credentials: false
-      - name: Aplicar somente novo visual sobre catálogos completos
+      - name: Aplicar campanha fotográfica mantendo catálogo e vendas
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          for key,accent,video in [('mb-dryfit','#ff7928','/brand-assets/mb-gym-motion.mp4'),('mb-for-her','#ed287c','https://mbdryfit.com.br/brand-assets/mb-gym-motion.mp4')]:
-              path=Path('stores')/key/'worker/storefront.html'
-              html=path.read_text()
-              assert 'mb-landing-2026' in html and 'data-my-orders' in html and 'id="catalog"' in html
-              style="""
-          .mb-hero.mb-landing-2026{--cinema-accent:ACCENT;position:relative;isolation:isolate;display:flex;flex-direction:column;justify-content:space-between;min-height:610px;padding:24px clamp(20px,6vw,90px) 0;background:#080a0d!important;color:#fff!important;overflow:hidden}
-          .mb-hero.mb-landing-2026:before{content:'';position:absolute;inset:0;z-index:0;background:linear-gradient(90deg,#07090cee 0%,#07090cb3 50%,#07090c3d 100%),linear-gradient(0deg,#07090cbb,transparent 50%);pointer-events:none}
-          .mb-hero.mb-landing-2026:after{display:none}
-          .mb-landing-2026>.mb-cinema-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:.77;z-index:-1;pointer-events:none}
-          .mb-landing-2026>.hero-topline,.mb-landing-2026>.mb-hero-copy,.mb-landing-2026>.hero-bottom{position:relative;z-index:1}
-          .mb-landing-2026 .hero-curation{display:none!important}
-          .mb-landing-2026 .hero-topline,.mb-landing-2026 .hero-bottom{width:100%;color:#fffc;border-color:#ffffff30}
-          .mb-landing-2026 .mb-hero-copy{align-self:flex-start;max-width:690px;margin:auto 0;padding:76px 0;animation:none!important}
-          .mb-landing-2026 h1{font:800 clamp(57px,7.7vw,110px)/1 'Arial',sans-serif!important;letter-spacing:-.065em;color:white!important;margin:22px 0}
-          .mb-landing-2026 h1 em{color:var(--cinema-accent)!important;font-style:normal}
-          .mb-landing-2026 .mb-hero-copy>p{font:400 clamp(14px,1.3vw,18px)/1.65 Arial,sans-serif;color:#fffd;max-width:385px}
-          .mb-landing-2026 .solid-cta{background:var(--cinema-accent);border-radius:4px;min-height:49px;padding:17px 23px;font-weight:700}
-          .mb-landing-2026 .hero-secondary,.mb-landing-2026 .hero-category-links button{color:#fff}
-          @media(max-width:700px){.mb-hero.mb-landing-2026{min-height:575px;padding:15px 19px 0}.mb-landing-2026 .mb-hero-copy{padding:70px 0}.mb-landing-2026 h1{font-size:clamp(44px,11.5vw,70px)!important;line-height:1.02}.mb-landing-2026 .hero-curation{display:none!important}.mb-landing-2026 .hero-season{display:none}.mb-landing-2026 .hero-bottom>span{display:none}.mb-landing-2026 .hero-category-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}.mb-landing-2026 .hero-category-links button{padding:10px 3px;border:1px solid #ffffff45;border-radius:4px;font-size:10px}}
-          @media(prefers-reduced-motion:reduce){.mb-landing-2026>.mb-cinema-video{display:none}}
-              """.replace('ACCENT',accent)
-              html=html.replace('</style></head>',style+'</style></head>')
-              marker='<section class="mb-hero mb-landing-2026'
-              i=html.index('>',html.index(marker))+1
-              videotag='<video class="mb-cinema-video" muted loop playsinline preload="none" aria-hidden="true"><source src="'+video+'" type="video/mp4"></video>'
-              html=html[:i]+videotag+html[i:]
-              html=html.replace('</body></html>',"<script>if(!matchMedia('(prefers-reduced-motion: reduce)').matches&&!navigator.connection?.saveData){document.querySelector('.mb-cinema-video')?.play().catch(()=>{});}</script></body></html>")
-              path.write_text(html)
-              print('Alterado somente a abertura',key)
+          for store,accent,title,kicker,desc,photo,video in [
+            ('mb-dryfit','#ff7623','SEU RITMO.<br><em>SUAS REGRAS.</em>','PERFORMANCE PARA O SEU DIA.','Do treino para a vida. Encontre a peça que acompanha você.','/brand-assets/mb-gym-poster.jpg','/brand-assets/mb-gym-motion.mp4'),
+            ('mb-for-her','#ef2984','SEU MOVIMENTO.<br><em>SEU ESTILO.</em>','MB FOR HER / THE MOVEMENT EDIT','Uma coleção feita para acompanhar sua energia, seu ritmo e todos os seus momentos.','https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1400&q=85',None)
+          ]:
+            path=Path('stores')/store/'worker/storefront.html'
+            h=path.read_text()
+            assert 'mb-landing-2026' in h and 'data-my-orders' in h and 'id="catalog"' in h and 'id="marcas"' in h
+            start=h.index('<section class="mb-hero mb-landing-2026')
+            end=h.index('</section>',start)+len('</section>')
+            previous=h[start:end]
+            import re
+            category=re.search(r'<div class="hero-category-links">.*?</div>',previous,re.S)
+            assert category, 'Filtros de categoria devem continuar'
+            vid=('<video class="mb-visual-video" muted autoplay loop playsinline preload="metadata" poster="'+photo+'" aria-hidden="true"><source src="'+video+'" type="video/mp4"></video>') if video else ''
+            cta='ENCONTRE SEU MODELO' if store=='mb-dryfit' else 'VER A COLEÇÃO'
+            hero=('<section class="mb-hero mb-landing-2026 mb-visual-2026" aria-label="Coleção MB">'
+                  '<img class="mb-visual-photo" src="'+photo+'" alt="" fetchpriority="high" decoding="async" aria-hidden="true">'+vid+
+                  '<div class="mb-visual-shade" aria-hidden="true"></div>'
+                  '<div class="mb-visual-copy"><span class="mb-visual-kicker">'+kicker+'</span><h1>'+title+'</h1><p>'+desc+'</p>'
+                  '<div class="mb-visual-actions"><a href="#colecao" class="solid-cta">'+cta+' <span aria-hidden="true">↗</span></a>'
+                  '<a href="#marcas" class="hero-secondary">EXPLORAR MARCAS <span aria-hidden="true">→</span></a></div></div>'
+                  '<div class="mb-visual-bottom">'+category.group()+'</div></section>')
+            h=h[:start]+hero+h[end:]
+            css="""
+          /* Photo-based MB visual design 2026. The live catalog and shopping logic are untouched. */
+          @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+          .announcement{display:none!important}
+          .campaign-header{background:#fff!important;color:#15161a!important}
+          .campaign-header .logo,.campaign-header .shop-tool{color:#15161a!important}
+          .mb-hero.mb-visual-2026{--visual-accent:ACCENT;position:relative!important;isolation:isolate!important;display:flex!important;flex-direction:column!important;justify-content:space-between!important;gap:0!important;max-width:none!important;min-height:640px!important;padding:0!important;background:#0b0c10!important;color:#fff!important;overflow:hidden!important}
+          .mb-hero.mb-visual-2026:before,.mb-hero.mb-visual-2026:after{content:none!important;display:none!important}
+          .mb-visual-2026>.mb-visual-photo,.mb-visual-2026>.mb-visual-video{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:65% center!important;z-index:-3!important;pointer-events:none}
+          .mb-visual-2026>.mb-visual-video{z-index:-2!important}
+          .mb-visual-shade{position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#07090df0 0%,#07090db8 42%,#07090d3b 100%),linear-gradient(0deg,#07090ddb,transparent 40%);pointer-events:none}
+          .mb-visual-copy{position:relative;z-index:1;max-width:790px;padding:92px clamp(24px,6vw,100px) 85px;margin:auto 0!important}
+          .mb-visual-kicker{display:block;color:#fff;font:700 11px/1.5 'DM Sans',Arial,sans-serif;letter-spacing:.17em}
+          .mb-visual-kicker:before{content:'';display:inline-block;background:var(--visual-accent);height:3px;width:34px;margin-right:15px;vertical-align:middle}
+          .mb-visual-2026 h1{font:800 clamp(53px,7.6vw,105px)/1.04 'DM Sans',Arial,sans-serif!important;letter-spacing:-.06em!important;margin:24px 0 22px!important;color:#fff!important}
+          .mb-visual-2026 h1 em{color:var(--visual-accent)!important;font-style:normal!important}
+          .mb-visual-copy>p{font:400 clamp(14px,1.4vw,19px)/1.6 'DM Sans',Arial,sans-serif!important;color:#f7f7f7!important;max-width:400px!important;margin:0 0 28px!important}
+          .mb-visual-actions{display:flex;align-items:center;gap:17px 24px;flex-wrap:wrap}
+          .mb-visual-actions .solid-cta{background:var(--visual-accent)!important;color:#fff!important;border-radius:5px!important;display:inline-flex;align-items:center;gap:21px;min-height:52px;padding:15px 23px!important;font:800 12px 'DM Sans',Arial,sans-serif!important;text-decoration:none}
+          .mb-visual-actions .hero-secondary{color:#fff!important;font:700 12px 'DM Sans',Arial,sans-serif!important;text-decoration:none}
+          .mb-visual-bottom{position:relative;z-index:2;min-height:76px;background:#0b0d10e8;border-top:1px solid #ffffff28;display:flex;align-items:center;justify-content:center;padding:15px 20px}
+          .mb-visual-bottom .hero-category-links{display:flex;gap:12px 28px;align-items:center;justify-content:center}
+          .mb-visual-bottom .hero-category-links button{font:700 11px 'DM Sans',Arial,sans-serif!important;color:#fff!important;min-height:41px;min-width:110px;border:1px solid #ffffff48!important;background:#ffffff0c!important;border-radius:5px!important;padding:11px 15px!important;cursor:pointer}
+          .mb-visual-bottom .hero-category-links button:hover{border-color:var(--visual-accent)!important}
+          .brand-selection.mb-brand-strip{background:#fff!important;padding-top:26px!important;padding-bottom:34px!important}
+          .mb-brand-strip .brand-selection-heading h2{font:800 clamp(23px,3vw,35px) 'DM Sans',Arial,sans-serif!important;letter-spacing:-.045em;color:#17191d!important}
+          .mb-brand-strip .brand-tile{background:#f5f5f6!important;border:1px solid #e6e6eb!important;color:#17191e!important;border-radius:11px!important}
+          .mb-brand-strip .brand-tile[data-choose-brand="On"]{background:#f5f5f6!important}
+          .mb-brand-strip .brand-tile[data-choose-brand="On"] .brand-symbol{display:none!important}
+          .mb-brand-strip .brand-tile[data-choose-brand="On"]:before{content:'on';display:block;font:800 28px/1 'DM Sans',Arial,sans-serif;letter-spacing:-.17em;color:#16181e;margin-right:10px}
+          @media(max-width:700px){
+            .mb-hero.mb-visual-2026{min-height:570px!important}
+            .mb-visual-2026>.mb-visual-photo,.mb-visual-2026>.mb-visual-video{object-position:65% center!important}
+            .mb-visual-shade{background:linear-gradient(90deg,#07090ded,#07090da6 55%,#07090d42),linear-gradient(0deg,#07090dd7,transparent 50%)}
+            .mb-visual-copy{padding:91px 21px 80px}
+            .mb-visual-kicker{font-size:9px;letter-spacing:.13em}
+            .mb-visual-kicker:before{width:22px;margin-right:8px}
+            .mb-visual-2026 h1{font-size:clamp(40px,10.7vw,71px)!important;line-height:1.04!important;margin:22px 0 20px!important}
+            .mb-visual-copy>p{font-size:13px!important;max-width:280px!important}
+            .mb-visual-actions{gap:14px}
+            .mb-visual-actions .solid-cta{min-height:48px;padding:12px 15px!important;font-size:10px!important;gap:9px}
+            .mb-visual-actions .hero-secondary{font-size:10px!important}
+            .mb-visual-bottom{min-height:75px;padding:12px 15px}
+            .mb-visual-bottom .hero-category-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;gap:8px}
+            .mb-visual-bottom .hero-category-links button{min-width:0;padding:9px 4px!important;font-size:9px!important}
+          }
+          @media(prefers-reduced-motion:reduce){.mb-visual-video{display:none!important}}
+            """.replace('ACCENT',accent)
+            h=h.replace('</style></head>',css+'</style></head>')
+            path.write_text(h)
+            print('Updated photographic landing; preserved catalog:',store)
           PY
       - uses: actions/setup-node@v4
         with:
@@ -113,39 +158,84 @@ jobs:
           ref: main
           path: catalogos-atuais
           persist-credentials: false
-      - name: Aplicar somente novo visual sobre catálogos completos
+      - name: Aplicar campanha fotográfica mantendo catálogo e vendas
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          for key,accent,video in [('mb-dryfit','#ff7928','/brand-assets/mb-gym-motion.mp4'),('mb-for-her','#ed287c','https://mbdryfit.com.br/brand-assets/mb-gym-motion.mp4')]:
-              path=Path('stores')/key/'worker/storefront.html'
-              html=path.read_text()
-              assert 'mb-landing-2026' in html and 'data-my-orders' in html and 'id="catalog"' in html
-              style="""
-          .mb-hero.mb-landing-2026{--cinema-accent:ACCENT;position:relative;isolation:isolate;display:flex;flex-direction:column;justify-content:space-between;min-height:610px;padding:24px clamp(20px,6vw,90px) 0;background:#080a0d!important;color:#fff!important;overflow:hidden}
-          .mb-hero.mb-landing-2026:before{content:'';position:absolute;inset:0;z-index:0;background:linear-gradient(90deg,#07090cee 0%,#07090cb3 50%,#07090c3d 100%),linear-gradient(0deg,#07090cbb,transparent 50%);pointer-events:none}
-          .mb-hero.mb-landing-2026:after{display:none}
-          .mb-landing-2026>.mb-cinema-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:.77;z-index:-1;pointer-events:none}
-          .mb-landing-2026>.hero-topline,.mb-landing-2026>.mb-hero-copy,.mb-landing-2026>.hero-bottom{position:relative;z-index:1}
-          .mb-landing-2026 .hero-curation{display:none!important}
-          .mb-landing-2026 .hero-topline,.mb-landing-2026 .hero-bottom{width:100%;color:#fffc;border-color:#ffffff30}
-          .mb-landing-2026 .mb-hero-copy{align-self:flex-start;max-width:690px;margin:auto 0;padding:76px 0;animation:none!important}
-          .mb-landing-2026 h1{font:800 clamp(57px,7.7vw,110px)/1 'Arial',sans-serif!important;letter-spacing:-.065em;color:white!important;margin:22px 0}
-          .mb-landing-2026 h1 em{color:var(--cinema-accent)!important;font-style:normal}
-          .mb-landing-2026 .mb-hero-copy>p{font:400 clamp(14px,1.3vw,18px)/1.65 Arial,sans-serif;color:#fffd;max-width:385px}
-          .mb-landing-2026 .solid-cta{background:var(--cinema-accent);border-radius:4px;min-height:49px;padding:17px 23px;font-weight:700}
-          .mb-landing-2026 .hero-secondary,.mb-landing-2026 .hero-category-links button{color:#fff}
-          @media(max-width:700px){.mb-hero.mb-landing-2026{min-height:575px;padding:15px 19px 0}.mb-landing-2026 .mb-hero-copy{padding:70px 0}.mb-landing-2026 h1{font-size:clamp(44px,11.5vw,70px)!important;line-height:1.02}.mb-landing-2026 .hero-curation{display:none!important}.mb-landing-2026 .hero-season{display:none}.mb-landing-2026 .hero-bottom>span{display:none}.mb-landing-2026 .hero-category-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}.mb-landing-2026 .hero-category-links button{padding:10px 3px;border:1px solid #ffffff45;border-radius:4px;font-size:10px}}
-          @media(prefers-reduced-motion:reduce){.mb-landing-2026>.mb-cinema-video{display:none}}
-              """.replace('ACCENT',accent)
-              html=html.replace('</style></head>',style+'</style></head>')
-              marker='<section class="mb-hero mb-landing-2026'
-              i=html.index('>',html.index(marker))+1
-              videotag='<video class="mb-cinema-video" muted loop playsinline preload="none" aria-hidden="true"><source src="'+video+'" type="video/mp4"></video>'
-              html=html[:i]+videotag+html[i:]
-              html=html.replace('</body></html>',"<script>if(!matchMedia('(prefers-reduced-motion: reduce)').matches&&!navigator.connection?.saveData){document.querySelector('.mb-cinema-video')?.play().catch(()=>{});}</script></body></html>")
-              path.write_text(html)
-              print('Alterado somente a abertura',key)
+          for store,accent,title,kicker,desc,photo,video in [
+            ('mb-dryfit','#ff7623','SEU RITMO.<br><em>SUAS REGRAS.</em>','PERFORMANCE PARA O SEU DIA.','Do treino para a vida. Encontre a peça que acompanha você.','/brand-assets/mb-gym-poster.jpg','/brand-assets/mb-gym-motion.mp4'),
+            ('mb-for-her','#ef2984','SEU MOVIMENTO.<br><em>SEU ESTILO.</em>','MB FOR HER / THE MOVEMENT EDIT','Uma coleção feita para acompanhar sua energia, seu ritmo e todos os seus momentos.','https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1400&q=85',None)
+          ]:
+            path=Path('stores')/store/'worker/storefront.html'
+            h=path.read_text()
+            assert 'mb-landing-2026' in h and 'data-my-orders' in h and 'id="catalog"' in h and 'id="marcas"' in h
+            start=h.index('<section class="mb-hero mb-landing-2026')
+            end=h.index('</section>',start)+len('</section>')
+            previous=h[start:end]
+            import re
+            category=re.search(r'<div class="hero-category-links">.*?</div>',previous,re.S)
+            assert category, 'Filtros de categoria devem continuar'
+            vid=('<video class="mb-visual-video" muted autoplay loop playsinline preload="metadata" poster="'+photo+'" aria-hidden="true"><source src="'+video+'" type="video/mp4"></video>') if video else ''
+            cta='ENCONTRE SEU MODELO' if store=='mb-dryfit' else 'VER A COLEÇÃO'
+            hero=('<section class="mb-hero mb-landing-2026 mb-visual-2026" aria-label="Coleção MB">'
+                  '<img class="mb-visual-photo" src="'+photo+'" alt="" fetchpriority="high" decoding="async" aria-hidden="true">'+vid+
+                  '<div class="mb-visual-shade" aria-hidden="true"></div>'
+                  '<div class="mb-visual-copy"><span class="mb-visual-kicker">'+kicker+'</span><h1>'+title+'</h1><p>'+desc+'</p>'
+                  '<div class="mb-visual-actions"><a href="#colecao" class="solid-cta">'+cta+' <span aria-hidden="true">↗</span></a>'
+                  '<a href="#marcas" class="hero-secondary">EXPLORAR MARCAS <span aria-hidden="true">→</span></a></div></div>'
+                  '<div class="mb-visual-bottom">'+category.group()+'</div></section>')
+            h=h[:start]+hero+h[end:]
+            css="""
+          /* Photo-based MB visual design 2026. The live catalog and shopping logic are untouched. */
+          @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+          .announcement{display:none!important}
+          .campaign-header{background:#fff!important;color:#15161a!important}
+          .campaign-header .logo,.campaign-header .shop-tool{color:#15161a!important}
+          .mb-hero.mb-visual-2026{--visual-accent:ACCENT;position:relative!important;isolation:isolate!important;display:flex!important;flex-direction:column!important;justify-content:space-between!important;gap:0!important;max-width:none!important;min-height:640px!important;padding:0!important;background:#0b0c10!important;color:#fff!important;overflow:hidden!important}
+          .mb-hero.mb-visual-2026:before,.mb-hero.mb-visual-2026:after{content:none!important;display:none!important}
+          .mb-visual-2026>.mb-visual-photo,.mb-visual-2026>.mb-visual-video{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:65% center!important;z-index:-3!important;pointer-events:none}
+          .mb-visual-2026>.mb-visual-video{z-index:-2!important}
+          .mb-visual-shade{position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#07090df0 0%,#07090db8 42%,#07090d3b 100%),linear-gradient(0deg,#07090ddb,transparent 40%);pointer-events:none}
+          .mb-visual-copy{position:relative;z-index:1;max-width:790px;padding:92px clamp(24px,6vw,100px) 85px;margin:auto 0!important}
+          .mb-visual-kicker{display:block;color:#fff;font:700 11px/1.5 'DM Sans',Arial,sans-serif;letter-spacing:.17em}
+          .mb-visual-kicker:before{content:'';display:inline-block;background:var(--visual-accent);height:3px;width:34px;margin-right:15px;vertical-align:middle}
+          .mb-visual-2026 h1{font:800 clamp(53px,7.6vw,105px)/1.04 'DM Sans',Arial,sans-serif!important;letter-spacing:-.06em!important;margin:24px 0 22px!important;color:#fff!important}
+          .mb-visual-2026 h1 em{color:var(--visual-accent)!important;font-style:normal!important}
+          .mb-visual-copy>p{font:400 clamp(14px,1.4vw,19px)/1.6 'DM Sans',Arial,sans-serif!important;color:#f7f7f7!important;max-width:400px!important;margin:0 0 28px!important}
+          .mb-visual-actions{display:flex;align-items:center;gap:17px 24px;flex-wrap:wrap}
+          .mb-visual-actions .solid-cta{background:var(--visual-accent)!important;color:#fff!important;border-radius:5px!important;display:inline-flex;align-items:center;gap:21px;min-height:52px;padding:15px 23px!important;font:800 12px 'DM Sans',Arial,sans-serif!important;text-decoration:none}
+          .mb-visual-actions .hero-secondary{color:#fff!important;font:700 12px 'DM Sans',Arial,sans-serif!important;text-decoration:none}
+          .mb-visual-bottom{position:relative;z-index:2;min-height:76px;background:#0b0d10e8;border-top:1px solid #ffffff28;display:flex;align-items:center;justify-content:center;padding:15px 20px}
+          .mb-visual-bottom .hero-category-links{display:flex;gap:12px 28px;align-items:center;justify-content:center}
+          .mb-visual-bottom .hero-category-links button{font:700 11px 'DM Sans',Arial,sans-serif!important;color:#fff!important;min-height:41px;min-width:110px;border:1px solid #ffffff48!important;background:#ffffff0c!important;border-radius:5px!important;padding:11px 15px!important;cursor:pointer}
+          .mb-visual-bottom .hero-category-links button:hover{border-color:var(--visual-accent)!important}
+          .brand-selection.mb-brand-strip{background:#fff!important;padding-top:26px!important;padding-bottom:34px!important}
+          .mb-brand-strip .brand-selection-heading h2{font:800 clamp(23px,3vw,35px) 'DM Sans',Arial,sans-serif!important;letter-spacing:-.045em;color:#17191d!important}
+          .mb-brand-strip .brand-tile{background:#f5f5f6!important;border:1px solid #e6e6eb!important;color:#17191e!important;border-radius:11px!important}
+          .mb-brand-strip .brand-tile[data-choose-brand="On"]{background:#f5f5f6!important}
+          .mb-brand-strip .brand-tile[data-choose-brand="On"] .brand-symbol{display:none!important}
+          .mb-brand-strip .brand-tile[data-choose-brand="On"]:before{content:'on';display:block;font:800 28px/1 'DM Sans',Arial,sans-serif;letter-spacing:-.17em;color:#16181e;margin-right:10px}
+          @media(max-width:700px){
+            .mb-hero.mb-visual-2026{min-height:570px!important}
+            .mb-visual-2026>.mb-visual-photo,.mb-visual-2026>.mb-visual-video{object-position:65% center!important}
+            .mb-visual-shade{background:linear-gradient(90deg,#07090ded,#07090da6 55%,#07090d42),linear-gradient(0deg,#07090dd7,transparent 50%)}
+            .mb-visual-copy{padding:91px 21px 80px}
+            .mb-visual-kicker{font-size:9px;letter-spacing:.13em}
+            .mb-visual-kicker:before{width:22px;margin-right:8px}
+            .mb-visual-2026 h1{font-size:clamp(40px,10.7vw,71px)!important;line-height:1.04!important;margin:22px 0 20px!important}
+            .mb-visual-copy>p{font-size:13px!important;max-width:280px!important}
+            .mb-visual-actions{gap:14px}
+            .mb-visual-actions .solid-cta{min-height:48px;padding:12px 15px!important;font-size:10px!important;gap:9px}
+            .mb-visual-actions .hero-secondary{font-size:10px!important}
+            .mb-visual-bottom{min-height:75px;padding:12px 15px}
+            .mb-visual-bottom .hero-category-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;gap:8px}
+            .mb-visual-bottom .hero-category-links button{min-width:0;padding:9px 4px!important;font-size:9px!important}
+          }
+          @media(prefers-reduced-motion:reduce){.mb-visual-video{display:none!important}}
+            """.replace('ACCENT',accent)
+            h=h.replace('</style></head>',css+'</style></head>')
+            path.write_text(h)
+            print('Updated photographic landing; preserved catalog:',store)
           PY
       - uses: actions/setup-node@v4
         with:
