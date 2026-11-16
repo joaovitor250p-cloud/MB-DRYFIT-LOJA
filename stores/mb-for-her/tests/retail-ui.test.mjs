@@ -36,7 +36,7 @@ test('PDV compacto mostra uma única seleção visível e mantém confirmação,
   assert.equal(document.querySelector('#saleItemCount').textContent,'2');
   assert.match(document.querySelector('#checkoutSale').textContent,/Finalizar venda/);
   document.querySelector('[data-express-payment=pix]').onclick();
-  assert.equal(document.querySelector('#salePayment').value,'pix');
+  assert.equal(document.querySelector('[data-express-payment=pix]').getAttribute('aria-pressed'),'true');
   assert.equal(document.querySelector('.mb-pos-extras').hasAttribute('open'),false);
   assert.equal(document.querySelector('#checkoutSale').disabled,true,'Sem vendedor não é possível finalizar.');
   const agent=document.querySelector('#saleAgent');
