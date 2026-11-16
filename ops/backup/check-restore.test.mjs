@@ -10,7 +10,7 @@ const root=resolve(import.meta.dirname,'../..');
 const pack=join(root,'ops/backup/mb-backup.mjs');
 const checker=join(root,'ops/backup/check-restore.mjs');
 const env={...process.env,MB_BACKUP_PASSPHRASE:'frase-forte-local-so-para-testes'};
-async function fixture(store,includePhoto=true){
+async function fixture(store,includePhoto=true,historyImageTable=null){
  const dir=await mkdtemp(join(tmpdir(),'mb-restore-integration-')),source=join(dir,'source');
  await mkdir(join(source,'d1'),{recursive:true});
  await mkdir(join(source,'codigo'),{recursive:true});
@@ -19,7 +19,13 @@ async function fixture(store,includePhoto=true){
   'CREATE TABLE products(id TEXT PRIMARY KEY,barcode TEXT,photo TEXT,main_photo TEXT);',
   "INSERT INTO products(id,barcode,photo,main_photo) VALUES ('modelo','0000000077','/api/photos/foto-1',NULL);",
   'CREATE TABLE shop_orders(id TEXT);',
-  'CREATE TABLE sales(id TEXT);'
+  'CREATE TABLE sales(id TEXT,product_photo TEXT);',
+  'CREATE TABLE shop_order_items(id TEXT,photo TEXT);',
+  ...(historyImageTable==='sales'
+    ? ["INSERT INTO sales VALUES ('venda-historica','/catalogo/fotos/foto-ausente');"]
+    : historyImageTable==='shop_order_items'
+      ? ["INSERT INTO shop_order_items VALUES ('pedido-historico','/api/photos/foto-ausente');"]
+      : [])
  ].join('\n'));
  if(includePhoto)await writeFile(join(source,'r2','photos','foto-1'),Buffer.from([255,216,255,0,1,2]));
  await writeFile(join(dir,'arquivo.txt'),'código rastreado');
@@ -58,3 +64,15 @@ test('restauração não certifica arquivo cujo D1 aponta para imagem faltante n
   assert.doesNotMatch(result.stdout,/LOCAL_RESTORE_CHECK_PASSED/);
  }finally{await rm(data.dir,{recursive:true,force:true})}
 });
+
+for(const table of ['sales','shop_order_items']){
+ test('recuperação rejeita foto histórica ausente em '+table,async()=>{
+  const data=await fixture('mb-dryfit',true,table);
+  try{
+   const r=spawnSync(process.execPath,[checker,'--store','mb-dryfit','--archive',data.archive],{env,encoding:'utf8',cwd:root,timeout:30000});
+   assert.notEqual(r.status,0,'Não aceitar recuperação sem foto usada em '+table);
+   assert.match(r.stderr,/referências de imagem sem arquivo correspondente/);
+   assert.doesNotMatch(r.stdout,/LOCAL_RESTORE_CHECK_PASSED/);
+  }finally{await rm(data.dir,{recursive:true,force:true})}
+ });
+}
