@@ -18,7 +18,7 @@ function mock(){
  };
  vm.createContext(ctx);
  const gp=src.indexOf('function groupProductModels('),ge=src.indexOf('\nfunction labelModelGrid(',gp);
- const cp=src.indexOf('let catalogCardLimit=60;function cards('),ce=src.indexOf('\nfunction openProduct(',cp);
+ const cp=src.indexOf('function cards('),ce=src.indexOf('\nfunction openProduct(',cp);
  assert.ok(gp>0&&ge>gp&&cp>0&&ce>cp);
  vm.runInContext(src.slice(gp,ge),ctx);
  vm.runInContext(src.slice(cp,ce),ctx);
