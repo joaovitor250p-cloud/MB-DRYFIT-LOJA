@@ -38,6 +38,21 @@ Exemplos de **pastas locais previamente exportadas**, criadas fora do Git:
 
 Se faltarem imagens ou dados, o arquivo gerado **não deve ser anunciado como backup completo**; documente as ausências. Verifique as permissões da pasta e não a coloque em diretórios sincronizados públicos.
 
+## Inventário SHA-256 obrigatório antes da criptografia
+
+Após concluir as exportações e verificar os arquivos de cada loja, gere **um inventário por unidade**. A ferramenta registra caminhos relativos, tamanhos, hashes SHA-256 e quantidades observadas. Ela rejeita symlinks, arquivos ausentes ou modificados e misturas de identificadores das duas lojas.
+
+```sh
+node ops/backup/mb-manifest.mjs create mb-dryfit /exportacoes/mb-dryfit
+node ops/backup/mb-manifest.mjs create mb-for-her /exportacoes/mb-for-her
+node ops/backup/mb-manifest.mjs verify mb-dryfit /exportacoes/mb-dryfit
+node ops/backup/mb-manifest.mjs verify mb-for-her /exportacoes/mb-for-her
+```
+
+**Atenção:** um inventário local válido NÃO prova que todos os registros e imagens do D1/R2 de produção foram realmente exportados. O manifesto registra `completeness: NOT_VERIFIED` até haver conferência da origem, cópia externa permanente e restauração em um D1 isolado. Não marque esses pacotes como backups completos no painel.
+
+O comando `pack` exige esse `manifesto.json` válido, confere os hashes novamente e falha se qualquer arquivo for alterado após o inventário. O manifesto também fica dentro do pacote criptografado. Para novos arquivos, gere um novo diretório de exportação e novo manifesto, sem sobrescrever o backup anterior.
+
 ## Empacotar cada loja
 
 Defina `MB_BACKUP_PASSPHRASE` **localmente**, por um gerenciador seguro de segredos ou entrada protegida no terminal, com frase longa e única. **Nunca** compartilhe a frase no chat, no Git ou em um comando que fique no histórico. Mantenha uma cópia de recuperação da frase separada dos arquivos.
@@ -79,4 +94,4 @@ O comando `unpack` **não restaura banco nenhum**, apenas recupera e verifica um
 node --test ops/backup/mb-backup.test.mjs
 ```
 
-Testa separação das lojas, preservação de códigos com zeros à esquerda, imagens, adulteração do arquivo, senha incorreta, proibição de sobrescrita e links simbólicos.
+Testa inventário SHA-256, isolamento entre lojas, preservação de códigos com zeros à esquerda, imagens, detecção de adulteração, senha incorreta, proibição de sobrescrita e links simbólicos.
