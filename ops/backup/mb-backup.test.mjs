@@ -1,16 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, writeFile, readFile, copyFile, rm, symlink } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, readFile, copyFile, rm, symlink, chmod } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join, resolve, delimiter } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { createManifest, verifyManifest } from './mb-manifest.mjs';
 
 const cli = resolve('ops/backup/mb-backup.mjs');
 const PASS = 'uma-frase-de-recuperacao-forte-para-testes';
-function run(args, password = PASS) {
+function run(args, password = PASS, extraEnv = {}) {
   return execFileSync(process.execPath, [cli, ...args], {
-    env: { ...process.env, MB_BACKUP_PASSPHRASE: password },
+    env: { ...process.env, MB_BACKUP_PASSPHRASE: password, ...extraEnv },
     encoding: 'utf8',
     stdio: 'pipe',
     timeout: 30_000
@@ -40,6 +40,19 @@ test('backups separados cifram, verificam e restauram códigos e fotos', async (
     assert.equal(mHer.coverage.r2_files, 0);
     assert.equal((await verifyManifest('mb-dryfit', dry)).store, 'mb-dryfit');
     await assert.rejects(verifyManifest('mb-for-her', dry), /Inventário divergente/);
+    if (process.platform !== 'win32') {
+      // Simular tar encerrando com erro APÓS o arquivo de saída ser aberto.
+      // Um backup parcial não deve permanecer no disco.
+      const bin = join(temp, 'fake-bin');
+      await mkdir(bin);
+      await writeFile(join(bin, 'tar'), '#!/usr/bin/env node\nprocess.exit(9);\n');
+      await chmod(join(bin, 'tar'), 0o755);
+      const partial = join(temp, 'pacote-parcial.mbbackup');
+      assert.throws(() => run(['pack', 'mb-dryfit', dry, partial], PASS, {
+        PATH: bin + delimiter + process.env.PATH
+      }), /Command failed|Status|failed|Error/);
+      await assert.rejects(readFile(partial), { code: 'ENOENT' }, 'Arquivo parcial deve ser excluído após erro.');
+    }
     assert.match(run(['pack', 'mb-dryfit', dry, dryEncrypted]), /mb-dryfit/);
     assert.match(run(['pack', 'mb-for-her', her, herEncrypted]), /mb-for-her/);
     assert.match(run(['verify', dryEncrypted]), /mb-dryfit/);
