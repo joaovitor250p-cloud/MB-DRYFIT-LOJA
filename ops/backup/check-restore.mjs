@@ -141,6 +141,23 @@ async function main(){
   if(origin.store!==options.store)throw Error('Dados de origem pertencem a outra loja.');
   const actualR2=manifest.coverage.r2_files;
   if(origin.r2_objects!==actualR2)throw Error('Quantidade de objetos R2 diferente do inventário.');
+  // Checagem adicional para pacotes feitos pelo exportador Cloudflare.
+  // Arquivos legados empacotados manualmente podem não ter metadados de origem.
+  const hasSourceInfo=['account_id','database','bucket','d1_sql_bytes','r2_bytes']
+   .some(key=>Object.hasOwn(origin,key));
+  if(hasSourceInfo){
+   const config=JSON.parse(await fs.readFile(join(root,'cloudflare.domains.config.json'),'utf8'));
+   const expected=options.store==='mb-dryfit'?config.dryfit:config.her;
+   if(origin.account_id!==config.account_id||origin.database!==expected.database_name||
+      origin.bucket!==expected.bucket)
+    throw Error('Origem Cloudflare D1/R2 não corresponde à loja escolhida.');
+   const sqlMeta=manifest.files.find(item=>item.path==='d1/database.sql');
+   const actualBytes=manifest.files.filter(item=>item.path.startsWith('r2/'))
+    .reduce((total,item)=>total+item.bytes,0);
+   if(!sqlMeta||origin.d1_sql_bytes!==sqlMeta.bytes||
+      !Number.isSafeInteger(origin.r2_bytes)||origin.r2_bytes!==actualBytes)
+    throw Error('Bytes da origem D1/R2 divergem do inventário; backup não confiável.');
+  }
   const code=join(files,'codigo','fonte.tar');
   await validateTar(code);
   const report=await examineDatabase(join(files,'d1','database.sql'),temp,manifest);
@@ -149,6 +166,7 @@ async function main(){
    store:options.store,
    ...report,
    r2_objects:actualR2,
+   provenance_verified:hasSourceInfo,
    source_commit:origin.source_commit,
    warnings:[
     'Isto comprova apenas restauração SQL e arquivos LOCAIS; não prova restauração remota D1/R2.',
