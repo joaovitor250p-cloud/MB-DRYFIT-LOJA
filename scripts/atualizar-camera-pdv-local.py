@@ -84,8 +84,8 @@ for store in ("mb-dryfit","mb-for-her"):
     code=code.replace(denied,denied+"if($('#retryCamera'))$('#retryCamera').hidden=false;",1)
     # One success beep is emitted by queueCameraCode for camera operations.
     code=code.replace("try{navigator.vibrate?.(50)}catch{}","",1)
-    code=code.replace("if(line&&!error)cameraBip();","if(line&&!error&&(cameraScanningHeld||cameraPressAccepted))cameraBip();",1)
-    code=code.replace("if(accepted&&line&&!error)cameraBip();","if(accepted&&line&&!error&&(cameraScanningHeld||cameraPressAccepted))cameraBip();",1)
+    code=code.replace("if(line&&!error)cameraBip();","if(line&&!error&&(!$('#cameraScanButton')||cameraScanningHeld||cameraPressAccepted))cameraBip();",1)
+    code=code.replace("if(accepted&&line&&!error)cameraBip();","if(accepted&&line&&!error&&(!$('#cameraScanButton')||cameraScanningHeld||cameraPressAccepted))cameraBip();",1)
     # Feedback should no longer promise automatic reads.
     code=code.replace("Próxima etiqueta: leitura automática.","Pressione para a próxima peça.",1)
     camera.write_text(code,encoding="utf-8")
