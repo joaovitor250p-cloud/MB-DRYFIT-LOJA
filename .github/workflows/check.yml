@@ -119,7 +119,9 @@ jobs:
           done
       - name: Testar suite completa sobre a versão congelada com alterações aplicadas
         run: |
+          cp scripts/atualizar-fixtures-ref.py release-smoke/scripts/
           cd release-smoke
+          python3 scripts/atualizar-fixtures-ref.py
           npm ci
           npm run check
       - run: npm ci
