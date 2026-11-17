@@ -87,5 +87,13 @@ jobs:
                           subprocess.run(['node','--check',str(src)],check=True)
               print('PASS: responsive cart and model management',store)
           PY
+      - name: Testar leitura por toque, flash e rascunho local nas duas lojas
+        run: |
+          python3 -m py_compile scripts/atualizar-camera-pdv-local.py
+          node --check scripts/testar-camera-pdv-local.mjs
+          cp scripts/atualizar-camera-pdv-local.py scripts/testar-camera-pdv-local.mjs release-smoke/scripts/
+          cd release-smoke
+          python3 scripts/atualizar-camera-pdv-local.py
+          node scripts/testar-camera-pdv-local.mjs
       - run: npm ci
       - run: npm run check
