@@ -94,17 +94,17 @@ for store in ("mb-dryfit","mb-for-her"):
     s=page.read_text(encoding="utf-8")
     mark="function renderSellerPOS(){"
     if s.count(mark)!=1:raise SystemExit("Retail POS renderer changed: "+store)
-    s=s.replace(mark,LOCAL_DRAFT+"\nfunction renderSellerPOS(){mbRestoreSaleDraft();",1)
+    s=s.replace(mark,LOCAL_DRAFT+"\nfunction renderSellerPOS(){if(typeof mbRestoreSaleDraft==='function')mbRestoreSaleDraft();",1)
     draw="function drawSaleCart(){if(!$('#saleItems'))return;"
     if s.count(draw)!=1:raise SystemExit("Cart render changed: "+store)
-    s=s.replace(draw,"function drawSaleCart(){mbPersistSaleDraft();if(!$('#saleItems'))return;",1)
+    s=s.replace(draw,"function drawSaleCart(){if(typeof mbPersistSaleDraft==='function')mbPersistSaleDraft();if(!$('#saleItems'))return;",1)
     # Audio context is resumed from user gestures, both hand scanners and camera.
     scan="async function scanForSale(e){e.preventDefault();"
     if s.count(scan)!=1:raise SystemExit("Sales scanner entry changed: "+store)
     s=s.replace(scan,scan+"if(typeof prepareCameraAudio==='function')prepareCameraAudio();",1)
     success="saleCart.set(p.barcode,{product:p,quantity});drawSaleCart()"
     old_release="saleCart.set(p.barcode,{product:p,quantity});acceptedProduct=p;drawSaleCart()"
-    replacement="if(!cameraScanBusy&&typeof cameraBip==='function')cameraBip()"
+    replacement="if((typeof cameraScanBusy==='undefined'||!cameraScanBusy)&&typeof cameraBip==='function')cameraBip()"
     if old_release in s:
         s=s.replace(old_release,old_release+";"+replacement,1)
     elif success in s:
