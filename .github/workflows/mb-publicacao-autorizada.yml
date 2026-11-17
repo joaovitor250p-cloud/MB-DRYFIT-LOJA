@@ -875,6 +875,7 @@ jobs:
         run: |
           python3 catalogos-atuais/scripts/marketing-vitrine-update.py
           python3 catalogos-atuais/scripts/online-order-alerts-update.py
+          python3 catalogos-atuais/scripts/fix-media-studio.py
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -1775,6 +1776,7 @@ jobs:
         run: |
           python3 catalogos-atuais/scripts/marketing-vitrine-update.py
           python3 catalogos-atuais/scripts/online-order-alerts-update.py
+          python3 catalogos-atuais/scripts/fix-media-studio.py
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
