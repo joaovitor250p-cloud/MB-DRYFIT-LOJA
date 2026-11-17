@@ -8,6 +8,7 @@ on:
       - scripts/fix-media-studio.py
       - scripts/online-order-alerts-update.py
       - scripts/limpar-catalogos-publicos.py
+      - scripts/aplicar-filtros-marca-peca.py
   workflow_dispatch:
 permissions:
   contents: read
