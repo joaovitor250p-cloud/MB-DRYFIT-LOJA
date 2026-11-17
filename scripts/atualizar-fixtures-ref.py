@@ -22,4 +22,13 @@ for store in ("mb-dryfit","mb-for-her"):
  old="name:'Camisa pedido',category:'Camisa',price:5000"
  if s.count(old)!=1:raise SystemExit("Unexpected WhatsApp fixture: "+store)
  p.write_text(s.replace(old,"name:'Camisa pedido',category:'Camisa',extra_code:'REF.TESTE',price:5000",1),encoding="utf-8")
+ p=root/"two-store-orders-isolation.test.mjs"
+ s=p.read_text(encoding="utf-8")
+ old="name:label,category:'Camisa',price:1000"
+ if s.count(old)!=1:raise SystemExit("Unexpected two store fixture: "+store)
+ p.write_text(s.replace(old,"name:label,category:'Camisa',extra_code:'REF.TESTE',price:1000",1),encoding="utf-8")
+ p=root/"order-center-ui.test.mjs"
+ s=p.read_text(encoding="utf-8")
+ if s.count("assert.match(document.querySelector('#onlineOrdersList').textContent,/FEITO/)")!=1:raise SystemExit("Unexpected order center stage fixture: "+store)
+ p.write_text(s.replace("assert.match(document.querySelector('#onlineOrdersList').textContent,/FEITO/)","assert.match(document.querySelector('#onlineOrdersList').textContent,/PROCESSADO/)",1),encoding="utf-8")
  print("Updated legacy fixture references without relaxing validation:",store)
