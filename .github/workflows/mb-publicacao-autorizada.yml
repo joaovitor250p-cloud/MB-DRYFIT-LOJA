@@ -32,9 +32,22 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           for store,accent,title,kicker,desc,photo,video in [
-            ('mb-dryfit','#ff7623','SEU RITMO.<br><em>SUAS REGRAS.</em>','PERFORMANCE PARA O SEU DIA.','Do treino para a vida. Encontre a peça que acompanha você.','/brand-assets/mb-gym-poster.jpg','/brand-assets/mb-gym-motion.mp4'),
-            ('mb-for-her','#ef2984','SEU MOVIMENTO.<br><em>SEU ESTILO.</em>','MB FOR HER / THE MOVEMENT EDIT','Uma coleção feita para acompanhar sua energia, seu ritmo e todos os seus momentos.','https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1400&q=85',None)
+            ('mb-dryfit','#ff7623','SEU RITMO.<br><em>SUAS REGRAS.</em>','PERFORMANCE PARA O SEU DIA.','Do treino para a vida. Encontre a peça que acompanha você.','/brand-assets/mb-male-exercise.webp',None),
+            ('mb-for-her','#ef2984','SEU MOVIMENTO.<br><em>SEU ESTILO.</em>','MB FOR HER / THE MOVEMENT EDIT','Uma coleção feita para acompanhar sua energia, seu ritmo e todos os seus momentos.','/brand-assets/mb-female-exercise.webp',None)
           ]:
+            # Ship original silent workout animations as local Worker assets, no external CDN.
+            animation_file='mb-male-exercise.webp' if store=='mb-dryfit' else 'mb-female-exercise.webp'
+            source_animation=Path('catalogos-atuais/stores')/store/'brand-assets'/animation_file
+            dest_animation=Path('stores')/store/'brand-assets'/animation_file
+            asset_data=source_animation.read_bytes()
+            assert asset_data[:4]==b'RIFF' and len(asset_data)>5000, 'Animated WebP asset missing'
+            dest_animation.write_bytes(asset_data)
+            # Extend the existing build's brand-media bundler to include animated WebP.
+            builder=Path('stores')/store/'scripts/build.mjs'
+            builder_code=builder.read_text()
+            assert 'jpg|mp4|svg' in builder_code and "file.endsWith('.svg')?'image/svg+xml':'image/jpeg'" in builder_code
+            builder_code=builder_code.replace('jpg|mp4|svg','jpg|mp4|svg|webp').replace("file.endsWith('.svg')?'image/svg+xml':'image/jpeg'","file.endsWith('.svg')?'image/svg+xml':file.endsWith('.webp')?'image/webp':'image/jpeg'")
+            builder.write_text(builder_code)
             path=Path('stores')/store/'worker/storefront.html'
             h=path.read_text()
             assert 'mb-landing-2026' in h and 'data-my-orders' in h and 'id="catalog"' in h and 'id="marcas"' in h
@@ -110,6 +123,13 @@ jobs:
           }
           @media(prefers-reduced-motion:reduce){.mb-visual-video{display:none!important}}
             """.replace('ACCENT',accent)
+            # WebP intrinsically loops through exercise frames; do not pan the entire picture.
+            css += """
+          .mb-visual-2026>.mb-visual-photo{animation:none!important;object-position:54% center!important}
+          .mb-visual-2026>.mb-visual-video{display:none!important}
+          .mb-visual-2026>.mb-visual-shade{background:linear-gradient(90deg,#05070de0 0%,#05070da8 39%,#05070d19 100%),linear-gradient(0deg,#05070db3,transparent 50%)!important}
+          @media(max-width:700px){.mb-visual-2026>.mb-visual-photo{object-position:60% center!important}}
+            """
             # Keep original catalog DOM for existing tests, but remove obsolete oversized logo/about panel from display.
             css += """
           /* Last pass: hide old brand-logo panel in both storefronts. */
@@ -247,9 +267,22 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           for store,accent,title,kicker,desc,photo,video in [
-            ('mb-dryfit','#ff7623','SEU RITMO.<br><em>SUAS REGRAS.</em>','PERFORMANCE PARA O SEU DIA.','Do treino para a vida. Encontre a peça que acompanha você.','/brand-assets/mb-gym-poster.jpg','/brand-assets/mb-gym-motion.mp4'),
-            ('mb-for-her','#ef2984','SEU MOVIMENTO.<br><em>SEU ESTILO.</em>','MB FOR HER / THE MOVEMENT EDIT','Uma coleção feita para acompanhar sua energia, seu ritmo e todos os seus momentos.','https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1400&q=85',None)
+            ('mb-dryfit','#ff7623','SEU RITMO.<br><em>SUAS REGRAS.</em>','PERFORMANCE PARA O SEU DIA.','Do treino para a vida. Encontre a peça que acompanha você.','/brand-assets/mb-male-exercise.webp',None),
+            ('mb-for-her','#ef2984','SEU MOVIMENTO.<br><em>SEU ESTILO.</em>','MB FOR HER / THE MOVEMENT EDIT','Uma coleção feita para acompanhar sua energia, seu ritmo e todos os seus momentos.','/brand-assets/mb-female-exercise.webp',None)
           ]:
+            # Ship original silent workout animations as local Worker assets, no external CDN.
+            animation_file='mb-male-exercise.webp' if store=='mb-dryfit' else 'mb-female-exercise.webp'
+            source_animation=Path('catalogos-atuais/stores')/store/'brand-assets'/animation_file
+            dest_animation=Path('stores')/store/'brand-assets'/animation_file
+            asset_data=source_animation.read_bytes()
+            assert asset_data[:4]==b'RIFF' and len(asset_data)>5000, 'Animated WebP asset missing'
+            dest_animation.write_bytes(asset_data)
+            # Extend the existing build's brand-media bundler to include animated WebP.
+            builder=Path('stores')/store/'scripts/build.mjs'
+            builder_code=builder.read_text()
+            assert 'jpg|mp4|svg' in builder_code and "file.endsWith('.svg')?'image/svg+xml':'image/jpeg'" in builder_code
+            builder_code=builder_code.replace('jpg|mp4|svg','jpg|mp4|svg|webp').replace("file.endsWith('.svg')?'image/svg+xml':'image/jpeg'","file.endsWith('.svg')?'image/svg+xml':file.endsWith('.webp')?'image/webp':'image/jpeg'")
+            builder.write_text(builder_code)
             path=Path('stores')/store/'worker/storefront.html'
             h=path.read_text()
             assert 'mb-landing-2026' in h and 'data-my-orders' in h and 'id="catalog"' in h and 'id="marcas"' in h
@@ -325,6 +358,13 @@ jobs:
           }
           @media(prefers-reduced-motion:reduce){.mb-visual-video{display:none!important}}
             """.replace('ACCENT',accent)
+            # WebP intrinsically loops through exercise frames; do not pan the entire picture.
+            css += """
+          .mb-visual-2026>.mb-visual-photo{animation:none!important;object-position:54% center!important}
+          .mb-visual-2026>.mb-visual-video{display:none!important}
+          .mb-visual-2026>.mb-visual-shade{background:linear-gradient(90deg,#05070de0 0%,#05070da8 39%,#05070d19 100%),linear-gradient(0deg,#05070db3,transparent 50%)!important}
+          @media(max-width:700px){.mb-visual-2026>.mb-visual-photo{object-position:60% center!important}}
+            """
             # Keep original catalog DOM for existing tests, but remove obsolete oversized logo/about panel from display.
             css += """
           /* Last pass: hide old brand-logo panel in both storefronts. */
