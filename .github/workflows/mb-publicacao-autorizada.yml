@@ -530,7 +530,7 @@ jobs:
               old='currentAppearance=a;renderCurated(a);'
               new="""currentAppearance=a;
               const fallbacks={categories:"""+repr(categories)+""",brands:"""+repr(brands)+"""};
-              window.mbCatalogFilters={
+              if(typeof window!=='undefined')window.mbCatalogFilters={
                 categories:String(a.catalog_categories??fallbacks.categories).split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean),
                 brands:String(a.catalog_brands??fallbacks.brands).split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean)
               };
@@ -1097,7 +1097,7 @@ jobs:
               old='currentAppearance=a;renderCurated(a);'
               new="""currentAppearance=a;
               const fallbacks={categories:"""+repr(categories)+""",brands:"""+repr(brands)+"""};
-              window.mbCatalogFilters={
+              if(typeof window!=='undefined')window.mbCatalogFilters={
                 categories:String(a.catalog_categories??fallbacks.categories).split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean),
                 brands:String(a.catalog_brands??fallbacks.brands).split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean)
               };
