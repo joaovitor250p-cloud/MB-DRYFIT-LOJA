@@ -52,7 +52,7 @@ for store in ('mb-dryfit','mb-for-her'):
 // Store-isolated online order alerts; never request private data before owner authentication.
 let mbPendingCount=0,mbOrderKnown=null,mbOrderAudio=null,mbSoundEnabled=false,mbOrderFetchBusy=false;
 function mbUpdateOrderBadge(){
- const link=document.querySelector('#nav [data-page="commerce"]');
+ const link=document.querySelector('#nav [data-page="orders"]');
  if(link){
   let chip=link.querySelector('.mb-order-count');
   if(!chip){chip=document.createElement('span');chip.className='mb-order-count';link.append(chip)}
@@ -89,7 +89,7 @@ async function mbCheckOrders(){
 if(typeof window!=='undefined'){
  setInterval(mbCheckOrders,20000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)mbCheckOrders()});
- document.addEventListener('click',event=>{if(event.target.closest('[data-page="commerce"]'))mbCheckOrders()});
+ document.addEventListener('click',event=>{if(event.target.closest('[data-page="orders"]'))mbCheckOrders()});
  setTimeout(mbCheckOrders,1500);
 }
 """
@@ -97,9 +97,6 @@ if(typeof window!=='undefined'){
  path.write_text(s)
  page=Path('stores')/store/'worker'/'page.html'
  p=page.read_text()
- anchor="function nav(){const items=navItems();$('#nav').innerHTML=items.map"
- if anchor not in p:raise SystemExit('Navegação original não encontrada: '+store)
- p=p.replace("function nav(){const items=navItems();$('#nav').innerHTML=items.map","function nav(){const items=navItems();$('#nav').innerHTML=items.map",1)
  hook="$('#nav').querySelectorAll('button').forEach(b=>b.onclick="
  if hook not in p:raise SystemExit('Nav handler missing')
  p=p.replace(hook,"if(typeof mbUpdateOrderBadge==='function')mbUpdateOrderBadge();"+hook,1)
