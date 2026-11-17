@@ -66,7 +66,7 @@ jobs:
               with tempfile.TemporaryDirectory() as tmp:
                   subprocess.run(['node','--check',str(root/'storefront-cart.js')],check=True)
                   for page in (html,admin):
-                      for i,inline in enumerate(re.findall(r'<script(?:\\s+[^>]*)?>([\\s\\S]*?)</script>',page)):
+                      for i,inline in enumerate(re.findall(r'<script[^>]*>(.*?)</script>',page,flags=re.S)):
                           if not inline.strip():continue
                           src=pathlib.Path(tmp)/f'script-{i}.js'
                           src.write_text(inline)
