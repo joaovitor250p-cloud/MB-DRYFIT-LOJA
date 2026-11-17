@@ -95,5 +95,10 @@ jobs:
           cd release-smoke
           python3 scripts/atualizar-camera-pdv-local.py
           node scripts/testar-camera-pdv-local.mjs
+      - name: Testar suite completa sobre a versão congelada com alterações aplicadas
+        run: |
+          cd release-smoke
+          npm ci
+          npm run check
       - run: npm ci
       - run: npm run check
