@@ -31,5 +31,9 @@ jobs:
             grep -q "pending_count" "stores/$store/worker/shop-commerce.js"
             grep -q 'mbUpdateOrderBadge' "stores/$store/worker/owner-commerce.js"
           done
+      - name: Conferir limpeza de ambos os catálogos sem alterar lojas reais
+        run: |
+          python3 -m py_compile scripts/limpar-catalogos-publicos.py
+          python3 scripts/testar-limpeza-catalogos.py
       - run: npm ci
       - run: npm run check
