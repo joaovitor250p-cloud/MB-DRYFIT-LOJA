@@ -903,6 +903,7 @@ jobs:
           python3 catalogos-atuais/scripts/marketing-vitrine-update.py
           python3 catalogos-atuais/scripts/online-order-alerts-update.py
           python3 catalogos-atuais/scripts/fix-media-studio.py
+          python3 catalogos-atuais/scripts/separar-pedidos-cupons-notificacao.py
       - name: Remover atacado, filtros e textos extras dos dois catálogos
         run: python3 catalogos-atuais/scripts/limpar-catalogos-publicos.py
       - name: Instalar filtros Marca e Peça no catálogo e no modo Dono
@@ -1835,6 +1836,7 @@ jobs:
           python3 catalogos-atuais/scripts/marketing-vitrine-update.py
           python3 catalogos-atuais/scripts/online-order-alerts-update.py
           python3 catalogos-atuais/scripts/fix-media-studio.py
+          python3 catalogos-atuais/scripts/separar-pedidos-cupons-notificacao.py
       - name: Remover atacado, filtros e textos extras dos dois catálogos
         run: python3 catalogos-atuais/scripts/limpar-catalogos-publicos.py
       - name: Instalar filtros Marca e Peça no catálogo e no modo Dono
