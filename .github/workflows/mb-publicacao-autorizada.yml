@@ -593,6 +593,66 @@ jobs:
               guest.write_text(src)
               print('Menus recolhidos e tema claro por padrão:',store)
           PY
+      - name: Refinar layout da coleção conforme referência aprovada
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for store in ('mb-dryfit','mb-for-her'):
+              page=Path('stores')/store/'worker'/'storefront.html'
+              html=page.read_text()
+              # Display the existing category and brand filters directly, as in the reference,
+              # without changing event handlers, model cards, API calls or inventory.
+              categories='<nav class="filters" id="filters" aria-label="Tipos de peça"></nav>'
+              brands='<nav class="catalog-brand-chips" id="catalogBrandChips" aria-label="Filtrar por marca"></nav>'
+              folded_categories='<details class="mb-filter-fold" id="pieceFilterFold"><summary>Peças <span class="fold-hint">Selecionar tipo</span><span class="fold-chevron" aria-hidden="true">⌄</span></summary><div class="mb-filter-paper">'+categories+'</div></details>'
+              folded_brands='<details class="mb-filter-fold" id="brandFilterFold"><summary>Marcas <span class="fold-hint">Selecionar marca</span><span class="fold-chevron" aria-hidden="true">⌄</span></summary><div class="mb-filter-paper">'+brands+'</div></details>'
+              if html.count(folded_categories)!=1 or html.count(folded_brands)!=1:
+                  raise SystemExit('Nao foi encontrada a estrutura dos filtros em '+store)
+              html=html.replace(folded_categories,categories,1).replace(folded_brands,brands,1)
+              # Update navigation links that otherwise point to hidden hero/about sections.
+              html=html.replace('href="#marcas">Marcas</a>','href="#catalogBrandChips">Marcas</a>')
+              html=html.replace('href="#sobre">Sobre a MB</a>','href="#filters">Peças</a>')
+              html=html.replace('href="#sobre">Sobre a loja</a>','href="#filters">Peças</a>')
+              # Portuguese editorial identity and professional typography; no product card styles changed.
+              html=html.replace('SPORT & LIFESTYLE','MODA ESPORTIVA')
+              html=html.replace('SPORT AND LIFESTYLE','MODA ESPORTIVA')
+              html=html.replace('FITNESS & LIFESTYLE','MODA FITNESS')
+              accent='#ff7429' if store=='mb-dryfit' else '#e83883'
+              css="""
+          /* The collection itself is the landing page. Keep cards and model selectors untouched. */
+          @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+          :root{--shop-accent:ACCENT}
+          body,.campaign-header,.main-nav,#colecao{font-family:'Manrope',Inter,Arial,sans-serif}
+          #colecao{max-width:1320px;margin:0 auto;padding-top:clamp(28px,4.5vw,60px)!important}
+          #colecao h1,#colecao h2{font-family:'Manrope',Inter,Arial,sans-serif!important;letter-spacing:-.055em!important;font-weight:800!important}
+          #colecao .catalog-toolbar{gap:16px}
+          #colecao .catalog-toolbar .search{border:1px solid #e1e3e6;border-radius:12px;font:500 13px 'Manrope',Inter,sans-serif;padding:15px 20px;background:var(--shop-panel,#fff);color:var(--shop-ink,#18191d)}
+          #colecao .catalog-toolbar .search:focus-visible{outline:2px solid var(--shop-accent);outline-offset:2px}
+          #colecao .filters{display:flex!important;align-items:center;flex-wrap:wrap;gap:10px;overflow:visible!important;padding:16px 0 17px!important;border-bottom:1px solid var(--shop-line,#e5e5e6)}
+          #colecao .filters button{font:700 12px 'Manrope',Inter,sans-serif!important;min-height:46px!important;border-radius:999px!important;padding:11px 20px!important;white-space:nowrap;transition:background .18s ease,border-color .18s ease!important}
+          #colecao .filters button.on{color:#fff!important;background:var(--shop-accent)!important;border-color:var(--shop-accent)!important}
+          #colecao .catalog-brand-chips{display:flex!important;gap:10px;flex-wrap:wrap;overflow:visible!important;padding:18px 0 25px!important}
+          #colecao .catalog-brand-chips button{font:700 12px 'Manrope',Inter,sans-serif!important;min-height:43px;padding:11px 17px!important;border:1px solid var(--shop-line,#e3e4e8)!important;border-radius:10px!important;background:var(--shop-soft,#f5f5f6);color:var(--shop-ink,#202128);transition:background .18s ease,border-color .18s ease!important}
+          #colecao .catalog-brand-chips button.on{background:var(--shop-ink,#21242b)!important;color:var(--shop-panel,#fff)!important;border-color:var(--shop-ink,#21242b)!important}
+          html:not([data-theme=dark]) .campaign-header{background:#fff!important;color:#1d2025!important}
+          html:not([data-theme=dark]) body{background:#fff}
+          .main-nav a{font:600 12px 'Manrope',Inter,sans-serif}
+          @media(max-width:750px){
+            #colecao{padding-top:24px!important}
+            #colecao h1,#colecao h2{letter-spacing:-.045em!important}
+            #colecao .filters,#colecao .catalog-brand-chips{flex-wrap:nowrap!important;overflow-x:auto!important;scrollbar-width:none;touch-action:pan-x;overscroll-behavior-x:contain;scroll-snap-type:x proximity}
+            #colecao .filters::-webkit-scrollbar,#colecao .catalog-brand-chips::-webkit-scrollbar{display:none}
+            #colecao .filters button{flex:0 0 auto;scroll-snap-align:start;min-height:43px!important;font-size:11px!important;padding:10px 15px!important}
+            #colecao .catalog-brand-chips button{flex:0 0 auto;scroll-snap-align:start;min-height:40px;font-size:11px!important;padding:9px 14px!important}
+            #colecao .catalog-toolbar .search{font-size:13px;min-height:46px}
+          }
+          @media(prefers-reduced-motion:reduce){#colecao .filters button,#colecao .catalog-brand-chips button{transition:none!important}}
+              """.replace('ACCENT',accent)
+              if html.count('</style></head>')!=1: raise SystemExit('Fechamento de estilos inesperado')
+              html=html.replace('</style></head>',css+'</style></head>',1)
+              page.write_text(html)
+              print('Colecao em portugues, filtros expandidos, cards preservados:',store)
+          PY
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -1210,6 +1270,66 @@ jobs:
               src=src.replace(old,"if(!theme)theme='light';",1)
               guest.write_text(src)
               print('Menus recolhidos e tema claro por padrão:',store)
+          PY
+      - name: Refinar layout da coleção conforme referência aprovada
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for store in ('mb-dryfit','mb-for-her'):
+              page=Path('stores')/store/'worker'/'storefront.html'
+              html=page.read_text()
+              # Display the existing category and brand filters directly, as in the reference,
+              # without changing event handlers, model cards, API calls or inventory.
+              categories='<nav class="filters" id="filters" aria-label="Tipos de peça"></nav>'
+              brands='<nav class="catalog-brand-chips" id="catalogBrandChips" aria-label="Filtrar por marca"></nav>'
+              folded_categories='<details class="mb-filter-fold" id="pieceFilterFold"><summary>Peças <span class="fold-hint">Selecionar tipo</span><span class="fold-chevron" aria-hidden="true">⌄</span></summary><div class="mb-filter-paper">'+categories+'</div></details>'
+              folded_brands='<details class="mb-filter-fold" id="brandFilterFold"><summary>Marcas <span class="fold-hint">Selecionar marca</span><span class="fold-chevron" aria-hidden="true">⌄</span></summary><div class="mb-filter-paper">'+brands+'</div></details>'
+              if html.count(folded_categories)!=1 or html.count(folded_brands)!=1:
+                  raise SystemExit('Nao foi encontrada a estrutura dos filtros em '+store)
+              html=html.replace(folded_categories,categories,1).replace(folded_brands,brands,1)
+              # Update navigation links that otherwise point to hidden hero/about sections.
+              html=html.replace('href="#marcas">Marcas</a>','href="#catalogBrandChips">Marcas</a>')
+              html=html.replace('href="#sobre">Sobre a MB</a>','href="#filters">Peças</a>')
+              html=html.replace('href="#sobre">Sobre a loja</a>','href="#filters">Peças</a>')
+              # Portuguese editorial identity and professional typography; no product card styles changed.
+              html=html.replace('SPORT & LIFESTYLE','MODA ESPORTIVA')
+              html=html.replace('SPORT AND LIFESTYLE','MODA ESPORTIVA')
+              html=html.replace('FITNESS & LIFESTYLE','MODA FITNESS')
+              accent='#ff7429' if store=='mb-dryfit' else '#e83883'
+              css="""
+          /* The collection itself is the landing page. Keep cards and model selectors untouched. */
+          @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+          :root{--shop-accent:ACCENT}
+          body,.campaign-header,.main-nav,#colecao{font-family:'Manrope',Inter,Arial,sans-serif}
+          #colecao{max-width:1320px;margin:0 auto;padding-top:clamp(28px,4.5vw,60px)!important}
+          #colecao h1,#colecao h2{font-family:'Manrope',Inter,Arial,sans-serif!important;letter-spacing:-.055em!important;font-weight:800!important}
+          #colecao .catalog-toolbar{gap:16px}
+          #colecao .catalog-toolbar .search{border:1px solid #e1e3e6;border-radius:12px;font:500 13px 'Manrope',Inter,sans-serif;padding:15px 20px;background:var(--shop-panel,#fff);color:var(--shop-ink,#18191d)}
+          #colecao .catalog-toolbar .search:focus-visible{outline:2px solid var(--shop-accent);outline-offset:2px}
+          #colecao .filters{display:flex!important;align-items:center;flex-wrap:wrap;gap:10px;overflow:visible!important;padding:16px 0 17px!important;border-bottom:1px solid var(--shop-line,#e5e5e6)}
+          #colecao .filters button{font:700 12px 'Manrope',Inter,sans-serif!important;min-height:46px!important;border-radius:999px!important;padding:11px 20px!important;white-space:nowrap;transition:background .18s ease,border-color .18s ease!important}
+          #colecao .filters button.on{color:#fff!important;background:var(--shop-accent)!important;border-color:var(--shop-accent)!important}
+          #colecao .catalog-brand-chips{display:flex!important;gap:10px;flex-wrap:wrap;overflow:visible!important;padding:18px 0 25px!important}
+          #colecao .catalog-brand-chips button{font:700 12px 'Manrope',Inter,sans-serif!important;min-height:43px;padding:11px 17px!important;border:1px solid var(--shop-line,#e3e4e8)!important;border-radius:10px!important;background:var(--shop-soft,#f5f5f6);color:var(--shop-ink,#202128);transition:background .18s ease,border-color .18s ease!important}
+          #colecao .catalog-brand-chips button.on{background:var(--shop-ink,#21242b)!important;color:var(--shop-panel,#fff)!important;border-color:var(--shop-ink,#21242b)!important}
+          html:not([data-theme=dark]) .campaign-header{background:#fff!important;color:#1d2025!important}
+          html:not([data-theme=dark]) body{background:#fff}
+          .main-nav a{font:600 12px 'Manrope',Inter,sans-serif}
+          @media(max-width:750px){
+            #colecao{padding-top:24px!important}
+            #colecao h1,#colecao h2{letter-spacing:-.045em!important}
+            #colecao .filters,#colecao .catalog-brand-chips{flex-wrap:nowrap!important;overflow-x:auto!important;scrollbar-width:none;touch-action:pan-x;overscroll-behavior-x:contain;scroll-snap-type:x proximity}
+            #colecao .filters::-webkit-scrollbar,#colecao .catalog-brand-chips::-webkit-scrollbar{display:none}
+            #colecao .filters button{flex:0 0 auto;scroll-snap-align:start;min-height:43px!important;font-size:11px!important;padding:10px 15px!important}
+            #colecao .catalog-brand-chips button{flex:0 0 auto;scroll-snap-align:start;min-height:40px;font-size:11px!important;padding:9px 14px!important}
+            #colecao .catalog-toolbar .search{font-size:13px;min-height:46px}
+          }
+          @media(prefers-reduced-motion:reduce){#colecao .filters button,#colecao .catalog-brand-chips button{transition:none!important}}
+              """.replace('ACCENT',accent)
+              if html.count('</style></head>')!=1: raise SystemExit('Fechamento de estilos inesperado')
+              html=html.replace('</style></head>',css+'</style></head>',1)
+              page.write_text(html)
+              print('Colecao em portugues, filtros expandidos, cards preservados:',store)
           PY
       - uses: actions/setup-node@v4
         with:
