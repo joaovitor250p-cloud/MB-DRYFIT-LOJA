@@ -1,0 +1,64 @@
+name: Validar otimização R2 sem publicar
+on:
+  push:
+    branches: [feat/r2-imagens-otimizadas]
+    paths:
+      - '.github/workflows/mb-publicacao-autorizada.yml'
+      - '.github/workflows/mb-validar-imagens.yml'
+      - 'scripts/test-optimized-r2.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: cff723e5b8384fccb3d134d8a9da30bdfb62b61f
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/r2-imagens-otimizadas
+          path: catalogos-atuais
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python3 -m pip install --quiet Pillow imageio-ffmpeg PyYAML
+      - name: Reproduzir transformações locais de ambos os catálogos
+        run: |
+          python3 - <<'PY'
+          import yaml,subprocess
+          data=yaml.safe_load(open('catalogos-atuais/.github/workflows/mb-publicacao-autorizada.yml'))
+          steps=data['jobs']['preparar']['steps']
+          active=False
+          for step in steps:
+              name=step.get('name','')
+              if name=='Aplicar campanha fotográfica mantendo catálogo e vendas':active=True
+              if not active:continue
+              if step.get('uses') or not step.get('run'):continue
+              cmd=step['run']
+              if 'node scripts/cloudflare-prepare.mjs' in cmd:break
+              print('Validando:',name or cmd[:80],flush=True)
+              subprocess.run(['bash','-e','-c',cmd],check=True)
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Validar JavaScript gerado para ambas as lojas
+        run: |
+          for loja in mb-dryfit mb-for-her; do
+            node --check "stores/$loja/worker/api.js"
+            node --check "stores/$loja/worker/appearance-editor.js"
+            node --check "stores/$loja/worker/appearance.js"
+          done
+          node catalogos-atuais/scripts/test-optimized-r2.mjs
+      - run: npm run check
+      - run: npm run test:hosting
+      - run: npm run build
+      - name: Garantir que não houve mutação de banco remoto
+        run: echo 'Somente testes locais. Nenhum deploy, R2 remoto ou D1 remoto foi chamado.'
