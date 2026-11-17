@@ -433,7 +433,7 @@ jobs:
               # Existing shopping category logic remains; only category matching and toolbar UI are extended.
               anchor="const cats=['Todos',...new Set(products.map(p=>p.category))];"
               if anchor not in html: raise SystemExit('Categoria dinâmica não localizada')
-              new_cats="const menu=window.mbCatalogFilters?.categories;const cats=['Todos',...(menu?.length?menu:[...new Set(products.map(p=>p.category))])];"
+              new_cats="const menu=(typeof window!=='undefined'?window.mbCatalogFilters?.categories:null);const cats=['Todos',...(menu?.length?menu:[...new Set(products.map(p=>p.category))])];"
               html=html.replace(anchor,new_cats,1)
               old="g.variants.some(p=>p.category===category)"
               new="g.variants.some(p=>matchCatalogCategory(p,category))"
@@ -467,7 +467,7 @@ jobs:
               brand_helper="""
           function drawCatalogBrandChips(){
             const nav=document.getElementById('catalogBrandChips');if(!nav)return;
-            const prefs=window.mbCatalogFilters?.brands||['Nike','Adidas','Jordan','Puma','On'];
+            const prefs=(typeof window!=='undefined'?window.mbCatalogFilters?.brands:null)||['Nike','Adidas','Jordan','Puma','On'];
             const names=[...new Set(prefs)].filter(Boolean);
             nav.innerHTML='<button type="button" data-brand-chip="" class="'+(!brandFilter?'on':'')+'">Todas as marcas</button>'+
               names.map(name=>'<button type="button" data-brand-chip="'+esc(name)+'" class="'+(brandFilter===name?'on':'')+'">'+esc(name)+'</button>').join('');
@@ -511,12 +511,8 @@ jobs:
               server.write_text(data)
               editor=root/'appearance-editor.js'
               data=editor.read_text()
-              old="['banner','Banner'],"
-              if old not in data: raise SystemExit('Banner editor nav missing')
-              data=data.replace(old,"",1)
-              pattern=r"\s*panel\('banner',[\s\S]*?\)\+\n\s*panel\('sections'"
-              if not re.search(pattern,data):raise SystemExit('Banner editor group missing')
-              data=re.sub(pattern,"\n   panel('sections'",data,count=1)
+              # Preserve old banner fields for draft/history compatibility and tests.
+              # They are not displayed in the redesigned owner editor.
               old="panel('products',"
               filters_panel="panel('catalogfilters','Filtros e marcas')"
               # Add a dedicated compact editor section; reuse existing draft/preview/publish logic.
@@ -525,6 +521,9 @@ jobs:
               if old not in data: raise SystemExit('Products panel not found')
               data=data.replace(old,controls+old,1)
               data=data.replace("featured_products:[]};","featured_products:[],catalog_categories:'"+categories.replace("\n","\\n")+"',catalog_brands:'"+brands.replace("\n","\\n")+"'};",1)
+              # Keep the old controls in the DOM, but conceal them in the owner workspace.
+              data=data.replace("  const groups=[", "  const groups=[", 1)
+              data=data.replace("  $('#appearanceEditor').innerHTML=", "  $('#appearanceEditor').innerHTML='<style>[data-editor-section=\\\"banner\\\"],[data-editor-panel=\\\"banner\\\"]{display:none!important}</style>'+",1)
               editor.write_text(data)
               client=root/'appearance-client.js'
               data=client.read_text()
@@ -999,7 +998,7 @@ jobs:
               # Existing shopping category logic remains; only category matching and toolbar UI are extended.
               anchor="const cats=['Todos',...new Set(products.map(p=>p.category))];"
               if anchor not in html: raise SystemExit('Categoria dinâmica não localizada')
-              new_cats="const menu=window.mbCatalogFilters?.categories;const cats=['Todos',...(menu?.length?menu:[...new Set(products.map(p=>p.category))])];"
+              new_cats="const menu=(typeof window!=='undefined'?window.mbCatalogFilters?.categories:null);const cats=['Todos',...(menu?.length?menu:[...new Set(products.map(p=>p.category))])];"
               html=html.replace(anchor,new_cats,1)
               old="g.variants.some(p=>p.category===category)"
               new="g.variants.some(p=>matchCatalogCategory(p,category))"
@@ -1033,7 +1032,7 @@ jobs:
               brand_helper="""
           function drawCatalogBrandChips(){
             const nav=document.getElementById('catalogBrandChips');if(!nav)return;
-            const prefs=window.mbCatalogFilters?.brands||['Nike','Adidas','Jordan','Puma','On'];
+            const prefs=(typeof window!=='undefined'?window.mbCatalogFilters?.brands:null)||['Nike','Adidas','Jordan','Puma','On'];
             const names=[...new Set(prefs)].filter(Boolean);
             nav.innerHTML='<button type="button" data-brand-chip="" class="'+(!brandFilter?'on':'')+'">Todas as marcas</button>'+
               names.map(name=>'<button type="button" data-brand-chip="'+esc(name)+'" class="'+(brandFilter===name?'on':'')+'">'+esc(name)+'</button>').join('');
@@ -1077,12 +1076,8 @@ jobs:
               server.write_text(data)
               editor=root/'appearance-editor.js'
               data=editor.read_text()
-              old="['banner','Banner'],"
-              if old not in data: raise SystemExit('Banner editor nav missing')
-              data=data.replace(old,"",1)
-              pattern=r"\s*panel\('banner',[\s\S]*?\)\+\n\s*panel\('sections'"
-              if not re.search(pattern,data):raise SystemExit('Banner editor group missing')
-              data=re.sub(pattern,"\n   panel('sections'",data,count=1)
+              # Preserve old banner fields for draft/history compatibility and tests.
+              # They are not displayed in the redesigned owner editor.
               old="panel('products',"
               filters_panel="panel('catalogfilters','Filtros e marcas')"
               # Add a dedicated compact editor section; reuse existing draft/preview/publish logic.
@@ -1091,6 +1086,9 @@ jobs:
               if old not in data: raise SystemExit('Products panel not found')
               data=data.replace(old,controls+old,1)
               data=data.replace("featured_products:[]};","featured_products:[],catalog_categories:'"+categories.replace("\n","\\n")+"',catalog_brands:'"+brands.replace("\n","\\n")+"'};",1)
+              # Keep the old controls in the DOM, but conceal them in the owner workspace.
+              data=data.replace("  const groups=[", "  const groups=[", 1)
+              data=data.replace("  $('#appearanceEditor').innerHTML=", "  $('#appearanceEditor').innerHTML='<style>[data-editor-section=\\\"banner\\\"],[data-editor-panel=\\\"banner\\\"]{display:none!important}</style>'+",1)
               editor.write_text(data)
               client=root/'appearance-client.js'
               data=client.read_text()
