@@ -462,7 +462,7 @@ jobs:
               html=html.replace(needle,insertion,1)
               anchor='updateBrandFilterUI()}'
               if anchor not in html: raise SystemExit('Render hook missing')
-              html=html.replace(anchor,'drawCatalogBrandChips();updateBrandFilterUI()}',1)
+              html=html.replace(anchor,"if(typeof drawCatalogBrandChips==='function')drawCatalogBrandChips();updateBrandFilterUI()}",1)
               before='function render(){'
               brand_helper="""
           function drawCatalogBrandChips(){
@@ -534,9 +534,11 @@ jobs:
                 categories:String(a.catalog_categories??fallbacks.categories).split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean),
                 brands:String(a.catalog_brands??fallbacks.brands).split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean)
               };
-              renderCurated(a);if(typeof render==='function')render();"""
+              renderCurated(a);"""
               if old not in data:raise SystemExit('appearance client marker missing')
               data=data.replace(old,new,1)
+              # Re-render the public catalog only once the appearance update has finished; never break old preview fixtures.
+              data=data.replace('   if(video&&quiet){video.autoplay=false;video.pause()}','   if(video&&quiet){video.autoplay=false;video.pause()}\n   if(typeof render===\'function\'){try{render()}catch(e){console.warn(\'catalog refresh unavailable\')}}',1)
               client.write_text(data)
               print('Filtros de roupas e marcas gerenciáveis; equipe retirada do catálogo:',store)
           PY
@@ -1027,7 +1029,7 @@ jobs:
               html=html.replace(needle,insertion,1)
               anchor='updateBrandFilterUI()}'
               if anchor not in html: raise SystemExit('Render hook missing')
-              html=html.replace(anchor,'drawCatalogBrandChips();updateBrandFilterUI()}',1)
+              html=html.replace(anchor,"if(typeof drawCatalogBrandChips==='function')drawCatalogBrandChips();updateBrandFilterUI()}",1)
               before='function render(){'
               brand_helper="""
           function drawCatalogBrandChips(){
@@ -1099,9 +1101,11 @@ jobs:
                 categories:String(a.catalog_categories??fallbacks.categories).split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean),
                 brands:String(a.catalog_brands??fallbacks.brands).split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean)
               };
-              renderCurated(a);if(typeof render==='function')render();"""
+              renderCurated(a);"""
               if old not in data:raise SystemExit('appearance client marker missing')
               data=data.replace(old,new,1)
+              # Re-render the public catalog only once the appearance update has finished; never break old preview fixtures.
+              data=data.replace('   if(video&&quiet){video.autoplay=false;video.pause()}','   if(video&&quiet){video.autoplay=false;video.pause()}\n   if(typeof render===\'function\'){try{render()}catch(e){console.warn(\'catalog refresh unavailable\')}}',1)
               client.write_text(data)
               print('Filtros de roupas e marcas gerenciáveis; equipe retirada do catálogo:',store)
           PY
