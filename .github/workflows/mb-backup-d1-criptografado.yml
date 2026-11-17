@@ -1,11 +1,45 @@
 name: Exportação criptografada D1 - MB
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/mb-backup-d1-criptografado.yml
 permissions:
   contents: read
 
 jobs:
+  teste_sem_dados_reais:
+    name: Simular criptografia e restauração sem dados reais
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exercitar fluxo offline com informações fictícias
+        shell: bash
+        run: |
+          set -euo pipefail
+          temp="$(mktemp -d)"
+          trap 'rm -rf "$temp"' EXIT
+          export MB_BACKUP_PASSPHRASE='chave-ficticia-apenas-para-testes-locais-2026'
+          printf '%s\\n' 'CREATE TABLE teste(id INTEGER PRIMARY KEY, valor TEXT);' "INSERT INTO teste(valor) VALUES ('exemplo');" > "$temp/teste.sql"
+          openssl enc -aes-256-cbc -pbkdf2 -iter 250000 -salt -in "$temp/teste.sql" -out "$temp/teste.sql.enc" -pass env:MB_BACKUP_PASSPHRASE
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 250000 -in "$temp/teste.sql.enc" -out "$temp/validar.sql" -pass env:MB_BACKUP_PASSPHRASE
+          cmp "$temp/teste.sql" "$temp/validar.sql"
+          TEMP_DIR="$temp" python3 - <<'PY'
+          import os,sqlite3
+          from pathlib import Path
+          directory=Path(os.environ['TEMP_DIR'])
+          db=sqlite3.connect(directory/'restaurado.sqlite')
+          try:
+            db.executescript((directory/'validar.sql').read_text())
+            assert db.execute('PRAGMA integrity_check').fetchone()[0]=='ok'
+            assert db.execute('SELECT valor FROM teste').fetchone()[0]=='exemplo'
+            print('Teste offline de backup e restauração passou; nenhum banco real acessado.')
+          finally:
+            db.close()
+          PY
   exportar:
+    if: github.event_name == 'workflow_dispatch'
     name: Exportar D1 separado por loja (somente leitura)
     runs-on: ubuntu-latest
     timeout-minutes: 30
