@@ -139,7 +139,8 @@ for store in ('mb-dryfit','mb-for-her'):
  backend.write_text(s)
  shop=root/'storefront.html'
  s=shop.read_text()
- s=rep(s,FILTER_JS_START+"\n  "+FILTER_JS_END,FILTER_JS_REPLACE,'catalog auto brand options',store)
+ s=rep(s,FILTER_JS_START,FILTER_JS_REPLACE.split("\n  pieceOptions=")[0],'catalog auto brand options',store)
+ s=rep(s,FILTER_JS_END,"pieceOptions="+FILTER_JS_REPLACE.split("\n  pieceOptions=")[1],'catalog auto piece options',store)
  # Product data may arrive asynchronously after the appearance settings fetch; take a
  # single public product snapshot rather than showing an empty filter menu.
  s=rep(s,".then(data=>update(data.appearance||{})).catch(()=>update({}));",
