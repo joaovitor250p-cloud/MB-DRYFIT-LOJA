@@ -144,11 +144,20 @@ jobs:
           .mb-visual-bottom .mb-visual-brands button:hover,.mb-visual-bottom .mb-visual-brands button:focus-visible{border-color:var(--visual-accent)!important;background:#ffffff24!important}
           @media(max-width:700px){.mb-visual-bottom{padding:11px 10px!important}.mb-visual-bottom .mb-visual-brands{gap:5px}.mb-visual-bottom .mb-visual-brands button{font-size:9px!important;padding:10px 2px!important}.mb-visual-bottom .mb-visual-brands button span{display:none}}
           """
+            if store=='mb-dryfit':
+              css += """
+          .mb-visual-2026>.mb-visual-video{filter:brightness(1.32) contrast(1.05) saturate(.9)!important;opacity:1!important}
+          .mb-visual-2026>.mb-visual-photo{filter:brightness(.92) contrast(1.12)!important}
+          .mb-visual-2026>.mb-visual-shade{background:linear-gradient(90deg,#06070be9 0%,#06070bb8 43%,#06070b25 100%),linear-gradient(0deg,#06070bab,transparent 58%)!important}
+              """
             if store=='mb-for-her':
               css += """
           .mb-visual-2026 h1{font-family:Georgia,'Times New Roman',serif!important;font-weight:700!important;letter-spacing:-.05em!important}
           .mb-visual-2026 h1 em{font-style:italic!important}
           .mb-visual-2026>.mb-visual-photo{object-position:58% 35%!important}
+          .mb-visual-2026>.mb-visual-photo{filter:brightness(1.12) contrast(1.1) saturate(.9)!important;animation:mbFemaleWorkoutMotion 5.2s ease-in-out infinite alternate!important}
+          @keyframes mbFemaleWorkoutMotion{0%{transform:translateY(1.5%) scale(1.05)}50%{transform:translateY(-1.5%) scale(1.09)}100%{transform:translateY(1.5%) scale(1.05)}}
+          @media(prefers-reduced-motion:reduce){.mb-visual-2026>.mb-visual-photo{animation:none!important}}
           .mb-visual-2026>.mb-visual-shade{background:linear-gradient(90deg,#110c15eb 0%,#110c15c3 53%,#110c154d 100%),linear-gradient(0deg,#100b14d9,transparent 50%)!important}
           @media(max-width:700px){.mb-visual-2026 h1{font-size:clamp(33px,8.7vw,55px)!important}}
               """
@@ -350,11 +359,20 @@ jobs:
           .mb-visual-bottom .mb-visual-brands button:hover,.mb-visual-bottom .mb-visual-brands button:focus-visible{border-color:var(--visual-accent)!important;background:#ffffff24!important}
           @media(max-width:700px){.mb-visual-bottom{padding:11px 10px!important}.mb-visual-bottom .mb-visual-brands{gap:5px}.mb-visual-bottom .mb-visual-brands button{font-size:9px!important;padding:10px 2px!important}.mb-visual-bottom .mb-visual-brands button span{display:none}}
           """
+            if store=='mb-dryfit':
+              css += """
+          .mb-visual-2026>.mb-visual-video{filter:brightness(1.32) contrast(1.05) saturate(.9)!important;opacity:1!important}
+          .mb-visual-2026>.mb-visual-photo{filter:brightness(.92) contrast(1.12)!important}
+          .mb-visual-2026>.mb-visual-shade{background:linear-gradient(90deg,#06070be9 0%,#06070bb8 43%,#06070b25 100%),linear-gradient(0deg,#06070bab,transparent 58%)!important}
+              """
             if store=='mb-for-her':
               css += """
           .mb-visual-2026 h1{font-family:Georgia,'Times New Roman',serif!important;font-weight:700!important;letter-spacing:-.05em!important}
           .mb-visual-2026 h1 em{font-style:italic!important}
           .mb-visual-2026>.mb-visual-photo{object-position:58% 35%!important}
+          .mb-visual-2026>.mb-visual-photo{filter:brightness(1.12) contrast(1.1) saturate(.9)!important;animation:mbFemaleWorkoutMotion 5.2s ease-in-out infinite alternate!important}
+          @keyframes mbFemaleWorkoutMotion{0%{transform:translateY(1.5%) scale(1.05)}50%{transform:translateY(-1.5%) scale(1.09)}100%{transform:translateY(1.5%) scale(1.05)}}
+          @media(prefers-reduced-motion:reduce){.mb-visual-2026>.mb-visual-photo{animation:none!important}}
           .mb-visual-2026>.mb-visual-shade{background:linear-gradient(90deg,#110c15eb 0%,#110c15c3 53%,#110c154d 100%),linear-gradient(0deg,#100b14d9,transparent 50%)!important}
           @media(max-width:700px){.mb-visual-2026 h1{font-size:clamp(33px,8.7vw,55px)!important}}
               """
