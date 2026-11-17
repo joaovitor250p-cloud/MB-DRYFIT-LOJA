@@ -95,9 +95,33 @@ jobs:
           cd release-smoke
           python3 scripts/atualizar-camera-pdv-local.py
           node scripts/testar-camera-pdv-local.mjs
+      - name: Testar estoque, REF, WhatsApp, pedidos, reposição e impressora nas duas lojas
+        run: |
+          python3 -m py_compile scripts/ajustes-ref-estoque-tamanhos.py scripts/ajustes-pedido-whatsapp-impressao.py scripts/corrigir-opcoes-filtros.py
+          cp scripts/aplicar-filtros-marca-peca.py scripts/ajustes-ref-estoque-tamanhos.py scripts/ajustes-pedido-whatsapp-impressao.py scripts/corrigir-opcoes-filtros.py release-smoke/scripts/
+          cd release-smoke
+          python3 scripts/aplicar-filtros-marca-peca.py
+          python3 scripts/ajustes-ref-estoque-tamanhos.py
+          python3 scripts/ajustes-pedido-whatsapp-impressao.py
+          python3 scripts/corrigir-opcoes-filtros.py
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/worker/staff-workspace.js"
+            node --check "stores/$store/worker/storefront-cart.js"
+            node --check "stores/$store/worker/storefront-contacts.js"
+            node --check "stores/$store/worker/shop-commerce.js"
+            node --check "stores/$store/worker/model-management.js"
+            node --check "stores/$store/worker/api.js"
+            node --check "stores/$store/worker/native-print.js"
+            node --check "stores/$store/worker/appearance.js"
+            grep -q 'catalog_hidden_brands' "stores/$store/worker/appearance.js"
+            grep -q 'mbColorExhausted' "stores/$store/worker/storefront.html"
+            grep -q 'mbOwnerFilterLines' "stores/$store/worker/page.html"
+          done
       - name: Testar suite completa sobre a versão congelada com alterações aplicadas
         run: |
+          cp scripts/atualizar-fixtures-ref.py release-smoke/scripts/
           cd release-smoke
+          python3 scripts/atualizar-fixtures-ref.py
           npm ci
           npm run check
       - run: npm ci

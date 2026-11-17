@@ -13,6 +13,10 @@ on:
       - scripts/carrinho-tela-imediata.py
       - scripts/separar-pedidos-cupons-notificacao.py
       - scripts/atualizar-camera-pdv-local.py
+      - scripts/ajustes-ref-estoque-tamanhos.py
+      - scripts/ajustes-pedido-whatsapp-impressao.py
+      - scripts/corrigir-opcoes-filtros.py
+      - scripts/atualizar-fixtures-ref.py
   workflow_dispatch:
 permissions:
   contents: read
@@ -918,11 +922,19 @@ jobs:
         run: python3 catalogos-atuais/scripts/organizar-modelos-export-mobile.py
       - name: Corrigir câmera do PDV e rascunho local por aparelho nas duas lojas
         run: python3 catalogos-atuais/scripts/atualizar-camera-pdv-local.py
+      - name: Mostrar esgotados, exigir REF e adicionar tamanhos na reposição
+        run: python3 catalogos-atuais/scripts/ajustes-ref-estoque-tamanhos.py
+      - name: Agilizar pedidos e WhatsApp, status, impressão e navegação
+        run: python3 catalogos-atuais/scripts/ajustes-pedido-whatsapp-impressao.py
+      - name: Corrigir filtros do catálogo e painel do dono
+        run: python3 catalogos-atuais/scripts/corrigir-opcoes-filtros.py
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - name: Ajustar fixtures históricas aos cadastros com REF obrigatória
+        run: python3 catalogos-atuais/scripts/atualizar-fixtures-ref.py
       - run: npm run check
       - run: npm run test:hosting
       - name: Preparar apenas o código, sem ativar R2 nem aplicar a migração 0042
@@ -1853,6 +1865,12 @@ jobs:
         run: python3 catalogos-atuais/scripts/organizar-modelos-export-mobile.py
       - name: Corrigir câmera do PDV e rascunho local por aparelho nas duas lojas
         run: python3 catalogos-atuais/scripts/atualizar-camera-pdv-local.py
+      - name: Mostrar esgotados, exigir REF e adicionar tamanhos na reposição
+        run: python3 catalogos-atuais/scripts/ajustes-ref-estoque-tamanhos.py
+      - name: Agilizar pedidos e WhatsApp, status, impressão e navegação
+        run: python3 catalogos-atuais/scripts/ajustes-pedido-whatsapp-impressao.py
+      - name: Corrigir filtros do catálogo e painel do dono
+        run: python3 catalogos-atuais/scripts/corrigir-opcoes-filtros.py
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
