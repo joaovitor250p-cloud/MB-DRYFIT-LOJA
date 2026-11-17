@@ -55,6 +55,12 @@ jobs:
                   '<div class="mb-visual-bottom">'+category.group()+'</div>'+
                   ('<div class="mb-editorial-photo mb-visual-hidden"><img src="/brand-assets/mb-gym-poster.jpg" alt="" aria-hidden="true"><div class="mb-editorial-orange"></div></div>' if store=='mb-dryfit' else '<div class="mb-her-editorial-scene mb-visual-hidden">FEITA PARA SE SENTIR INCRÍVEL.</div>')+
                   '</section>')
+            # Five real brand shortcuts; preserve hidden legacy category hooks for existing tests.
+            brand_buttons=''.join('<button type="button" data-hero-brand="'+brand+'" aria-label="Ver modelos '+brand+'">'+brand.upper()+' <span aria-hidden="true">↗</span></button>' for brand in ('Nike','Adidas','Jordan','Puma','On'))
+            brand_bar='<nav class="mb-visual-brands" aria-label="Filtrar por marca">'+brand_buttons+'</nav>'
+            hero=hero.replace('<div class="mb-visual-bottom">'+category.group()+'</div>',
+                              '<div class="mb-visual-bottom">'+brand_bar+'<div class="mb-original-categories-hidden" aria-hidden="true">'+category.group()+'</div></div>')
+            assert hero.count('data-hero-brand=')==5
             h=h[:start]+hero+h[end:]
             css="""
           /* Photo-based MB visual design 2026. The live catalog and shopping logic are untouched. */
@@ -129,6 +135,15 @@ jobs:
           }
           @media(prefers-reduced-motion:reduce){.mb-visual-2026 .mb-visual-photo{animation:none!important}}
           """
+            css += """
+          /* Five existing brands as prominent hero shortcuts; old garment shortcuts remain hidden. */
+          .mb-original-categories-hidden{display:none!important}
+          .mb-visual-bottom .mb-visual-brands{display:flex!important;flex-wrap:nowrap;align-items:center;justify-content:center;gap:10px;width:100%;max-width:720px}
+          .mb-visual-bottom .mb-visual-brands button{color:#fff!important;background:#ffffff12!important;border:1px solid #ffffff47!important;border-radius:5px!important;min-height:43px;min-width:0;flex:1 1 0;padding:11px 8px!important;font:700 11px 'DM Sans',Arial,sans-serif!important;white-space:nowrap}
+          .mb-visual-bottom .mb-visual-brands button span{color:var(--visual-accent)}
+          .mb-visual-bottom .mb-visual-brands button:hover,.mb-visual-bottom .mb-visual-brands button:focus-visible{border-color:var(--visual-accent)!important;background:#ffffff24!important}
+          @media(max-width:700px){.mb-visual-bottom{padding:11px 10px!important}.mb-visual-bottom .mb-visual-brands{gap:5px}.mb-visual-bottom .mb-visual-brands button{font-size:9px!important;padding:10px 2px!important}.mb-visual-bottom .mb-visual-brands button span{display:none}}
+          """
             if store=='mb-for-her':
               css += """
           .mb-visual-2026 h1{font-family:Georgia,'Times New Roman',serif!important;font-weight:700!important;letter-spacing:-.05em!important}
@@ -148,6 +163,19 @@ jobs:
             const play=()=>v.play().catch(()=>{});
             if(document.visibilityState==='visible')play();
             document.addEventListener('visibilitychange',()=>{if(document.hidden)v.pause();else play()});
+          })();
+          </script></body></html>""")
+            # Filtering routes through the existing catalog brand tile actions, preserving cart and search.
+            h=h.replace('</body></html>',"""<script>
+          (() => {
+            document.querySelectorAll('[data-hero-brand]').forEach(button => {
+              button.addEventListener('click', () => {
+                const brand=button.getAttribute('data-hero-brand');
+                const tile=Array.from(document.querySelectorAll('[data-choose-brand]'))
+                    .find(item=>item.getAttribute('data-choose-brand')===brand);
+                if(tile)tile.click();
+              });
+            });
           })();
           </script></body></html>""")
             path.write_text(h)
@@ -233,6 +261,12 @@ jobs:
                   '<div class="mb-visual-bottom">'+category.group()+'</div>'+
                   ('<div class="mb-editorial-photo mb-visual-hidden"><img src="/brand-assets/mb-gym-poster.jpg" alt="" aria-hidden="true"><div class="mb-editorial-orange"></div></div>' if store=='mb-dryfit' else '<div class="mb-her-editorial-scene mb-visual-hidden">FEITA PARA SE SENTIR INCRÍVEL.</div>')+
                   '</section>')
+            # Five real brand shortcuts; preserve hidden legacy category hooks for existing tests.
+            brand_buttons=''.join('<button type="button" data-hero-brand="'+brand+'" aria-label="Ver modelos '+brand+'">'+brand.upper()+' <span aria-hidden="true">↗</span></button>' for brand in ('Nike','Adidas','Jordan','Puma','On'))
+            brand_bar='<nav class="mb-visual-brands" aria-label="Filtrar por marca">'+brand_buttons+'</nav>'
+            hero=hero.replace('<div class="mb-visual-bottom">'+category.group()+'</div>',
+                              '<div class="mb-visual-bottom">'+brand_bar+'<div class="mb-original-categories-hidden" aria-hidden="true">'+category.group()+'</div></div>')
+            assert hero.count('data-hero-brand=')==5
             h=h[:start]+hero+h[end:]
             css="""
           /* Photo-based MB visual design 2026. The live catalog and shopping logic are untouched. */
@@ -307,6 +341,15 @@ jobs:
           }
           @media(prefers-reduced-motion:reduce){.mb-visual-2026 .mb-visual-photo{animation:none!important}}
           """
+            css += """
+          /* Five existing brands as prominent hero shortcuts; old garment shortcuts remain hidden. */
+          .mb-original-categories-hidden{display:none!important}
+          .mb-visual-bottom .mb-visual-brands{display:flex!important;flex-wrap:nowrap;align-items:center;justify-content:center;gap:10px;width:100%;max-width:720px}
+          .mb-visual-bottom .mb-visual-brands button{color:#fff!important;background:#ffffff12!important;border:1px solid #ffffff47!important;border-radius:5px!important;min-height:43px;min-width:0;flex:1 1 0;padding:11px 8px!important;font:700 11px 'DM Sans',Arial,sans-serif!important;white-space:nowrap}
+          .mb-visual-bottom .mb-visual-brands button span{color:var(--visual-accent)}
+          .mb-visual-bottom .mb-visual-brands button:hover,.mb-visual-bottom .mb-visual-brands button:focus-visible{border-color:var(--visual-accent)!important;background:#ffffff24!important}
+          @media(max-width:700px){.mb-visual-bottom{padding:11px 10px!important}.mb-visual-bottom .mb-visual-brands{gap:5px}.mb-visual-bottom .mb-visual-brands button{font-size:9px!important;padding:10px 2px!important}.mb-visual-bottom .mb-visual-brands button span{display:none}}
+          """
             if store=='mb-for-her':
               css += """
           .mb-visual-2026 h1{font-family:Georgia,'Times New Roman',serif!important;font-weight:700!important;letter-spacing:-.05em!important}
@@ -326,6 +369,19 @@ jobs:
             const play=()=>v.play().catch(()=>{});
             if(document.visibilityState==='visible')play();
             document.addEventListener('visibilitychange',()=>{if(document.hidden)v.pause();else play()});
+          })();
+          </script></body></html>""")
+            # Filtering routes through the existing catalog brand tile actions, preserving cart and search.
+            h=h.replace('</body></html>',"""<script>
+          (() => {
+            document.querySelectorAll('[data-hero-brand]').forEach(button => {
+              button.addEventListener('click', () => {
+                const brand=button.getAttribute('data-hero-brand');
+                const tile=Array.from(document.querySelectorAll('[data-choose-brand]'))
+                    .find(item=>item.getAttribute('data-choose-brand')===brand);
+                if(tile)tile.click();
+              });
+            });
           })();
           </script></body></html>""")
             path.write_text(h)
