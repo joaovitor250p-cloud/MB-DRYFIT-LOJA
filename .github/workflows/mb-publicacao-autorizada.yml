@@ -871,6 +871,10 @@ jobs:
               app.write_text(content)
               print('Painel de mídia e servidor preparado com R2 opcional:',store)
           PY
+      - name: Configurar vitrine de mídia, novidades e notificações
+        run: |
+          python3 catalogos-atuais/scripts/marketing-vitrine-update.py
+          python3 catalogos-atuais/scripts/online-order-alerts-update.py
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -1767,6 +1771,10 @@ jobs:
               app.write_text(content)
               print('Painel de mídia e servidor preparado com R2 opcional:',store)
           PY
+      - name: Configurar vitrine de mídia, novidades e notificações
+        run: |
+          python3 catalogos-atuais/scripts/marketing-vitrine-update.py
+          python3 catalogos-atuais/scripts/online-order-alerts-update.py
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
