@@ -20,7 +20,10 @@ for store in ("mb-dryfit", "mb-for-her"):
     text = text.replace('<a class="mbw-contact-cta" href="#atendimento" data-contact-vendors>▣ Pedir no atacado</a>', '')
     text = text.replace('<p class="mbw-wholesale">◈ Venda no atacado &nbsp;│&nbsp; Pedido mínimo: consulte as condições</p>', '')
     text = text.replace('<a href="#atacado">Atacado</a>', '')
-    text = text.replace('<a href="#filters">Categorias</a>', '')
+    # Keep the top navigation item, but point it to the collection: the large
+    # old category chips are intentionally hidden below the hero.
+    text = text.replace('<a href="#filters">Categorias</a>',
+                        '<a href="#colecao">Categorias</a>')
     text = text.replace('Destaques da coleção', 'Nossa coleção')
 
     # Media saved by the owner remains untouched; only surplus public elements
@@ -41,6 +44,19 @@ for store in ("mb-dryfit", "mb-for-her"):
             raise SystemExit("Catalog CSS anchor missing: "+store)
         text = text.replace("</style></head>", "<style>"+css+"</style></head>", 1)
     shop.write_text(text, encoding="utf-8")
+
+    # Prevent the appearance renderer from rebuilding the three unnecessary
+    # lower sections. Merely hiding their initial nodes was not sufficient:
+    # the renderer creates them again asynchronously after the catalog loads.
+    appearance = root / "appearance-client.js"
+    if appearance.exists():
+        client = appearance.read_text(encoding="utf-8")
+        original = "currentAppearance=a;renderCurated(a);"
+        if original not in client and "currentAppearance=a;/* curated sections intentionally disabled */" not in client:
+            raise SystemExit("Appearance renderer changed: "+store)
+        client = client.replace(original,
+             "currentAppearance=a;/* curated sections intentionally disabled */")
+        appearance.write_text(client, encoding="utf-8")
 
     # Remove the sidebar link, NOT the underlying appearance revision history
     # or its data: the site can be recovered without losing previously saved media.
