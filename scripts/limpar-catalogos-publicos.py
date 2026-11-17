@@ -56,10 +56,14 @@ for store in ("mb-dryfit", "mb-for-her"):
     if appearance.exists():
         client = appearance.read_text(encoding="utf-8")
         original = "currentAppearance=a;renderCurated(a);"
-        if original not in client and "currentAppearance=a;/* curated sections intentionally disabled */" not in client:
-            raise SystemExit("Appearance renderer changed: "+store)
-        client = client.replace(original,
-             "currentAppearance=a;/* curated sections intentionally disabled */")
+        if original in client:
+            client = client.replace(original,
+                "currentAppearance=a;/* curated sections intentionally disabled */", 1)
+        elif "function renderCurated(a){" in client:
+            client = client.replace("function renderCurated(a){",
+                "function renderCurated(a){return;/* sections intentionally disabled */", 1)
+        else:
+            print("Renderer without curated sections; keeping final CSS exclusions:", store)
         appearance.write_text(client, encoding="utf-8")
 
     # The owner-entered placeholder was saved as a footer description. Filter
@@ -67,13 +71,14 @@ for store in ("mb-dryfit", "mb-for-her"):
     if appearance.exists():
         client = appearance.read_text(encoding="utf-8")
         footer = "if(a.footer_text){const p="
-        if footer not in client:
-            raise SystemExit("Appearance footer renderer changed: "+store)
-        client = client.replace(
-            footer,
-            "if(a.footer_text&&!/^[dsa]{7,}$/i.test(String(a.footer_text).trim())){const p=",
-            1,
-        )
+        if footer in client:
+            client = client.replace(
+                footer,
+                "if(a.footer_text&&!/^[dsa]{7,}$/i.test(String(a.footer_text).trim())){const p=",
+                1,
+            )
+        else:
+            print("No legacy footer text renderer in this build:", store)
         appearance.write_text(client, encoding="utf-8")
 
     # Favorites retain their existing persistent keys. The header heart opens
