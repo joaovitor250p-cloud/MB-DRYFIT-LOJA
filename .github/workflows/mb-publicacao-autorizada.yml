@@ -1,4 +1,4 @@
-name: Publicar MB Dryfit e For Her (com R2 verificado)
+name: Publicar MB Dryfit e For Her (sem R2)
 on:
   push:
     branches:
@@ -1787,25 +1787,10 @@ jobs:
       - run: npm run build
       - name: Preparar Workers sem migrações novas
         run: node scripts/cloudflare-prepare.mjs cloudflare.domains.config.json
-      - name: Verificar ou criar R2 separado por loja e habilitar somente o binding
-        run: node catalogos-atuais/scripts/activate-r2.mjs
-      - name: Testar gravação e leitura no R2 com arquivos temporários
-        shell: bash
+      - name: Publicar sem criar ou ativar R2
         run: |
-          set -euo pipefail
-          temp="$(mktemp -d)"
-          trap 'rm -rf "$temp"' EXIT
-          printf 'MB-R2-HEALTH-CHECK\n' > "$temp/smoke.txt"
-          for loja in dryfit her; do
-            if [ "$loja" = dryfit ]; then bucket="mb-dryfit-fotos"; else bucket="mb-for-her-fotos"; fi
-            key="_mb-r2-health/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.txt"
-            npx --no-install wrangler r2 object put "$bucket/$key" --file "$temp/smoke.txt" --remote
-            npx --no-install wrangler r2 object get "$bucket/$key" --file "$temp/received.txt" --remote
-            cmp "$temp/smoke.txt" "$temp/received.txt"
-            npx --no-install wrangler r2 object delete "$bucket/$key" --remote
-            rm -f "$temp/received.txt"
-            echo "Leitura e escrita R2 aprovadas para $loja"
-          done
+          echo 'R2 desativado por escolha do proprietário. Nenhuma cobrança ou bucket será criado.'
+          node -e "const fs=require('fs'); for(const shop of ['dryfit','her']){ const p='cloudflare-dist/'+shop+'/wrangler.json'; const c=JSON.parse(fs.readFileSync(p)); if(c.r2_buckets?.length) process.exit(1); if(c.vars?.MB_PHOTOS_ENABLED && String(c.vars.MB_PHOTOS_ENABLED)!=='0')process.exit(1); console.log(shop+': sem binding R2'); }"
       - name: Dry-run de ambas as lojas (sem deploy)
         run: |
           npx --no-install wrangler deploy --dry-run --config cloudflare-dist/dryfit/wrangler.json
