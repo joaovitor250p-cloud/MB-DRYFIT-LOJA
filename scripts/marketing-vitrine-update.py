@@ -145,16 +145,20 @@ function mbSortNewGroups(list){
 }
 """
     html=put(html,"function groups(){",helper+"function groups(){",str(storefront))
-    html=put(html,"function render(){const all=groups(),visible=all.filter(isStoreGroupVisible)",
-      "function render(){const all=mbSortNewGroups(groups()),visible=all.filter(isStoreGroupVisible)",str(storefront))
+    html=put(html,"return [...map.values()]}",
+      "return [...map.values()].sort((a,b)=>{const ids=typeof mbMarketingNewIds==='undefined'?new Set():mbMarketingNewIds;return Number(b.variants.some(v=>ids.has(v.id)))-Number(a.variants.some(v=>ids.has(v.id)))})}",str(storefront))
     html=put(html,"cards.forEach((g,i)=>drawCard(g,cardNodes[i]));",
-      """cards.forEach((g,i)=>{
- drawCard(g,cardNodes[i]);
- if(g.variants.some(p=>mbMarketingNewIds.has(p.id))){
-  const target=cardNodes[i]?.querySelector('.photo')||cardNodes[i];
-  const tag=document.createElement('span');tag.className='mb-new-product-label';tag.textContent='NOVIDADE';target?.append(tag);
- }
-});""",str(storefront))
+      """cards.forEach((g,i)=>drawCard(g,cardNodes[i]));
+if(typeof mbMarketingNewIds!=='undefined' && mbMarketingNewIds.size){
+ cards.forEach((g,i)=>{
+  if(g.variants.some(p=>mbMarketingNewIds.has(p.id))){
+   const target=cardNodes[i]?.querySelector?.('.photo')||cardNodes[i];
+   if(target&&typeof target.append==='function'){
+    const tag=document.createElement('span');tag.className='mb-new-product-label';tag.textContent='NOVIDADE';target.append(tag);
+   }
+  }
+ });
+}""",str(storefront))
     publicScript="""
 <script>
 (()=> {
