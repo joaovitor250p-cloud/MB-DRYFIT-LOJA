@@ -157,7 +157,7 @@ for store in ('mb-dryfit','mb-for-her'):
  s=rep(s,"async function openContactChooser(message=''){",
  """let mbContactCache=null,mbContactCacheUntil=0;
 async function mbCachedContactSellers(){
- if(mbContactCache&&Date.now()<mbContactCacheUntil)return mbContactCache;
+ // Verify sellers again on each open; staff changes take effect immediately.
  const response=await fetch('/api/shop/sellers'),data=await response.json();
  if(!response.ok||!Array.isArray(data.items))throw Error('Vendedores indisponíveis');
  mbContactCache=data;mbContactCacheUntil=Date.now()+60000;return data
