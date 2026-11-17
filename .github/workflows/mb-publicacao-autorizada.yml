@@ -797,15 +797,31 @@ jobs:
                 const status=document.createElement('small');status.setAttribute('role','status');
                 button.addEventListener('click',async()=>{
                   const selected=file.files?.[0];if(!selected){status.textContent='Escolha um arquivo.';return}
-                  if(selected.size>(selected.type.startsWith('video/')?10:5)*1048576){status.textContent='Arquivo acima do limite.';return}
-                  button.disabled=true;status.textContent='Enviando…';
+                  if(selected.size>(selected.type.startsWith('video/')?5:8)*1048576){status.textContent='Arquivo acima do limite.';return}
+                  button.disabled=true;status.textContent='Otimizando…';
                   try{
-                    const result=await fetch('/api/catalog-media',{method:'POST',headers:{'Content-Type':selected.type},body:selected,credentials:'same-origin'});
+                    let upload=selected;
+                    if(/^image\\/(jpeg|png|webp)$/.test(selected.type)){
+                      const bitmap=await createImageBitmap(selected);
+                      try{
+                        const scale=Math.min(1,1400/Math.max(bitmap.width,bitmap.height));
+                        const canvas=document.createElement('canvas');
+                        canvas.width=Math.max(1,Math.round(bitmap.width*scale));
+                        canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+                        canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);
+                        const webp=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',0.76));
+                        if(!webp||webp.type!=='image/webp')throw Error('Não foi possível converter a imagem.');
+                        upload=webp;
+                      }finally{bitmap.close?.()}
+                      if(upload.size>1048576)throw Error('Imagem ainda grande após otimização (máximo 1 MB). Escolha uma foto menor.');
+                    }
+                    status.textContent='Enviando arquivo otimizado…';
+                    const result=await fetch('/api/catalog-media',{method:'POST',headers:{'Content-Type':upload.type},body:upload,credentials:'same-origin'});
                     const body=await result.json();if(!result.ok)throw Error(body.error||'Falha no armazenamento.');
                     url.value=body.url;url.dispatchEvent(new Event('input',{bubbles:true}));
                     const kind=form.querySelector('[name="banner_slide_'+n+'_type"]');
-                    if(kind){kind.value=selected.type.startsWith('video/')?'video':'image';kind.dispatchEvent(new Event('change',{bubbles:true}))}
-                    status.textContent='Enviado. Salve o rascunho e publique para aparecer na loja.';
+                    if(kind){kind.value=upload.type.startsWith('video/')?'video':'image';kind.dispatchEvent(new Event('change',{bubbles:true}))}
+                    status.textContent='Enviado ('+Math.round(upload.size/1024)+' KB). Salve o rascunho e publique.';
                   }catch(e){status.textContent=e.message||'Não foi possível enviar. Use um link HTTPS.'}
                   finally{button.disabled=false}
                 });
@@ -824,10 +840,15 @@ jobs:
               content=content.replace(get,"""if(u.pathname.startsWith('/catalogo/media/')&&req.method==='GET'){
               const key=u.pathname.slice('/catalogo/media/'.length);
               if(!/^[0-9a-f-]{36}$/.test(key))return new Response('Mídia não encontrada',{status:404});
+              const cache=typeof caches!=='undefined'?caches.default:null;
+              const cacheKey=new Request(u.toString(),{method:'GET'});
+              if(cache){const hit=await cache.match(cacheKey);if(hit)return hit}
               if(!env.BUCKET||env.MB_PHOTOS_ENABLED==='0')return new Response('Armazenamento indisponível',{status:503});
               const object=await env.BUCKET.get('campaign/'+key);
               if(!object)return new Response('Mídia não encontrada',{status:404});
-              return new Response(object.body,{headers:{'Content-Type':object.httpMetadata?.contentType||'application/octet-stream','X-Content-Type-Options':'nosniff','Cache-Control':'public,max-age=1800'}});
+              const response=new Response(object.body,{headers:{'Content-Type':object.httpMetadata?.contentType||'application/octet-stream','X-Content-Type-Options':'nosniff','Cache-Control':'public,max-age=604800,immutable'}});
+              if(cache)await cache.put(cacheKey,response.clone()).catch(()=>{});
+              return response;
             }
             """+get,1)
               post="if(u.pathname==='/api/upload'&&req.method==='POST')"
@@ -836,7 +857,7 @@ jobs:
               if(!owner)return json({error:'Apenas o dono pode enviar mídias.'},403);
               if(!env.BUCKET||env.MB_PHOTOS_ENABLED==='0')return json({error:'O armazenamento de mídia ainda não está habilitado. Enquanto isso, adicione um link HTTPS no editor.'},503);
               const type=(req.headers.get('Content-Type')||'').split(';')[0].trim().toLowerCase();
-              const types={'image/jpeg':5*1048576,'image/png':5*1048576,'image/webp':5*1048576,'image/gif':5*1048576,'video/mp4':10*1048576,'video/webm':10*1048576};
+              const types={'image/jpeg':1048576,'image/png':1048576,'image/webp':1048576,'image/gif':1048576,'video/mp4':5*1048576,'video/webm':5*1048576};
               const max=types[type];if(!max)return json({error:'Formatos: JPG, PNG, WebP, GIF, MP4 ou WebM.'},400);
               const declared=Number(req.headers.get('Content-Length')||0);
               if(declared>max)return json({error:'Arquivo muito grande.'},413);
@@ -1699,15 +1720,31 @@ jobs:
                 const status=document.createElement('small');status.setAttribute('role','status');
                 button.addEventListener('click',async()=>{
                   const selected=file.files?.[0];if(!selected){status.textContent='Escolha um arquivo.';return}
-                  if(selected.size>(selected.type.startsWith('video/')?10:5)*1048576){status.textContent='Arquivo acima do limite.';return}
-                  button.disabled=true;status.textContent='Enviando…';
+                  if(selected.size>(selected.type.startsWith('video/')?5:8)*1048576){status.textContent='Arquivo acima do limite.';return}
+                  button.disabled=true;status.textContent='Otimizando…';
                   try{
-                    const result=await fetch('/api/catalog-media',{method:'POST',headers:{'Content-Type':selected.type},body:selected,credentials:'same-origin'});
+                    let upload=selected;
+                    if(/^image\\/(jpeg|png|webp)$/.test(selected.type)){
+                      const bitmap=await createImageBitmap(selected);
+                      try{
+                        const scale=Math.min(1,1400/Math.max(bitmap.width,bitmap.height));
+                        const canvas=document.createElement('canvas');
+                        canvas.width=Math.max(1,Math.round(bitmap.width*scale));
+                        canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+                        canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);
+                        const webp=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',0.76));
+                        if(!webp||webp.type!=='image/webp')throw Error('Não foi possível converter a imagem.');
+                        upload=webp;
+                      }finally{bitmap.close?.()}
+                      if(upload.size>1048576)throw Error('Imagem ainda grande após otimização (máximo 1 MB). Escolha uma foto menor.');
+                    }
+                    status.textContent='Enviando arquivo otimizado…';
+                    const result=await fetch('/api/catalog-media',{method:'POST',headers:{'Content-Type':upload.type},body:upload,credentials:'same-origin'});
                     const body=await result.json();if(!result.ok)throw Error(body.error||'Falha no armazenamento.');
                     url.value=body.url;url.dispatchEvent(new Event('input',{bubbles:true}));
                     const kind=form.querySelector('[name="banner_slide_'+n+'_type"]');
-                    if(kind){kind.value=selected.type.startsWith('video/')?'video':'image';kind.dispatchEvent(new Event('change',{bubbles:true}))}
-                    status.textContent='Enviado. Salve o rascunho e publique para aparecer na loja.';
+                    if(kind){kind.value=upload.type.startsWith('video/')?'video':'image';kind.dispatchEvent(new Event('change',{bubbles:true}))}
+                    status.textContent='Enviado ('+Math.round(upload.size/1024)+' KB). Salve o rascunho e publique.';
                   }catch(e){status.textContent=e.message||'Não foi possível enviar. Use um link HTTPS.'}
                   finally{button.disabled=false}
                 });
@@ -1726,10 +1763,15 @@ jobs:
               content=content.replace(get,"""if(u.pathname.startsWith('/catalogo/media/')&&req.method==='GET'){
               const key=u.pathname.slice('/catalogo/media/'.length);
               if(!/^[0-9a-f-]{36}$/.test(key))return new Response('Mídia não encontrada',{status:404});
+              const cache=typeof caches!=='undefined'?caches.default:null;
+              const cacheKey=new Request(u.toString(),{method:'GET'});
+              if(cache){const hit=await cache.match(cacheKey);if(hit)return hit}
               if(!env.BUCKET||env.MB_PHOTOS_ENABLED==='0')return new Response('Armazenamento indisponível',{status:503});
               const object=await env.BUCKET.get('campaign/'+key);
               if(!object)return new Response('Mídia não encontrada',{status:404});
-              return new Response(object.body,{headers:{'Content-Type':object.httpMetadata?.contentType||'application/octet-stream','X-Content-Type-Options':'nosniff','Cache-Control':'public,max-age=1800'}});
+              const response=new Response(object.body,{headers:{'Content-Type':object.httpMetadata?.contentType||'application/octet-stream','X-Content-Type-Options':'nosniff','Cache-Control':'public,max-age=604800,immutable'}});
+              if(cache)await cache.put(cacheKey,response.clone()).catch(()=>{});
+              return response;
             }
             """+get,1)
               post="if(u.pathname==='/api/upload'&&req.method==='POST')"
@@ -1738,7 +1780,7 @@ jobs:
               if(!owner)return json({error:'Apenas o dono pode enviar mídias.'},403);
               if(!env.BUCKET||env.MB_PHOTOS_ENABLED==='0')return json({error:'O armazenamento de mídia ainda não está habilitado. Enquanto isso, adicione um link HTTPS no editor.'},503);
               const type=(req.headers.get('Content-Type')||'').split(';')[0].trim().toLowerCase();
-              const types={'image/jpeg':5*1048576,'image/png':5*1048576,'image/webp':5*1048576,'image/gif':5*1048576,'video/mp4':10*1048576,'video/webm':10*1048576};
+              const types={'image/jpeg':1048576,'image/png':1048576,'image/webp':1048576,'image/gif':1048576,'video/mp4':5*1048576,'video/webm':5*1048576};
               const max=types[type];if(!max)return json({error:'Formatos: JPG, PNG, WebP, GIF, MP4 ou WebM.'},400);
               const declared=Number(req.headers.get('Content-Length')||0);
               if(declared>max)return json({error:'Arquivo muito grande.'},413);
