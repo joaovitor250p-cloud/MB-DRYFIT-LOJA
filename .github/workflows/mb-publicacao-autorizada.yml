@@ -138,6 +138,18 @@ jobs:
           @media(max-width:700px){.mb-visual-2026 h1{font-size:clamp(33px,8.7vw,55px)!important}}
               """
             h=h.replace('</style></head>',css+'</style></head>')
+            # Play the silent male background on compatible browsers; static photo remains the fallback.
+            if store=='mb-dryfit':
+              h=h.replace('</body></html>',"""<script>
+          (() => {
+            const v=document.querySelector('.mb-visual-video');
+            if(!v || window.matchMedia('(prefers-reduced-motion: reduce)').matches || navigator.connection?.saveData)return;
+            v.muted=true;v.loop=true;v.playsInline=true;
+            const play=()=>v.play().catch(()=>{});
+            if(document.visibilityState==='visible')play();
+            document.addEventListener('visibilitychange',()=>{if(document.hidden)v.pause();else play()});
+          })();
+          </script></body></html>""")
             path.write_text(h)
             print('Updated photographic landing; preserved catalog:',store)
           PY
@@ -304,6 +316,18 @@ jobs:
           @media(max-width:700px){.mb-visual-2026 h1{font-size:clamp(33px,8.7vw,55px)!important}}
               """
             h=h.replace('</style></head>',css+'</style></head>')
+            # Play the silent male background on compatible browsers; static photo remains the fallback.
+            if store=='mb-dryfit':
+              h=h.replace('</body></html>',"""<script>
+          (() => {
+            const v=document.querySelector('.mb-visual-video');
+            if(!v || window.matchMedia('(prefers-reduced-motion: reduce)').matches || navigator.connection?.saveData)return;
+            v.muted=true;v.loop=true;v.playsInline=true;
+            const play=()=>v.play().catch(()=>{});
+            if(document.visibilityState==='visible')play();
+            document.addEventListener('visibilitychange',()=>{if(document.hidden)v.pause();else play()});
+          })();
+          </script></body></html>""")
             path.write_text(h)
             print('Updated photographic landing; preserved catalog:',store)
           PY
