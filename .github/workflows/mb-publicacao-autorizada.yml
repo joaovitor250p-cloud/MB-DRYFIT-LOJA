@@ -5,6 +5,7 @@ on:
       - main
     paths:
       - .github/workflows/mb-publicacao-autorizada.yml
+      - scripts/fix-media-studio.py
   workflow_dispatch:
 permissions:
   contents: read
