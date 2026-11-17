@@ -28,10 +28,11 @@ for store in ("mb-dryfit","mb-for-her"):
  if s.count(old)!=1:raise SystemExit("Unexpected two store fixture: "+store)
  p.write_text(s.replace(old,"name:label,category:'Camisa',extra_code:'REF.TESTE',price:1000",1),encoding="utf-8")
  p=root/"owner-cross-store-models.test.mjs"
- s=p.read_text(encoding="utf-8")
- old="name:'CONJUNTO FOR HER',category:'Conjunto',price:6000"
- if s.count(old)!=1:raise SystemExit("Unexpected owner cross-store fixture: "+store)
- p.write_text(s.replace(old,"name:'CONJUNTO FOR HER',category:'Conjunto',extra_code:'REF.HER',price:6000",1),encoding="utf-8")
+ if p.exists():
+  s=p.read_text(encoding="utf-8")
+  old="name:'CONJUNTO FOR HER',category:'Conjunto',price:6000"
+  if s.count(old)!=1:raise SystemExit("Unexpected owner cross-store fixture: "+store)
+  p.write_text(s.replace(old,"name:'CONJUNTO FOR HER',category:'Conjunto',extra_code:'REF.HER',price:6000",1),encoding="utf-8")
  p=root/"order-center-ui.test.mjs"
  s=p.read_text(encoding="utf-8")
  if s.count("assert.match(document.querySelector('#onlineOrdersList').textContent,/FEITO/)")!=1:raise SystemExit("Unexpected order center stage fixture: "+store)
