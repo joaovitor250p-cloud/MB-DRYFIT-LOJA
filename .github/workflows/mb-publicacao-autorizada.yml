@@ -901,6 +901,8 @@ jobs:
           python3 catalogos-atuais/scripts/marketing-vitrine-update.py
           python3 catalogos-atuais/scripts/online-order-alerts-update.py
           python3 catalogos-atuais/scripts/fix-media-studio.py
+      - name: Remover atacado, filtros e textos extras dos dois catálogos
+        run: python3 catalogos-atuais/scripts/limpar-catalogos-publicos.py
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -1825,6 +1827,8 @@ jobs:
           python3 catalogos-atuais/scripts/marketing-vitrine-update.py
           python3 catalogos-atuais/scripts/online-order-alerts-update.py
           python3 catalogos-atuais/scripts/fix-media-studio.py
+      - name: Remover atacado, filtros e textos extras dos dois catálogos
+        run: python3 catalogos-atuais/scripts/limpar-catalogos-publicos.py
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
