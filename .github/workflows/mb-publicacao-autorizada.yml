@@ -27,6 +27,8 @@ jobs:
           ref: main
           path: catalogos-atuais
           persist-credentials: false
+      - name: Instalar codificador de frames para vídeos leves
+        run: python3 -m pip install --quiet Pillow
       - name: Aplicar campanha fotográfica mantendo catálogo e vendas
         run: |
           python3 - <<'PY'
@@ -42,6 +44,33 @@ jobs:
             asset_data=source_animation.read_bytes()
             assert asset_data[:4]==b'RIFF' and len(asset_data)>5000, 'Animated WebP asset missing'
             dest_animation.write_bytes(asset_data)
+            # Convert the 4-frame animated WebP into a small hardware-decoded H.264 loop.
+            # Create 6 ping-pong frames; frame blending avoids the visible 4-frame stutter.
+            from PIL import Image
+            from pathlib import Path
+            import tempfile,subprocess
+            with Image.open(source_animation) as img:
+              n=getattr(img,'n_frames',1)
+              assert n>=3 and n<=24
+              with tempfile.TemporaryDirectory() as tmp:
+                indexes=list(range(n))+list(range(n-2,0,-1))
+                for j,k in enumerate(indexes):
+                  img.seek(k)
+                  rgb=img.convert('RGB')
+                  rgb.save(Path(tmp)/('frame%02d.png'%j))
+                  if j==0:
+                    poster_name='mb-'+('male' if store=='mb-dryfit' else 'female')+'-exercise-poster.jpg'
+                    rgb.save(Path('stores')/store/'brand-assets'/poster_name,quality=83,optimize=True)
+                video_name='mb-'+('male' if store=='mb-dryfit' else 'female')+'-exercise-loop.mp4'
+                video_dest=Path('stores')/store/'brand-assets'/video_name
+                subprocess.run(['ffmpeg','-y','-loglevel','error','-framerate','4','-i',str(Path(tmp)/'frame%02d.png'),
+                   '-vf','minterpolate=fps=20:mi_mode=blend,scale=600:-2:flags=bicubic,format=yuv420p',
+                   '-an','-c:v','libx264','-preset','veryfast','-crf','27','-movflags','+faststart',str(video_dest)],
+                   check=True)
+                assert 10000<video_dest.stat().st_size<1000000
+            photo='/brand-assets/'+poster_name
+            video='/brand-assets/'+video_name
+
             # Extend the existing build's brand-media bundler to include animated WebP.
             builder=Path('stores')/store/'scripts/build.mjs'
             builder_code=builder.read_text()
@@ -69,11 +98,11 @@ jobs:
                   ('<div class="mb-editorial-photo mb-visual-hidden"><img src="/brand-assets/mb-gym-poster.jpg" alt="" aria-hidden="true"><div class="mb-editorial-orange"></div></div>' if store=='mb-dryfit' else '<div class="mb-her-editorial-scene mb-visual-hidden">FEITA PARA SE SENTIR INCRÍVEL.</div>')+
                   '</section>')
             # Five real brand shortcuts; preserve hidden legacy category hooks for existing tests.
-            brand_buttons=''.join('<button type="button" data-hero-brand="'+brand+'" aria-label="Ver modelos '+brand+'">'+brand.upper()+' <span aria-hidden="true">↗</span></button>' for brand in ('Nike','Adidas','Jordan','Puma','On'))
-            brand_bar='<nav class="mb-visual-brands" aria-label="Filtrar por marca">'+brand_buttons+'</nav>'
+            # Move the real existing brand tiles to the opening, rather than adding tiny text duplicates.
+            brand_bar='<nav class="mb-visual-brands" id="heroBrands" aria-label="Filtrar por marca"></nav>'
             hero=hero.replace('<div class="mb-visual-bottom">'+category.group()+'</div>',
                               '<div class="mb-visual-bottom">'+brand_bar+'<div class="mb-original-categories-hidden" aria-hidden="true">'+category.group()+'</div></div>')
-            assert hero.count('data-hero-brand=')==5
+            assert hero.count('id="heroBrands"')==1
             h=h[:start]+hero+h[end:]
             css="""
           /* Photo-based MB visual design 2026. The live catalog and shopping logic are untouched. */
@@ -164,6 +193,23 @@ jobs:
           .mb-visual-bottom .mb-visual-brands button:hover,.mb-visual-bottom .mb-visual-brands button:focus-visible{border-color:var(--visual-accent)!important;background:#ffffff24!important}
           @media(max-width:700px){.mb-visual-bottom{padding:11px 10px!important}.mb-visual-bottom .mb-visual-brands{gap:5px}.mb-visual-bottom .mb-visual-brands button{font-size:9px!important;padding:10px 2px!important}.mb-visual-bottom .mb-visual-brands button span{display:none}}
           """
+            # Prevent a second brand strip, use existing logo tiles in readable, touch-friendly cards.
+            css += """
+          .mb-brand-strip[hidden]{display:none!important}
+          .mb-visual-bottom{box-sizing:border-box!important;padding:12px 14px!important}
+          #heroBrands{display:block!important;width:100%;max-width:900px;min-width:0!important;margin:auto}
+          #heroBrands .brand-tile-list{display:flex!important;overflow-x:auto!important;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scrollbar-width:none;gap:10px!important;width:100%!important;padding:3px 0 6px!important}
+          #heroBrands .brand-tile-list::-webkit-scrollbar{display:none}
+          #heroBrands .brand-tile{flex:0 0 132px!important;min-width:132px!important;min-height:65px!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:9px!important;padding:11px 12px!important;border:1px solid #eeeeee!important;border-radius:10px!important;background:#f7f7f8!important;color:#171923!important;scroll-snap-align:start;font:700 12px 'DM Sans',Arial,sans-serif!important}
+          #heroBrands .brand-tile .brand-symbol{display:inline-block!important;flex:0 0 31px!important;width:31px!important;height:26px!important;max-width:31px!important;background-size:contain!important;filter:none!important}
+          #heroBrands .brand-tile[data-choose-brand="On"] .brand-symbol{display:none!important}
+          #heroBrands .brand-tile[data-choose-brand="On"]:before{content:'on';font:800 27px/1 'DM Sans',Arial,sans-serif;letter-spacing:-.16em;color:#111}
+          #heroBrands .brand-tile[data-choose-brand="On"]{background:#f7f7f8!important}
+          #heroBrands .brand-tile:hover,#heroBrands .brand-tile.is-selected{border-color:var(--visual-accent)!important}
+          .mb-visual-2026>.mb-visual-photo{animation:none!important;transform:none!important;filter:none!important}
+          .mb-visual-2026>.mb-visual-video{animation:none!important;transform:none!important;filter:none!important;opacity:1!important}
+          @media(max-width:700px){#heroBrands .brand-tile{flex-basis:117px!important;min-width:117px!important;min-height:63px!important;gap:7px!important;font-size:11px!important}#heroBrands .brand-tile .brand-symbol{flex-basis:27px!important;width:27px!important;height:25px!important}}
+          """
             if store=='mb-dryfit':
               css += """
           .mb-visual-2026>.mb-visual-video{filter:brightness(1.32) contrast(1.05) saturate(.9)!important;opacity:1!important}
@@ -182,8 +228,8 @@ jobs:
           @media(max-width:700px){.mb-visual-2026 h1{font-size:clamp(33px,8.7vw,55px)!important}}
               """
             h=h.replace('</style></head>',css+'</style></head>')
-            # Play the silent male background on compatible browsers; static photo remains the fallback.
-            if store=='mb-dryfit':
+            # Use the same mobile-friendly silent video player on both storefronts.
+            if True:
               h=h.replace('</body></html>',"""<script>
           (() => {
             const v=document.querySelector('.mb-visual-video');
@@ -194,19 +240,24 @@ jobs:
             document.addEventListener('visibilitychange',()=>{if(document.hidden)v.pause();else play()});
           })();
           </script></body></html>""")
-            # Filtering routes through the existing catalog brand tile actions, preserving cart and search.
+            # One brand list in the actual DOM: relocate the five existing logo tiles without cloning.
             h=h.replace('</body></html>',"""<script>
           (() => {
-            document.querySelectorAll('[data-hero-brand]').forEach(button => {
-              button.addEventListener('click', () => {
-                const brand=button.getAttribute('data-hero-brand');
-                const tile=Array.from(document.querySelectorAll('[data-choose-brand]'))
-                    .find(item=>item.getAttribute('data-choose-brand')===brand);
-                if(tile)tile.click();
+            const destination=document.getElementById('heroBrands');
+            const original=document.querySelector('.mb-brand-strip .brand-tile-list');
+            if(destination && original) {
+              destination.appendChild(original);
+              const strip=document.querySelector('.mb-brand-strip');
+              if(strip)strip.hidden=true;
+              const explore=document.querySelector('.mb-visual-actions .hero-secondary');
+              if(explore)explore.addEventListener('click',(event)=>{
+                event.preventDefault();destination.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});
               });
-            });
+            }
           })();
           </script></body></html>""")
+            # Let the HTML video play only when visible; use static poster for low-power devices.
+            h=h.replace('class="mb-visual-video" muted loop','class="mb-visual-video" muted loop')
             path.write_text(h)
             print('Updated photographic landing; preserved catalog:',store)
           PY
@@ -262,6 +313,8 @@ jobs:
           ref: main
           path: catalogos-atuais
           persist-credentials: false
+      - name: Instalar codificador de frames para vídeos leves
+        run: python3 -m pip install --quiet Pillow
       - name: Aplicar campanha fotográfica mantendo catálogo e vendas
         run: |
           python3 - <<'PY'
@@ -277,6 +330,33 @@ jobs:
             asset_data=source_animation.read_bytes()
             assert asset_data[:4]==b'RIFF' and len(asset_data)>5000, 'Animated WebP asset missing'
             dest_animation.write_bytes(asset_data)
+            # Convert the 4-frame animated WebP into a small hardware-decoded H.264 loop.
+            # Create 6 ping-pong frames; frame blending avoids the visible 4-frame stutter.
+            from PIL import Image
+            from pathlib import Path
+            import tempfile,subprocess
+            with Image.open(source_animation) as img:
+              n=getattr(img,'n_frames',1)
+              assert n>=3 and n<=24
+              with tempfile.TemporaryDirectory() as tmp:
+                indexes=list(range(n))+list(range(n-2,0,-1))
+                for j,k in enumerate(indexes):
+                  img.seek(k)
+                  rgb=img.convert('RGB')
+                  rgb.save(Path(tmp)/('frame%02d.png'%j))
+                  if j==0:
+                    poster_name='mb-'+('male' if store=='mb-dryfit' else 'female')+'-exercise-poster.jpg'
+                    rgb.save(Path('stores')/store/'brand-assets'/poster_name,quality=83,optimize=True)
+                video_name='mb-'+('male' if store=='mb-dryfit' else 'female')+'-exercise-loop.mp4'
+                video_dest=Path('stores')/store/'brand-assets'/video_name
+                subprocess.run(['ffmpeg','-y','-loglevel','error','-framerate','4','-i',str(Path(tmp)/'frame%02d.png'),
+                   '-vf','minterpolate=fps=20:mi_mode=blend,scale=600:-2:flags=bicubic,format=yuv420p',
+                   '-an','-c:v','libx264','-preset','veryfast','-crf','27','-movflags','+faststart',str(video_dest)],
+                   check=True)
+                assert 10000<video_dest.stat().st_size<1000000
+            photo='/brand-assets/'+poster_name
+            video='/brand-assets/'+video_name
+
             # Extend the existing build's brand-media bundler to include animated WebP.
             builder=Path('stores')/store/'scripts/build.mjs'
             builder_code=builder.read_text()
@@ -304,11 +384,11 @@ jobs:
                   ('<div class="mb-editorial-photo mb-visual-hidden"><img src="/brand-assets/mb-gym-poster.jpg" alt="" aria-hidden="true"><div class="mb-editorial-orange"></div></div>' if store=='mb-dryfit' else '<div class="mb-her-editorial-scene mb-visual-hidden">FEITA PARA SE SENTIR INCRÍVEL.</div>')+
                   '</section>')
             # Five real brand shortcuts; preserve hidden legacy category hooks for existing tests.
-            brand_buttons=''.join('<button type="button" data-hero-brand="'+brand+'" aria-label="Ver modelos '+brand+'">'+brand.upper()+' <span aria-hidden="true">↗</span></button>' for brand in ('Nike','Adidas','Jordan','Puma','On'))
-            brand_bar='<nav class="mb-visual-brands" aria-label="Filtrar por marca">'+brand_buttons+'</nav>'
+            # Move the real existing brand tiles to the opening, rather than adding tiny text duplicates.
+            brand_bar='<nav class="mb-visual-brands" id="heroBrands" aria-label="Filtrar por marca"></nav>'
             hero=hero.replace('<div class="mb-visual-bottom">'+category.group()+'</div>',
                               '<div class="mb-visual-bottom">'+brand_bar+'<div class="mb-original-categories-hidden" aria-hidden="true">'+category.group()+'</div></div>')
-            assert hero.count('data-hero-brand=')==5
+            assert hero.count('id="heroBrands"')==1
             h=h[:start]+hero+h[end:]
             css="""
           /* Photo-based MB visual design 2026. The live catalog and shopping logic are untouched. */
@@ -399,6 +479,23 @@ jobs:
           .mb-visual-bottom .mb-visual-brands button:hover,.mb-visual-bottom .mb-visual-brands button:focus-visible{border-color:var(--visual-accent)!important;background:#ffffff24!important}
           @media(max-width:700px){.mb-visual-bottom{padding:11px 10px!important}.mb-visual-bottom .mb-visual-brands{gap:5px}.mb-visual-bottom .mb-visual-brands button{font-size:9px!important;padding:10px 2px!important}.mb-visual-bottom .mb-visual-brands button span{display:none}}
           """
+            # Prevent a second brand strip, use existing logo tiles in readable, touch-friendly cards.
+            css += """
+          .mb-brand-strip[hidden]{display:none!important}
+          .mb-visual-bottom{box-sizing:border-box!important;padding:12px 14px!important}
+          #heroBrands{display:block!important;width:100%;max-width:900px;min-width:0!important;margin:auto}
+          #heroBrands .brand-tile-list{display:flex!important;overflow-x:auto!important;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scrollbar-width:none;gap:10px!important;width:100%!important;padding:3px 0 6px!important}
+          #heroBrands .brand-tile-list::-webkit-scrollbar{display:none}
+          #heroBrands .brand-tile{flex:0 0 132px!important;min-width:132px!important;min-height:65px!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:9px!important;padding:11px 12px!important;border:1px solid #eeeeee!important;border-radius:10px!important;background:#f7f7f8!important;color:#171923!important;scroll-snap-align:start;font:700 12px 'DM Sans',Arial,sans-serif!important}
+          #heroBrands .brand-tile .brand-symbol{display:inline-block!important;flex:0 0 31px!important;width:31px!important;height:26px!important;max-width:31px!important;background-size:contain!important;filter:none!important}
+          #heroBrands .brand-tile[data-choose-brand="On"] .brand-symbol{display:none!important}
+          #heroBrands .brand-tile[data-choose-brand="On"]:before{content:'on';font:800 27px/1 'DM Sans',Arial,sans-serif;letter-spacing:-.16em;color:#111}
+          #heroBrands .brand-tile[data-choose-brand="On"]{background:#f7f7f8!important}
+          #heroBrands .brand-tile:hover,#heroBrands .brand-tile.is-selected{border-color:var(--visual-accent)!important}
+          .mb-visual-2026>.mb-visual-photo{animation:none!important;transform:none!important;filter:none!important}
+          .mb-visual-2026>.mb-visual-video{animation:none!important;transform:none!important;filter:none!important;opacity:1!important}
+          @media(max-width:700px){#heroBrands .brand-tile{flex-basis:117px!important;min-width:117px!important;min-height:63px!important;gap:7px!important;font-size:11px!important}#heroBrands .brand-tile .brand-symbol{flex-basis:27px!important;width:27px!important;height:25px!important}}
+          """
             if store=='mb-dryfit':
               css += """
           .mb-visual-2026>.mb-visual-video{filter:brightness(1.32) contrast(1.05) saturate(.9)!important;opacity:1!important}
@@ -417,8 +514,8 @@ jobs:
           @media(max-width:700px){.mb-visual-2026 h1{font-size:clamp(33px,8.7vw,55px)!important}}
               """
             h=h.replace('</style></head>',css+'</style></head>')
-            # Play the silent male background on compatible browsers; static photo remains the fallback.
-            if store=='mb-dryfit':
+            # Use the same mobile-friendly silent video player on both storefronts.
+            if True:
               h=h.replace('</body></html>',"""<script>
           (() => {
             const v=document.querySelector('.mb-visual-video');
@@ -429,19 +526,24 @@ jobs:
             document.addEventListener('visibilitychange',()=>{if(document.hidden)v.pause();else play()});
           })();
           </script></body></html>""")
-            # Filtering routes through the existing catalog brand tile actions, preserving cart and search.
+            # One brand list in the actual DOM: relocate the five existing logo tiles without cloning.
             h=h.replace('</body></html>',"""<script>
           (() => {
-            document.querySelectorAll('[data-hero-brand]').forEach(button => {
-              button.addEventListener('click', () => {
-                const brand=button.getAttribute('data-hero-brand');
-                const tile=Array.from(document.querySelectorAll('[data-choose-brand]'))
-                    .find(item=>item.getAttribute('data-choose-brand')===brand);
-                if(tile)tile.click();
+            const destination=document.getElementById('heroBrands');
+            const original=document.querySelector('.mb-brand-strip .brand-tile-list');
+            if(destination && original) {
+              destination.appendChild(original);
+              const strip=document.querySelector('.mb-brand-strip');
+              if(strip)strip.hidden=true;
+              const explore=document.querySelector('.mb-visual-actions .hero-secondary');
+              if(explore)explore.addEventListener('click',(event)=>{
+                event.preventDefault();destination.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});
               });
-            });
+            }
           })();
           </script></body></html>""")
+            # Let the HTML video play only when visible; use static poster for low-power devices.
+            h=h.replace('class="mb-visual-video" muted loop','class="mb-visual-video" muted loop')
             path.write_text(h)
             print('Updated photographic landing; preserved catalog:',store)
           PY
