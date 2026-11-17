@@ -847,7 +847,7 @@ jobs:
               const object=await env.BUCKET.get('campaign/'+key);
               if(!object)return new Response('Mídia não encontrada',{status:404});
               const response=new Response(object.body,{headers:{'Content-Type':object.httpMetadata?.contentType||'application/octet-stream','X-Content-Type-Options':'nosniff','Cache-Control':'public,max-age=604800,immutable'}});
-              if(cache)ctx.waitUntil(cache.put(cacheKey,response.clone()).catch(()=>{}));
+              if(cache)await cache.put(cacheKey,response.clone()).catch(()=>{});
               return response;
             }
             """+get,1)
@@ -1770,7 +1770,7 @@ jobs:
               const object=await env.BUCKET.get('campaign/'+key);
               if(!object)return new Response('Mídia não encontrada',{status:404});
               const response=new Response(object.body,{headers:{'Content-Type':object.httpMetadata?.contentType||'application/octet-stream','X-Content-Type-Options':'nosniff','Cache-Control':'public,max-age=604800,immutable'}});
-              if(cache)ctx.waitUntil(cache.put(cacheKey,response.clone()).catch(()=>{}));
+              if(cache)await cache.put(cacheKey,response.clone()).catch(()=>{});
               return response;
             }
             """+get,1)
