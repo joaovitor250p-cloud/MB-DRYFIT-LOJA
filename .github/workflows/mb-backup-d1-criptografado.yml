@@ -46,7 +46,38 @@ jobs:
             rm -f ".backup-privado/$loja.sql"
           done
           (cd .backup-privado/cifrados && sha256sum *.enc > SHA256SUMS.txt)
-          printf 'Backup D1 criptografado. Não inclui fotos R2, Firebase ou arquivos externos.\n' > .backup-privado/cifrados/LEIA-ME.txt
+      - name: Validar descriptografia e integridade SQL em banco local isolado
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          trap 'rm -f .backup-privado/validar-*.sql .backup-privado/validar-*.sqlite' EXIT
+          for loja in dryfit her; do
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 250000 -in ".backup-privado/cifrados/$loja.sql.enc" -out ".backup-privado/validar-$loja.sql" -pass env:MB_BACKUP_PASSPHRASE
+            test -s ".backup-privado/validar-$loja.sql"
+            LOJA="$loja" python3 - <<'PY'
+          import os,sqlite3
+          from pathlib import Path
+          loja=os.environ['LOJA']
+          source=Path(f'.backup-privado/validar-{loja}.sql')
+          database=Path(f'.backup-privado/validar-{loja}.sqlite')
+          sql=source.read_text(encoding='utf-8')
+          db=sqlite3.connect(database)
+          try:
+              db.executescript(sql)
+              result=db.execute('PRAGMA integrity_check').fetchone()[0]
+              if result!='ok': raise RuntimeError('Falha de integridade no backup '+loja)
+              table_count=db.execute("SELECT count(*) FROM sqlite_master WHERE type='table'").fetchone()[0]
+              if table_count==0: raise RuntimeError('Nenhuma tabela no backup '+loja)
+              print(f'Restauração local e integridade aprovadas para {loja}.')
+          finally:
+              db.close()
+          PY
+            rm -f ".backup-privado/validar-$loja.sql" ".backup-privado/validar-$loja.sqlite"
+          done
+          (cd .backup-privado/cifrados && sha256sum --check SHA256SUMS.txt)
+
+          printf 'Backup D1 criptografado de duas lojas. CUIDADO: nao inclui fotos R2, contas Firebase ou secrets. Validade operacional ainda depende de teste de restauracao do aplicativo em homologacao.\\n' > .backup-privado/cifrados/LEIA-ME.txt
       - name: Guardar apenas arquivos criptografados por 7 dias
         uses: actions/upload-artifact@v4
         with:
