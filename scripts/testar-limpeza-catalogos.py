@@ -18,6 +18,8 @@ with tempfile.TemporaryDirectory() as temp:
             '<main id="colecao"><h2>Destaques da coleção</h2><nav id="filters"></nav>'
             '<article class="catalog-product-card">Peça permanece</article></main></body></html>',
             encoding="utf-8")
+        (worker / "appearance-client.js").write_text(
+            "function apply(a){currentAppearance=a;renderCurated(a);}", encoding="utf-8")
         (worker / "page.html").write_text(
             "owner menu [['appearance','✦','Personalizar catálogo'],['products','▦','Modelos']]", encoding="utf-8")
     script = Path(__file__).with_name("limpar-catalogos-publicos.py")
@@ -26,10 +28,15 @@ with tempfile.TemporaryDirectory() as temp:
         worker = root / "stores" / store / "worker"
         shop = (worker / "storefront.html").read_text()
         page = (worker / "page.html").read_text()
+        client = (worker / "appearance-client.js").read_text()
         assert 'Peça permanece' in shop
         assert 'no atacado' not in shop.lower()
         assert 'Pedir no atacado' not in shop
         assert 'Destaques da coleção' not in shop
+        assert '<a href="#colecao">Categorias</a>' in shop
+        assert '<a href="#filters">Categorias</a>' not in shop
+        assert '.mbw-categories,#filters' in shop
+        assert 'currentAppearance=a;renderCurated(a);' not in client
         assert '#novidades,#destaques,#categorias' in shop
         assert "Personalizar catálogo" not in page
         assert "['products','▦','Modelos']" in page
