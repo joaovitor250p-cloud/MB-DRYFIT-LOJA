@@ -101,7 +101,7 @@ for store in ('mb-dryfit','mb-for-her'):
   document.getElementById('appearanceEditor').append(simplifiedStyle);
   const heading=document.querySelector('#appearanceEditor [data-editor-section="banner"]');
   if(heading)heading.textContent='Imagens e vídeos';
-  queueMicrotask(()=>heading?.click());
+  if(typeof Promise!=='undefined')Promise.resolve().then(()=>{if(typeof heading?.click==='function')heading.click()}).catch(()=>{});
 """
     e=put(e,setup_anchor,setup_anchor+"\n"+media_only,str(editor))
     e=e.replace('<h2>Personalizar catálogo</h2>','<h2>Imagens da vitrine</h2>',1)
@@ -120,7 +120,7 @@ for store in ('mb-dryfit','mb-for-her'):
     # The selection is loaded per model from the authenticated owner endpoint.
     h=put(h,"dialog.showModal();dialog.scrollTop=0;",
       """dialog.showModal();dialog.scrollTop=0;
- fetch('/api/owner-marketing',{credentials:'same-origin'}).then(r=>r.ok?r.json():null).then(marketing=>{
+ if(typeof fetch==='function')fetch('/api/owner-marketing',{credentials:'same-origin'}).then(r=>r.ok?r.json():null).then(marketing=>{
    const control=$('#modelIsNew');
    if(control&&marketing){control.checked=variants.some(v=>(marketing.new_ids||[]).includes(v.id));}
  }).catch(()=>{});""",str(page))
