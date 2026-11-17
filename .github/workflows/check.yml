@@ -15,5 +15,6 @@ jobs:
           node-version: '24'
           cache: npm
       - run: python3 -m py_compile scripts/fix-media-studio.py
+      - run: python3 -m py_compile scripts/online-order-alerts-update.py scripts/fix-media-studio.py
       - run: npm ci
       - run: npm run check
