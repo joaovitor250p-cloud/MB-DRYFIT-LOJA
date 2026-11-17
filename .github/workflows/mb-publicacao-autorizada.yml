@@ -28,7 +28,7 @@ jobs:
           path: catalogos-atuais
           persist-credentials: false
       - name: Instalar codificador de frames para vídeos leves
-        run: python3 -m pip install --quiet Pillow
+        run: python3 -m pip install --quiet Pillow imageio-ffmpeg
       - name: Aplicar campanha fotográfica mantendo catálogo e vendas
         run: |
           python3 - <<'PY'
@@ -48,7 +48,7 @@ jobs:
             # Create 6 ping-pong frames; frame blending avoids the visible 4-frame stutter.
             from PIL import Image
             from pathlib import Path
-            import tempfile,subprocess
+            import tempfile,subprocess,imageio_ffmpeg
             with Image.open(source_animation) as img:
               n=getattr(img,'n_frames',1)
               assert n>=3 and n<=24
@@ -63,7 +63,7 @@ jobs:
                     rgb.save(Path('stores')/store/'brand-assets'/poster_name,quality=83,optimize=True)
                 video_name='mb-'+('male' if store=='mb-dryfit' else 'female')+'-exercise-loop.mp4'
                 video_dest=Path('stores')/store/'brand-assets'/video_name
-                subprocess.run(['ffmpeg','-y','-loglevel','error','-framerate','4','-i',str(Path(tmp)/'frame%02d.png'),
+                subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(),'-y','-loglevel','error','-framerate','4','-i',str(Path(tmp)/'frame%02d.png'),
                    '-vf','minterpolate=fps=20:mi_mode=blend,scale=600:-2:flags=bicubic,format=yuv420p',
                    '-an','-c:v','libx264','-preset','veryfast','-crf','27','-movflags','+faststart',str(video_dest)],
                    check=True)
@@ -314,7 +314,7 @@ jobs:
           path: catalogos-atuais
           persist-credentials: false
       - name: Instalar codificador de frames para vídeos leves
-        run: python3 -m pip install --quiet Pillow
+        run: python3 -m pip install --quiet Pillow imageio-ffmpeg
       - name: Aplicar campanha fotográfica mantendo catálogo e vendas
         run: |
           python3 - <<'PY'
@@ -334,7 +334,7 @@ jobs:
             # Create 6 ping-pong frames; frame blending avoids the visible 4-frame stutter.
             from PIL import Image
             from pathlib import Path
-            import tempfile,subprocess
+            import tempfile,subprocess,imageio_ffmpeg
             with Image.open(source_animation) as img:
               n=getattr(img,'n_frames',1)
               assert n>=3 and n<=24
@@ -349,7 +349,7 @@ jobs:
                     rgb.save(Path('stores')/store/'brand-assets'/poster_name,quality=83,optimize=True)
                 video_name='mb-'+('male' if store=='mb-dryfit' else 'female')+'-exercise-loop.mp4'
                 video_dest=Path('stores')/store/'brand-assets'/video_name
-                subprocess.run(['ffmpeg','-y','-loglevel','error','-framerate','4','-i',str(Path(tmp)/'frame%02d.png'),
+                subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(),'-y','-loglevel','error','-framerate','4','-i',str(Path(tmp)/'frame%02d.png'),
                    '-vf','minterpolate=fps=20:mi_mode=blend,scale=600:-2:flags=bicubic,format=yuv420p',
                    '-an','-c:v','libx264','-preset','veryfast','-crf','27','-movflags','+faststart',str(video_dest)],
                    check=True)
