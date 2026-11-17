@@ -1,0 +1,56 @@
+name: Exportação criptografada D1 - MB
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  exportar:
+    name: Exportar D1 separado por loja (somente leitura)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: cloudflare-producao
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      MB_BACKUP_PASSPHRASE: ${{ secrets.MB_BACKUP_PASSPHRASE }}
+      MB_RELEASE_CODE_ONLY: '1'
+    steps:
+      - name: Verificar acesso e chave de criptografia
+        shell: bash
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "::error::Token da Cloudflare ausente"; exit 1; }
+          test "${#MB_BACKUP_PASSPHRASE}" -ge 20 || { echo "::error::Configure MB_BACKUP_PASSPHRASE (20+ caracteres) nos segredos do environment cloudflare-producao"; exit 1; }
+      - uses: actions/checkout@v4
+        with:
+          ref: cff723e5b8384fccb3d134d8a9da30bdfb62b61f
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Montar configurações das duas bases sem migrações
+        run: node scripts/cloudflare-prepare.mjs cloudflare.domains.config.json
+      - name: Exportar as duas bases de dados separadamente e criptografar
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .backup-privado/cifrados
+          umask 077
+          trap 'rm -f .backup-privado/*.sql' EXIT
+          for loja in dryfit her; do
+            echo "Exportando D1 de $loja (sem imprimir dados)..."
+            npx --no-install wrangler d1 export DB --remote --config "cloudflare-dist/$loja/wrangler.json" --output ".backup-privado/$loja.sql"
+            test -s ".backup-privado/$loja.sql"
+            openssl enc -aes-256-cbc -pbkdf2 -iter 250000 -salt -in ".backup-privado/$loja.sql" -out ".backup-privado/cifrados/$loja.sql.enc" -pass env:MB_BACKUP_PASSPHRASE
+            rm -f ".backup-privado/$loja.sql"
+          done
+          (cd .backup-privado/cifrados && sha256sum *.enc > SHA256SUMS.txt)
+          printf 'Backup D1 criptografado. Não inclui fotos R2, Firebase ou arquivos externos.\n' > .backup-privado/cifrados/LEIA-ME.txt
+      - name: Guardar apenas arquivos criptografados por 7 dias
+        uses: actions/upload-artifact@v4
+        with:
+          name: mb-d1-criptografado-${{ github.run_number }}
+          path: .backup-privado/cifrados/
+          if-no-files-found: error
+          retention-days: 7
