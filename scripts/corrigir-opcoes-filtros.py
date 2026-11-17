@@ -167,9 +167,10 @@ for store in ('mb-dryfit','mb-for-her'):
  # append labels to an otherwise empty filter.
  old="'<label>Marca<select name=\"brand\"><option value=\"\">Sem marca definida</option>'+['Nike','Adidas','Jordan','Puma','On','Outra'].map(b=>'<option '+(p?.brand===b?'selected':'')+'>'+b+'</option>').join('')+'</select></label><label>Tipo de peça<select name=\"category\" required><option value=\"\">Selecionar tipo de peça</option>'+garmentTypes.map(c=>'<option '+(p?.category===c?'selected':'')+'>'+c+'</option>').join('')+'</select></label>'"
  new="'<label>Marca<input name=\"brand\" list=\"mbModelBrands\" maxlength=\"50\" placeholder=\"Escolha ou digite a marca\" value=\"'+esc(p?.brand||'')+'\"><datalist id=\"mbModelBrands\">'+[...new Set(['Nike','Adidas','Jordan','Puma','On','Outra',...products.map(v=>v.brand).filter(Boolean)])].map(b=>'<option value=\"'+esc(b)+'\"></option>').join('')+'</datalist></label><label>Tipo de peça<input name=\"category\" list=\"mbModelPieces\" required maxlength=\"60\" placeholder=\"Escolha ou digite o tipo\" value=\"'+esc(p?.category||'')+'\"><datalist id=\"mbModelPieces\">'+[...new Set([...garmentTypes,...products.map(v=>v.category).filter(Boolean)])].map(c=>'<option value=\"'+esc(c)+'\"></option>').join('')+'</datalist></label>'"
- begin=s.find('<label>Marca<select name="brand">')
+ model_start=s.find('function openModel(')
+ begin=s.find('<label>Marca<select name="brand">',model_start) if model_start>=0 else -1
  finish=s.find('<label>Preço padrão',begin) if begin>=0 else -1
- if begin<0 or finish<0:raise SystemExit(f'{store}: model brand/type fields changed; cannot edit safely')
+ if begin<0 or finish<0 or finish-begin>1200:raise SystemExit(f'{store}: model brand/type fields changed; cannot edit safely')
  s=s[:begin]+new[1:-1]+s[finish:]
 
  page.write_text(s)
