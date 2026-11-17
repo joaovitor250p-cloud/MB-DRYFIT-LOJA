@@ -119,14 +119,13 @@ for store in ('mb-dryfit','mb-for-her'):
     h=put(h,anchor,checkbox+anchor,str(page))
     # The selection is loaded per model from the authenticated owner endpoint.
     h=put(h,"dialog.showModal();dialog.scrollTop=0;",
-      """$('#modelForm').onsubmit=saveModel;dialog.showModal();
+      """dialog.showModal();dialog.scrollTop=0;
  fetch('/api/owner-marketing',{credentials:'same-origin'}).then(r=>r.ok?r.json():null).then(marketing=>{
    const control=$('#modelIsNew');
    if(control&&marketing){control.checked=variants.some(v=>(marketing.new_ids||[]).includes(v.id));}
- }).catch(()=>{});
-}""",str(page))
+ }).catch(()=>{});""",str(page))
     h=put(h,"const result=await api(modelEditingId?'product-models/'+modelEditingId:'product-models',modelEditingId?'PATCH':'POST',data);",
-      """const result=await api('product-models','POST',data);
+      """const result=await api(modelEditingId?'product-models/'+modelEditingId:'product-models',modelEditingId?'PATCH':'POST',data);
  try{
   const ids=[...new Set([...(result.variants||[]),...products.filter(v=>modelEditingId&&v.model_id===modelEditingId)].map(v=>v.id).filter(Boolean))];
   if(ids.length){
