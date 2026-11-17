@@ -35,5 +35,9 @@ jobs:
         run: |
           python3 -m py_compile scripts/limpar-catalogos-publicos.py
           python3 scripts/testar-limpeza-catalogos.py
+      - name: Testar os filtros nas duas lojas sem publicar
+        run: |
+          python3 -m py_compile scripts/aplicar-filtros-marca-peca.py
+          python3 scripts/testar-filtros-marca-peca.py
       - run: npm ci
       - run: npm run check
