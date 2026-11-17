@@ -16,6 +16,7 @@ on:
       - scripts/ajustes-ref-estoque-tamanhos.py
       - scripts/ajustes-pedido-whatsapp-impressao.py
       - scripts/corrigir-opcoes-filtros.py
+      - scripts/atualizar-fixtures-ref.py
   workflow_dispatch:
 permissions:
   contents: read
@@ -932,6 +933,8 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - name: Ajustar fixtures históricas aos cadastros com REF obrigatória
+        run: python3 catalogos-atuais/scripts/atualizar-fixtures-ref.py
       - run: npm run check
       - run: npm run test:hosting
       - name: Preparar apenas o código, sem ativar R2 nem aplicar a migração 0042
