@@ -416,6 +416,131 @@ jobs:
               page.write_text(html)
               print('Abertura removida do catálogo de',store)
           PY
+      - name: Filtros gerenciáveis no catálogo e remover acesso público da equipe
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          for store in ('mb-dryfit','mb-for-her'):
+              root=Path('stores')/store/'worker'
+              shop=root/'storefront.html'
+              html=shop.read_text()
+              if '<a href="/acesso">Acesso da equipe ↗</a>' not in html:
+                  raise SystemExit('Link de equipe não localizado: '+store)
+              html=html.replace('<a href="/acesso">Acesso da equipe ↗</a>','')
+              categories='Camisa\nBermuda\nCalça\nConjunto\nPeças importadas' if store=='mb-dryfit' else 'Top\nConjunto\nJaqueta\nLegging\nShort\nVestido'
+              brands='Nike\nAdidas\nJordan\nPuma\nOn'
+              # Existing shopping category logic remains; only category matching and toolbar UI are extended.
+              anchor="const cats=['Todos',...new Set(products.map(p=>p.category))];"
+              if anchor not in html: raise SystemExit('Categoria dinâmica não localizada')
+              new_cats="const menu=window.mbCatalogFilters?.categories;const cats=['Todos',...(menu?.length?menu:[...new Set(products.map(p=>p.category))])];"
+              html=html.replace(anchor,new_cats,1)
+              old="g.variants.some(p=>p.category===category)"
+              new="g.variants.some(p=>matchCatalogCategory(p,category))"
+              if old not in html: raise SystemExit('Filtro de categoria não localizado')
+              html=html.replace(old,new,1)
+              old="function groups(){"
+              category_helper="""
+          function catalogNormalize(text){return String(text||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().trim()}
+          function matchCatalogCategory(p,label){
+            const selected=catalogNormalize(label),original=catalogNormalize(p.category),name=catalogNormalize(p.name);
+            if(!selected)return true;
+            if(original===selected)return true;
+            const aliases={'camisa':['camiseta','camisas','camisetas','manga longa','regata'],'bermuda':['bermudas','short','shorts'],'calca':['calcas'],'conjunto':['conjuntos'],'top':['tops'],'jaqueta':['jaquetas'],'legging':['leggings'],'short':['shorts','bermuda'],'vestido':['vestidos'],'pecas importadas':['importada','importado','importados','importadas']};
+            const matches=aliases[selected]||[];
+            if(matches.includes(original))return true;
+            if(selected==='pecas importadas')return /\\b(importad[ao]s?|importacao)\\b/.test(name+' '+original);
+            return false;
+          }
+          """
+              if old not in html: raise SystemExit('groups not found')
+              html=html.replace(old,category_helper+old,1)
+              # Place the new brand filters in the product area, separate from the removed hero.
+              needle='<nav class="filters" id="filters" aria-label="Tipos de peça"></nav>'
+              insertion=needle+'<nav class="catalog-brand-chips" id="catalogBrandChips" aria-label="Filtrar por marca"></nav>'
+              if needle not in html: raise SystemExit('Category nav not found')
+              html=html.replace(needle,insertion,1)
+              anchor='updateBrandFilterUI()}'
+              if anchor not in html: raise SystemExit('Render hook missing')
+              html=html.replace(anchor,'drawCatalogBrandChips();updateBrandFilterUI()}',1)
+              before='function render(){'
+              brand_helper="""
+          function drawCatalogBrandChips(){
+            const nav=document.getElementById('catalogBrandChips');if(!nav)return;
+            const prefs=window.mbCatalogFilters?.brands||['Nike','Adidas','Jordan','Puma','On'];
+            const names=[...new Set(prefs)].filter(Boolean);
+            nav.innerHTML='<button type="button" data-brand-chip="" class="'+(!brandFilter?'on':'')+'">Todas as marcas</button>'+
+              names.map(name=>'<button type="button" data-brand-chip="'+esc(name)+'" class="'+(brandFilter===name?'on':'')+'">'+esc(name)+'</button>').join('');
+            nav.querySelectorAll('[data-brand-chip]').forEach(button=>button.addEventListener('click',()=>{
+              brandFilter=button.dataset.brandChip;category='';search='';render.limit=60;
+              const input=document.getElementById('search');if(input)input.value='';
+              render();
+            }));
+          }
+          """
+              html=html.replace(before,brand_helper+before,1)
+              css="""
+          /* Compact, owner-configurable category and brand filters. No campaign hero. */
+          #colecao .filters{display:flex!important;gap:9px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:8px 0 14px;scroll-snap-type:x proximity;touch-action:pan-x}
+          #colecao .filters::-webkit-scrollbar,.catalog-brand-chips::-webkit-scrollbar{display:none}
+          #colecao .filters button{flex:0 0 auto;min-height:43px;padding:10px 18px!important;border-radius:999px!important;border:1px solid #dadde1!important;background:#fff!important;color:#242631!important;font:700 12px/1.2 Inter,Arial,sans-serif!important;scroll-snap-align:start;white-space:nowrap;transform:none!important}
+          #colecao .filters button.on{border-color:var(--shop-accent,#f97316)!important;background:var(--shop-accent,#f97316)!important;color:white!important}
+          .catalog-brand-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:6px 0 12px;touch-action:pan-x}
+          .catalog-brand-chips button{flex:0 0 auto;border:1px solid #e2e3e6;border-radius:10px;background:#f6f6f7;color:#36383f;font:600 11px Inter,Arial,sans-serif;padding:10px 15px;min-height:39px;white-space:nowrap}
+          .catalog-brand-chips button.on{background:#22242b;color:white;border-color:#22242b}
+          @media(max-width:700px){#colecao .filters button{padding:10px 14px!important;font-size:11px!important}.catalog-brand-chips button{font-size:11px;padding:9px 12px}}
+              """
+              html=html.replace('</style></head>',css+'</style></head>',1)
+              shop.write_text(html)
+              server=root/'appearance.js'
+              data=server.read_text()
+              if 'out.catalog_categories' in data: raise SystemExit('Duplicate server patch')
+              validator="""
+           // Each store owns its own category and brand filter menus; this never deletes products.
+           for(const key of ['catalog_categories','catalog_brands']){
+             const raw=input[key]===undefined?'':input[key];
+             if(typeof raw!=='string'||raw.length>1100)throw Error('Confira os filtros e marcas.');
+             const names=raw.split(/\\r?\\n/).map(s=>s.trim()).filter(Boolean);
+             if(names.length>24||names.some(s=>s.length>45||!/^[\\p{L}\\p{N} ._&()/-]+$/u.test(s)))throw Error('Use até 24 nomes curtos em cada lista.');
+             if(new Set(names.map(s=>s.toLocaleLowerCase('pt-BR'))).size!==names.length)throw Error('Não repita filtros ou marcas.');
+             out[key]=names.join('\\n');
+           }
+              """
+              if ' return out;\n}' not in data: raise SystemExit('Appearance validator missing')
+              data=data.replace(' return out;\n}',validator+' return out;\n}',1)
+              server.write_text(data)
+              editor=root/'appearance-editor.js'
+              data=editor.read_text()
+              old="['banner','Banner'],"
+              if old not in data: raise SystemExit('Banner editor nav missing')
+              data=data.replace(old,"",1)
+              pattern=r"\s*panel\('banner',[\s\S]*?\)\+\n\s*panel\('sections'"
+              if not re.search(pattern,data):raise SystemExit('Banner editor group missing')
+              data=re.sub(pattern,"\n   panel('sections'",data,count=1)
+              old="panel('products',"
+              filters_panel="panel('catalogfilters','Filtros e marcas')"
+              # Add a dedicated compact editor section; reuse existing draft/preview/publish logic.
+              data=data.replace("['products','Produtos'],","['products','Produtos'],['catalogfilters','Filtros e marcas'],",1)
+              controls="panel('catalogfilters','<p class=\"help\">Um filtro por linha. Adicione, remova ou altere a ordem. As peças continuam cadastradas; remover um nome apenas o retira do filtro público.</p><label>Categorias<textarea name=\"catalog_categories\" maxlength=\"1100\" rows=\"7\">'+esc(a.catalog_categories??'"+categories.replace("\n","\\n")+"')+'</textarea></label><label>Marcas<textarea name=\"catalog_brands\" maxlength=\"1100\" rows=\"7\">'+esc(a.catalog_brands??'"+brands.replace("\n","\\n")+"')+'</textarea></label>')+\n   "
+              if old not in data: raise SystemExit('Products panel not found')
+              data=data.replace(old,controls+old,1)
+              data=data.replace("featured_products:[]};","featured_products:[],catalog_categories:'"+categories.replace("\n","\\n")+"',catalog_brands:'"+brands.replace("\n","\\n")+"'};",1)
+              editor.write_text(data)
+              client=root/'appearance-client.js'
+              data=client.read_text()
+              old='currentAppearance=a;renderCurated(a);'
+              new="""currentAppearance=a;
+              const fallbacks={categories:"""+repr(categories)+""",brands:"""+repr(brands)+"""};
+              window.mbCatalogFilters={
+                categories:String(a.catalog_categories??fallbacks.categories).split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean),
+                brands:String(a.catalog_brands??fallbacks.brands).split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean)
+              };
+              renderCurated(a);if(typeof render==='function')render();"""
+              if old not in data:raise SystemExit('appearance client marker missing')
+              data=data.replace(old,new,1)
+              client.write_text(data)
+              print('Filtros de roupas e marcas gerenciáveis; equipe retirada do catálogo:',store)
+          PY
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -856,6 +981,131 @@ jobs:
               html=html.replace('</body></html>',guard+'</body></html>')
               page.write_text(html)
               print('Abertura removida do catálogo de',store)
+          PY
+      - name: Filtros gerenciáveis no catálogo e remover acesso público da equipe
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          for store in ('mb-dryfit','mb-for-her'):
+              root=Path('stores')/store/'worker'
+              shop=root/'storefront.html'
+              html=shop.read_text()
+              if '<a href="/acesso">Acesso da equipe ↗</a>' not in html:
+                  raise SystemExit('Link de equipe não localizado: '+store)
+              html=html.replace('<a href="/acesso">Acesso da equipe ↗</a>','')
+              categories='Camisa\nBermuda\nCalça\nConjunto\nPeças importadas' if store=='mb-dryfit' else 'Top\nConjunto\nJaqueta\nLegging\nShort\nVestido'
+              brands='Nike\nAdidas\nJordan\nPuma\nOn'
+              # Existing shopping category logic remains; only category matching and toolbar UI are extended.
+              anchor="const cats=['Todos',...new Set(products.map(p=>p.category))];"
+              if anchor not in html: raise SystemExit('Categoria dinâmica não localizada')
+              new_cats="const menu=window.mbCatalogFilters?.categories;const cats=['Todos',...(menu?.length?menu:[...new Set(products.map(p=>p.category))])];"
+              html=html.replace(anchor,new_cats,1)
+              old="g.variants.some(p=>p.category===category)"
+              new="g.variants.some(p=>matchCatalogCategory(p,category))"
+              if old not in html: raise SystemExit('Filtro de categoria não localizado')
+              html=html.replace(old,new,1)
+              old="function groups(){"
+              category_helper="""
+          function catalogNormalize(text){return String(text||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().trim()}
+          function matchCatalogCategory(p,label){
+            const selected=catalogNormalize(label),original=catalogNormalize(p.category),name=catalogNormalize(p.name);
+            if(!selected)return true;
+            if(original===selected)return true;
+            const aliases={'camisa':['camiseta','camisas','camisetas','manga longa','regata'],'bermuda':['bermudas','short','shorts'],'calca':['calcas'],'conjunto':['conjuntos'],'top':['tops'],'jaqueta':['jaquetas'],'legging':['leggings'],'short':['shorts','bermuda'],'vestido':['vestidos'],'pecas importadas':['importada','importado','importados','importadas']};
+            const matches=aliases[selected]||[];
+            if(matches.includes(original))return true;
+            if(selected==='pecas importadas')return /\\b(importad[ao]s?|importacao)\\b/.test(name+' '+original);
+            return false;
+          }
+          """
+              if old not in html: raise SystemExit('groups not found')
+              html=html.replace(old,category_helper+old,1)
+              # Place the new brand filters in the product area, separate from the removed hero.
+              needle='<nav class="filters" id="filters" aria-label="Tipos de peça"></nav>'
+              insertion=needle+'<nav class="catalog-brand-chips" id="catalogBrandChips" aria-label="Filtrar por marca"></nav>'
+              if needle not in html: raise SystemExit('Category nav not found')
+              html=html.replace(needle,insertion,1)
+              anchor='updateBrandFilterUI()}'
+              if anchor not in html: raise SystemExit('Render hook missing')
+              html=html.replace(anchor,'drawCatalogBrandChips();updateBrandFilterUI()}',1)
+              before='function render(){'
+              brand_helper="""
+          function drawCatalogBrandChips(){
+            const nav=document.getElementById('catalogBrandChips');if(!nav)return;
+            const prefs=window.mbCatalogFilters?.brands||['Nike','Adidas','Jordan','Puma','On'];
+            const names=[...new Set(prefs)].filter(Boolean);
+            nav.innerHTML='<button type="button" data-brand-chip="" class="'+(!brandFilter?'on':'')+'">Todas as marcas</button>'+
+              names.map(name=>'<button type="button" data-brand-chip="'+esc(name)+'" class="'+(brandFilter===name?'on':'')+'">'+esc(name)+'</button>').join('');
+            nav.querySelectorAll('[data-brand-chip]').forEach(button=>button.addEventListener('click',()=>{
+              brandFilter=button.dataset.brandChip;category='';search='';render.limit=60;
+              const input=document.getElementById('search');if(input)input.value='';
+              render();
+            }));
+          }
+          """
+              html=html.replace(before,brand_helper+before,1)
+              css="""
+          /* Compact, owner-configurable category and brand filters. No campaign hero. */
+          #colecao .filters{display:flex!important;gap:9px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:8px 0 14px;scroll-snap-type:x proximity;touch-action:pan-x}
+          #colecao .filters::-webkit-scrollbar,.catalog-brand-chips::-webkit-scrollbar{display:none}
+          #colecao .filters button{flex:0 0 auto;min-height:43px;padding:10px 18px!important;border-radius:999px!important;border:1px solid #dadde1!important;background:#fff!important;color:#242631!important;font:700 12px/1.2 Inter,Arial,sans-serif!important;scroll-snap-align:start;white-space:nowrap;transform:none!important}
+          #colecao .filters button.on{border-color:var(--shop-accent,#f97316)!important;background:var(--shop-accent,#f97316)!important;color:white!important}
+          .catalog-brand-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:6px 0 12px;touch-action:pan-x}
+          .catalog-brand-chips button{flex:0 0 auto;border:1px solid #e2e3e6;border-radius:10px;background:#f6f6f7;color:#36383f;font:600 11px Inter,Arial,sans-serif;padding:10px 15px;min-height:39px;white-space:nowrap}
+          .catalog-brand-chips button.on{background:#22242b;color:white;border-color:#22242b}
+          @media(max-width:700px){#colecao .filters button{padding:10px 14px!important;font-size:11px!important}.catalog-brand-chips button{font-size:11px;padding:9px 12px}}
+              """
+              html=html.replace('</style></head>',css+'</style></head>',1)
+              shop.write_text(html)
+              server=root/'appearance.js'
+              data=server.read_text()
+              if 'out.catalog_categories' in data: raise SystemExit('Duplicate server patch')
+              validator="""
+           // Each store owns its own category and brand filter menus; this never deletes products.
+           for(const key of ['catalog_categories','catalog_brands']){
+             const raw=input[key]===undefined?'':input[key];
+             if(typeof raw!=='string'||raw.length>1100)throw Error('Confira os filtros e marcas.');
+             const names=raw.split(/\\r?\\n/).map(s=>s.trim()).filter(Boolean);
+             if(names.length>24||names.some(s=>s.length>45||!/^[\\p{L}\\p{N} ._&()/-]+$/u.test(s)))throw Error('Use até 24 nomes curtos em cada lista.');
+             if(new Set(names.map(s=>s.toLocaleLowerCase('pt-BR'))).size!==names.length)throw Error('Não repita filtros ou marcas.');
+             out[key]=names.join('\\n');
+           }
+              """
+              if ' return out;\n}' not in data: raise SystemExit('Appearance validator missing')
+              data=data.replace(' return out;\n}',validator+' return out;\n}',1)
+              server.write_text(data)
+              editor=root/'appearance-editor.js'
+              data=editor.read_text()
+              old="['banner','Banner'],"
+              if old not in data: raise SystemExit('Banner editor nav missing')
+              data=data.replace(old,"",1)
+              pattern=r"\s*panel\('banner',[\s\S]*?\)\+\n\s*panel\('sections'"
+              if not re.search(pattern,data):raise SystemExit('Banner editor group missing')
+              data=re.sub(pattern,"\n   panel('sections'",data,count=1)
+              old="panel('products',"
+              filters_panel="panel('catalogfilters','Filtros e marcas')"
+              # Add a dedicated compact editor section; reuse existing draft/preview/publish logic.
+              data=data.replace("['products','Produtos'],","['products','Produtos'],['catalogfilters','Filtros e marcas'],",1)
+              controls="panel('catalogfilters','<p class=\"help\">Um filtro por linha. Adicione, remova ou altere a ordem. As peças continuam cadastradas; remover um nome apenas o retira do filtro público.</p><label>Categorias<textarea name=\"catalog_categories\" maxlength=\"1100\" rows=\"7\">'+esc(a.catalog_categories??'"+categories.replace("\n","\\n")+"')+'</textarea></label><label>Marcas<textarea name=\"catalog_brands\" maxlength=\"1100\" rows=\"7\">'+esc(a.catalog_brands??'"+brands.replace("\n","\\n")+"')+'</textarea></label>')+\n   "
+              if old not in data: raise SystemExit('Products panel not found')
+              data=data.replace(old,controls+old,1)
+              data=data.replace("featured_products:[]};","featured_products:[],catalog_categories:'"+categories.replace("\n","\\n")+"',catalog_brands:'"+brands.replace("\n","\\n")+"'};",1)
+              editor.write_text(data)
+              client=root/'appearance-client.js'
+              data=client.read_text()
+              old='currentAppearance=a;renderCurated(a);'
+              new="""currentAppearance=a;
+              const fallbacks={categories:"""+repr(categories)+""",brands:"""+repr(brands)+"""};
+              window.mbCatalogFilters={
+                categories:String(a.catalog_categories??fallbacks.categories).split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean),
+                brands:String(a.catalog_brands??fallbacks.brands).split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean)
+              };
+              renderCurated(a);if(typeof render==='function')render();"""
+              if old not in data:raise SystemExit('appearance client marker missing')
+              data=data.replace(old,new,1)
+              client.write_text(data)
+              print('Filtros de roupas e marcas gerenciáveis; equipe retirada do catálogo:',store)
           PY
       - uses: actions/setup-node@v4
         with:
