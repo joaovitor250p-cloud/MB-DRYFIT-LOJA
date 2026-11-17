@@ -542,6 +542,57 @@ jobs:
               client.write_text(data)
               print('Filtros de roupas e marcas gerenciáveis; equipe retirada do catálogo:',store)
           PY
+      - name: Menus de filtro com efeito de papel desenrolando e tema claro padrão
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for store in ('mb-dryfit','mb-for-her'):
+              root=Path('stores')/store/'worker'
+              page=root/'storefront.html'
+              html=page.read_text()
+              category='<nav class="filters" id="filters" aria-label="Tipos de peça"></nav>'
+              brand='<nav class="catalog-brand-chips" id="catalogBrandChips" aria-label="Filtrar por marca"></nav>'
+              if html.count(category)!=1 or html.count(brand)!=1:
+                  raise SystemExit('Estrutura de filtros inesperada em '+store)
+              # Keep existing filter nav IDs and click handlers intact.
+              html=html.replace(category,
+                  '<details class="mb-filter-fold" id="pieceFilterFold"><summary>Peças <span class="fold-hint">Selecionar tipo</span><span class="fold-chevron" aria-hidden="true">⌄</span></summary><div class="mb-filter-paper">'+category+'</div></details>',1)
+              html=html.replace(brand,
+                  '<details class="mb-filter-fold" id="brandFilterFold"><summary>Marcas <span class="fold-hint">Selecionar marca</span><span class="fold-chevron" aria-hidden="true">⌄</span></summary><div class="mb-filter-paper">'+brand+'</div></details>',1)
+              css="""
+          /* Accordion: soft paper-unrolling reveal, light as the storefront default. */
+          .mb-filter-fold{max-width:100%;margin:8px 0 11px;border:1px solid var(--shop-line,#e3e3e5);border-radius:13px;background:var(--shop-panel,#fff);overflow:visible;box-shadow:0 3px 16px #00000008}
+          .mb-filter-fold>summary{display:flex;align-items:center;gap:11px;min-height:56px;padding:13px 18px;font:750 14px Inter,Arial,sans-serif;cursor:pointer;list-style:none;user-select:none;color:var(--shop-ink,#202126)}
+          .mb-filter-fold>summary::-webkit-details-marker{display:none}
+          .mb-filter-fold .fold-hint{font:400 12px Inter,Arial,sans-serif;color:var(--shop-muted,#777);margin-left:auto}
+          .mb-filter-fold .fold-chevron{display:inline-flex;justify-content:center;align-items:center;width:26px;height:26px;border-radius:50%;background:var(--shop-soft,#f1f1f2);font-size:19px;transition:transform .32s cubic-bezier(.2,.75,.25,1)}
+          .mb-filter-fold[open] .fold-chevron{transform:rotate(180deg)}
+          .mb-filter-fold[open]>summary{border-bottom:1px solid var(--shop-line,#e5e5e5)}
+          .mb-filter-paper{padding:10px 15px 15px;transform-origin:top center;animation:mb-paper-unroll .38s cubic-bezier(.22,.72,.22,1) both}
+          @keyframes mb-paper-unroll{0%{opacity:0;clip-path:inset(0 0 100% 0);transform:scaleY(.75)}100%{opacity:1;clip-path:inset(0);transform:scaleY(1)}}
+          .mb-filter-fold .filters,.mb-filter-fold .catalog-brand-chips{margin:0!important}
+          .mb-filter-fold:focus-within{outline:2px solid transparent}
+          .mb-filter-fold>summary:focus-visible{outline:2px solid var(--shop-accent,#ff7429);outline-offset:2px;border-radius:10px}
+          @media(max-width:700px){.mb-filter-fold{margin:7px 0 9px}.mb-filter-fold>summary{min-height:53px;padding:12px 14px}.mb-filter-paper{padding:7px 12px 12px}.mb-filter-fold .fold-hint{font-size:11px}}
+          @media(prefers-reduced-motion:reduce){.mb-filter-paper{animation:none!important}.fold-chevron{transition:none!important}}
+              """
+              html=html.replace('</style></head>',css+'</style></head>',1)
+              # Set first-frame theme before CSS loads; persisted explicit dark choice still wins.
+              bootstrap="""<script>
+          try{document.documentElement.dataset.theme=localStorage.getItem('mb-theme')==='dark'?'dark':'light'}
+          catch{document.documentElement.dataset.theme='light'}
+          </script>"""
+              html=html.replace('<head>','<head>'+bootstrap,1)
+              page.write_text(html)
+              guest=root/'storefront-guest.js'
+              src=guest.read_text()
+              old="if(!theme)theme=typeof window!=='undefined'&&window.matchMedia?.('(prefers-color-scheme: dark)').matches?'dark':'light';"
+              if src.count(old)!=1:
+                  raise SystemExit('Theme initialization unexpected: '+store)
+              src=src.replace(old,"if(!theme)theme='light';",1)
+              guest.write_text(src)
+              print('Menus recolhidos e tema claro por padrão:',store)
+          PY
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -1108,6 +1159,57 @@ jobs:
               data=data.replace('   if(video&&quiet){video.autoplay=false;video.pause()}','   if(video&&quiet){video.autoplay=false;video.pause()}\n   if(typeof render===\'function\'){try{render()}catch(e){console.warn(\'catalog refresh unavailable\')}}',1)
               client.write_text(data)
               print('Filtros de roupas e marcas gerenciáveis; equipe retirada do catálogo:',store)
+          PY
+      - name: Menus de filtro com efeito de papel desenrolando e tema claro padrão
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for store in ('mb-dryfit','mb-for-her'):
+              root=Path('stores')/store/'worker'
+              page=root/'storefront.html'
+              html=page.read_text()
+              category='<nav class="filters" id="filters" aria-label="Tipos de peça"></nav>'
+              brand='<nav class="catalog-brand-chips" id="catalogBrandChips" aria-label="Filtrar por marca"></nav>'
+              if html.count(category)!=1 or html.count(brand)!=1:
+                  raise SystemExit('Estrutura de filtros inesperada em '+store)
+              # Keep existing filter nav IDs and click handlers intact.
+              html=html.replace(category,
+                  '<details class="mb-filter-fold" id="pieceFilterFold"><summary>Peças <span class="fold-hint">Selecionar tipo</span><span class="fold-chevron" aria-hidden="true">⌄</span></summary><div class="mb-filter-paper">'+category+'</div></details>',1)
+              html=html.replace(brand,
+                  '<details class="mb-filter-fold" id="brandFilterFold"><summary>Marcas <span class="fold-hint">Selecionar marca</span><span class="fold-chevron" aria-hidden="true">⌄</span></summary><div class="mb-filter-paper">'+brand+'</div></details>',1)
+              css="""
+          /* Accordion: soft paper-unrolling reveal, light as the storefront default. */
+          .mb-filter-fold{max-width:100%;margin:8px 0 11px;border:1px solid var(--shop-line,#e3e3e5);border-radius:13px;background:var(--shop-panel,#fff);overflow:visible;box-shadow:0 3px 16px #00000008}
+          .mb-filter-fold>summary{display:flex;align-items:center;gap:11px;min-height:56px;padding:13px 18px;font:750 14px Inter,Arial,sans-serif;cursor:pointer;list-style:none;user-select:none;color:var(--shop-ink,#202126)}
+          .mb-filter-fold>summary::-webkit-details-marker{display:none}
+          .mb-filter-fold .fold-hint{font:400 12px Inter,Arial,sans-serif;color:var(--shop-muted,#777);margin-left:auto}
+          .mb-filter-fold .fold-chevron{display:inline-flex;justify-content:center;align-items:center;width:26px;height:26px;border-radius:50%;background:var(--shop-soft,#f1f1f2);font-size:19px;transition:transform .32s cubic-bezier(.2,.75,.25,1)}
+          .mb-filter-fold[open] .fold-chevron{transform:rotate(180deg)}
+          .mb-filter-fold[open]>summary{border-bottom:1px solid var(--shop-line,#e5e5e5)}
+          .mb-filter-paper{padding:10px 15px 15px;transform-origin:top center;animation:mb-paper-unroll .38s cubic-bezier(.22,.72,.22,1) both}
+          @keyframes mb-paper-unroll{0%{opacity:0;clip-path:inset(0 0 100% 0);transform:scaleY(.75)}100%{opacity:1;clip-path:inset(0);transform:scaleY(1)}}
+          .mb-filter-fold .filters,.mb-filter-fold .catalog-brand-chips{margin:0!important}
+          .mb-filter-fold:focus-within{outline:2px solid transparent}
+          .mb-filter-fold>summary:focus-visible{outline:2px solid var(--shop-accent,#ff7429);outline-offset:2px;border-radius:10px}
+          @media(max-width:700px){.mb-filter-fold{margin:7px 0 9px}.mb-filter-fold>summary{min-height:53px;padding:12px 14px}.mb-filter-paper{padding:7px 12px 12px}.mb-filter-fold .fold-hint{font-size:11px}}
+          @media(prefers-reduced-motion:reduce){.mb-filter-paper{animation:none!important}.fold-chevron{transition:none!important}}
+              """
+              html=html.replace('</style></head>',css+'</style></head>',1)
+              # Set first-frame theme before CSS loads; persisted explicit dark choice still wins.
+              bootstrap="""<script>
+          try{document.documentElement.dataset.theme=localStorage.getItem('mb-theme')==='dark'?'dark':'light'}
+          catch{document.documentElement.dataset.theme='light'}
+          </script>"""
+              html=html.replace('<head>','<head>'+bootstrap,1)
+              page.write_text(html)
+              guest=root/'storefront-guest.js'
+              src=guest.read_text()
+              old="if(!theme)theme=typeof window!=='undefined'&&window.matchMedia?.('(prefers-color-scheme: dark)').matches?'dark':'light';"
+              if src.count(old)!=1:
+                  raise SystemExit('Theme initialization unexpected: '+store)
+              src=src.replace(old,"if(!theme)theme='light';",1)
+              guest.write_text(src)
+              print('Menus recolhidos e tema claro por padrão:',store)
           PY
       - uses: actions/setup-node@v4
         with:
