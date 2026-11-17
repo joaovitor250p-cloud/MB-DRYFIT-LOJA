@@ -21,7 +21,7 @@ jobs:
           temp="$(mktemp -d)"
           trap 'rm -rf "$temp"' EXIT
           export MB_BACKUP_PASSPHRASE='chave-ficticia-apenas-para-testes-locais-2026'
-          printf '%s\\n' 'CREATE TABLE teste(id INTEGER PRIMARY KEY, valor TEXT);' "INSERT INTO teste(valor) VALUES ('exemplo');" > "$temp/teste.sql"
+          printf '%s\n' 'CREATE TABLE teste(id INTEGER PRIMARY KEY, valor TEXT);' "INSERT INTO teste(valor) VALUES ('exemplo');" > "$temp/teste.sql"
           openssl enc -aes-256-cbc -pbkdf2 -iter 250000 -salt -in "$temp/teste.sql" -out "$temp/teste.sql.enc" -pass env:MB_BACKUP_PASSPHRASE
           openssl enc -d -aes-256-cbc -pbkdf2 -iter 250000 -in "$temp/teste.sql.enc" -out "$temp/validar.sql" -pass env:MB_BACKUP_PASSPHRASE
           cmp "$temp/teste.sql" "$temp/validar.sql"
