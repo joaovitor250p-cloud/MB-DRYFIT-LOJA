@@ -912,6 +912,8 @@ jobs:
         run: python3 catalogos-atuais/scripts/carrinho-tela-imediata.py
       - name: Organizar modelos, exportação e layouts móveis
         run: python3 catalogos-atuais/scripts/organizar-modelos-export-mobile.py
+      - name: Corrigir câmera do PDV e rascunho local por aparelho nas duas lojas
+        run: python3 catalogos-atuais/scripts/atualizar-camera-pdv-local.py
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -1845,6 +1847,8 @@ jobs:
         run: python3 catalogos-atuais/scripts/carrinho-tela-imediata.py
       - name: Organizar modelos, exportação e layouts móveis
         run: python3 catalogos-atuais/scripts/organizar-modelos-export-mobile.py
+      - name: Corrigir câmera do PDV e rascunho local por aparelho nas duas lojas
+        run: python3 catalogos-atuais/scripts/atualizar-camera-pdv-local.py
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
