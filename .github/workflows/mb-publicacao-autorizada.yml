@@ -867,7 +867,7 @@ jobs:
               if ending<0:raise SystemExit('Banner URL validator end unavailable')
               ending+=len(marker)
               original=content[pos:ending]
-              content=content[:pos]+original.replace(marker,".test(url)||/^\\\\/catalogo\\\\/media\\\\/[0-9a-f-]{36}$/.test(url);")+content[ending:]
+              content=content[:pos]+original.replace(marker,".test(url)||(url.startsWith('/catalogo/media/')&&/^[0-9a-f-]{36}$/.test(url.slice(16)));")+content[ending:]
               app.write_text(content)
               print('Painel de mídia e servidor preparado com R2 opcional:',store)
           PY
@@ -1763,7 +1763,7 @@ jobs:
               if ending<0:raise SystemExit('Banner URL validator end unavailable')
               ending+=len(marker)
               original=content[pos:ending]
-              content=content[:pos]+original.replace(marker,".test(url)||/^\\\\/catalogo\\\\/media\\\\/[0-9a-f-]{36}$/.test(url);")+content[ending:]
+              content=content[:pos]+original.replace(marker,".test(url)||(url.startsWith('/catalogo/media/')&&/^[0-9a-f-]{36}$/.test(url.slice(16)));")+content[ending:]
               app.write_text(content)
               print('Painel de mídia e servidor preparado com R2 opcional:',store)
           PY
