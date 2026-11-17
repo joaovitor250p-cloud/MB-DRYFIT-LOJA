@@ -14,6 +14,7 @@ on:
     branches: [main]
     paths:
       - .github/workflows/mb-backup-d1-criptografado.yml
+      - scripts/verificar-backup-d1.py
 permissions:
   contents: read
 concurrency:
@@ -26,6 +27,9 @@ jobs:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Exercitar fluxo offline com informações fictícias
         shell: bash
         run: |
@@ -50,6 +54,26 @@ jobs:
           finally:
             db.close()
           PY
+      - name: Testar verificador offline com dois backups fictícios e corrupção proposital
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="$(mktemp -d)"
+          trap 'rm -rf "$dir"' EXIT
+          export MB_BACKUP_PASSPHRASE='chave-ficticia-apenas-para-testes-locais-2026'
+          for store in dryfit her; do
+            printf '%s\\n' 'CREATE TABLE teste(id INTEGER PRIMARY KEY, valor TEXT);' "INSERT INTO teste(valor) VALUES ('exemplo');" > "$dir/$store.sql"
+            openssl enc -aes-256-cbc -pbkdf2 -iter 250000 -salt -in "$dir/$store.sql" -out "$dir/$store.sql.enc" -pass env:MB_BACKUP_PASSPHRASE
+            rm "$dir/$store.sql"
+          done
+          (cd "$dir" && sha256sum dryfit.sql.enc her.sql.enc > SHA256SUMS.txt)
+          python3 scripts/verificar-backup-d1.py --archive-dir "$dir"
+          printf 'corrompido' >> "$dir/her.sql.enc"
+          if python3 scripts/verificar-backup-d1.py --archive-dir "$dir"; then
+            echo "::error::O verificador aceitou arquivo adulterado"
+            exit 1
+          fi
+          echo "Verificação de integridade rejeitou arquivo adulterado corretamente."
   exportar:
     if: github.event_name == 'workflow_dispatch'
     name: Exportar D1 separado por loja (somente leitura)
