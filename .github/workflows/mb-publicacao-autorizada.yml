@@ -6,6 +6,7 @@ on:
     paths:
       - .github/workflows/mb-publicacao-autorizada.yml
       - scripts/fix-media-studio.py
+      - scripts/online-order-alerts-update.py
   workflow_dispatch:
 permissions:
   contents: read

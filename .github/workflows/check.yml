@@ -14,6 +14,22 @@ jobs:
         with:
           node-version: '24'
           cache: npm
-      - run: python3 -m py_compile scripts/fix-media-studio.py
+      - run: python3 -m py_compile scripts/online-order-alerts-update.py scripts/fix-media-studio.py
+      - uses: actions/checkout@v4
+        with:
+          ref: cff723e5b8384fccb3d134d8a9da30bdfb62b61f
+          path: release-smoke
+          persist-credentials: false
+      - name: Testar montagem dos avisos sem publicar
+        run: |
+          cp scripts/online-order-alerts-update.py release-smoke/scripts/
+          cd release-smoke
+          python3 scripts/online-order-alerts-update.py
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/worker/owner-commerce.js"
+            node --check "stores/$store/worker/shop-commerce.js"
+            grep -q "pending_count" "stores/$store/worker/shop-commerce.js"
+            grep -q 'mbUpdateOrderBadge' "stores/$store/worker/owner-commerce.js"
+          done
       - run: npm ci
       - run: npm run check
