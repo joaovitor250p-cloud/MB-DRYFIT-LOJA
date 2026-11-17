@@ -163,5 +163,19 @@ for store in ('mb-dryfit','mb-for-her'):
  old=s[begin:end]
  s=s[:begin]+OWNER_FILTER_JS+s[end:]
  s=rep(s,'</head>','<style>'+CSS+'</style></head>','filters owner style',store)
+ # The owner can assign any new brand/garment type to a real model, not just
+ # append labels to an otherwise empty filter.
+ old="'<label>Marca<select name=\"brand\"><option value=\"\">Sem marca definida</option>'+['Nike','Adidas','Jordan','Puma','On','Outra'].map(b=>'<option '+(p?.brand===b?'selected':'')+'>'+b+'</option>').join('')+'</select></label><label>Tipo de peça<select name=\"category\" required><option value=\"\">Selecionar tipo de peça</option>'+garmentTypes.map(c=>'<option '+(p?.category===c?'selected':'')+'>'+c+'</option>').join('')+'</select></label>'"
+ new="'<label>Marca<input name=\"brand\" list=\"mbModelBrands\" maxlength=\"50\" placeholder=\"Escolha ou digite a marca\" value=\"'+esc(p?.brand||'')+'\"><datalist id=\"mbModelBrands\">'+[...new Set(['Nike','Adidas','Jordan','Puma','On','Outra',...products.map(v=>v.brand).filter(Boolean)])].map(b=>'<option value=\"'+esc(b)+'\"></option>').join('')+'</datalist></label><label>Tipo de peça<input name=\"category\" list=\"mbModelPieces\" required maxlength=\"60\" placeholder=\"Escolha ou digite o tipo\" value=\"'+esc(p?.category||'')+'\"><datalist id=\"mbModelPieces\">'+[...new Set([...garmentTypes,...products.map(v=>v.category).filter(Boolean)])].map(c=>'<option value=\"'+esc(c)+'\"></option>').join('')+'</datalist></label>'"
+ s=rep(s,old,new,'free owner brand and type',store)
  page.write_text(s)
+ backend_api=root/'api.js'
+ source=backend_api.read_text()
+ source=rep(source,"if(p.brand&&!['Nike','Adidas','Jordan','Puma','On','Outra'].includes(p.brand))throw Error('Marca inválida.');",
+ "if(p.brand&&(typeof p.brand!=='string'||!p.brand.trim()||p.brand.trim().length>50||/[<>\\x00-\\x1F]/.test(p.brand)))throw Error('Informe uma marca válida, de até 50 caracteres.');",
+ 'custom brands server',store)
+ source=rep(source,"return {brand:p.brand||'',size:",
+ "return {brand:String(p.brand||'').trim(),size:",
+ 'normalize brand',store)
+ backend_api.write_text(source)
  print('Fixed catalog auto filters and owner options:',store)
