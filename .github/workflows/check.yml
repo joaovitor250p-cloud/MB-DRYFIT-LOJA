@@ -41,9 +41,10 @@ jobs:
           python3 scripts/testar-filtros-marca-peca.py
       - name: Testar carrinho imediato e painel do dono nos dois sites
         run: |
-          python3 -m py_compile scripts/carrinho-tela-imediata.py scripts/organizar-modelos-export-mobile.py
-          cp scripts/carrinho-tela-imediata.py scripts/organizar-modelos-export-mobile.py release-smoke/scripts/
+          python3 -m py_compile scripts/carrinho-tela-imediata.py scripts/organizar-modelos-export-mobile.py scripts/separar-pedidos-cupons-notificacao.py
+          cp scripts/carrinho-tela-imediata.py scripts/organizar-modelos-export-mobile.py scripts/separar-pedidos-cupons-notificacao.py release-smoke/scripts/
           cd release-smoke
+          python3 scripts/separar-pedidos-cupons-notificacao.py
           python3 scripts/carrinho-tela-imediata.py
           python3 scripts/organizar-modelos-export-mobile.py
           python3 - <<'PY'
@@ -60,11 +61,17 @@ jobs:
               assert 'mbOpenModelExport' in admin and 'makeZip(files)' in admin
               assert 'mbAutomaticBarcode' in admin
               assert 'Excluir modelo' in admin
+              assert "['coupons','%','Cupons']" in admin
+              assert "page==='commerce'||page==='coupons'" in admin
+              assert 'mbShowCommercePage()' in (root/'owner-commerce.js').read_text()
+              assert 'mb-commerce-hidden' in admin
+              assert '#nav [data-page="commerce"] .mb-order-count' in admin
               assert 'Ver vitrine ↗' not in admin
               assert 'Importação Nex</button>' not in admin
               assert 'showArchivedModels()' not in admin
               with tempfile.TemporaryDirectory() as tmp:
                   subprocess.run(['node','--check',str(root/'storefront-cart.js')],check=True)
+                  subprocess.run(['node','--check',str(root/'owner-commerce.js')],check=True)
                   for page in (html,admin):
                       for i,inline in enumerate(re.findall(r'<script>(.*?)</script>',page,flags=re.S)):
                           if not inline.strip():continue
