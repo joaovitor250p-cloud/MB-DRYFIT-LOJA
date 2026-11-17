@@ -206,6 +206,19 @@ jobs:
           #heroBrands .brand-tile[data-choose-brand="On"]:before{content:'on';font:800 27px/1 'DM Sans',Arial,sans-serif;letter-spacing:-.16em;color:#111}
           #heroBrands .brand-tile[data-choose-brand="On"]{background:#f7f7f8!important}
           #heroBrands .brand-tile:hover,#heroBrands .brand-tile.is-selected{border-color:var(--visual-accent)!important}
+          /* Brand names must remain visible beside the original icons, with touch swipe and arrow navigation. */
+          #heroBrands{display:flex!important;align-items:center!important;gap:8px!important}
+          #heroBrands .brand-tile-list{min-width:0!important;flex:1 1 auto!important;touch-action:pan-x!important;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;padding:6px 2px!important}
+          #heroBrands .brand-tile{position:relative!important;flex-direction:row!important;overflow:visible!important;isolation:auto!important;text-align:center!important;box-sizing:border-box!important;transform:none!important}
+          #heroBrands .brand-tile .brand-symbol{position:relative!important;top:auto!important;right:auto!important;z-index:0!important;opacity:1!important;transform:none!important;background-image:var(--brand-mark)!important;background-repeat:no-repeat!important;background-position:center!important;background-size:contain!important}
+          #heroBrands .brand-tile>span:not(.brand-symbol){display:none!important}
+          #heroBrands .mb-brand-visible-name{display:inline-block!important;position:relative!important;z-index:2!important;visibility:visible!important;opacity:1!important;color:#20232a!important;font:800 12px/1.15 'DM Sans',Arial,sans-serif!important;white-space:nowrap!important;letter-spacing:0!important}
+          #heroBrands .brand-tile[data-choose-brand="On"]::before{content:'on';display:inline-block!important;position:relative!important;margin-right:5px!important;background:none!important}
+          #heroBrands .mb-brand-arrow{display:flex;align-items:center;justify-content:center;flex:0 0 33px;width:33px;height:46px;border:1px solid #ffffff4c;border-radius:10px;background:#ffffff16;color:#fff;font:600 29px/1 Arial,sans-serif;cursor:pointer;touch-action:manipulation}
+          #heroBrands .mb-brand-arrow:disabled{opacity:.24;cursor:default}
+          #heroBrands .mb-brand-arrow:not(:disabled):active{background:var(--visual-accent)}
+          @media(max-width:700px){#heroBrands{gap:4px!important}#heroBrands .brand-tile{flex-basis:131px!important;min-width:131px!important;padding:10px 8px!important;gap:6px!important}#heroBrands .mb-brand-visible-name{font-size:11px!important}#heroBrands .mb-brand-arrow{width:26px;flex-basis:26px;height:44px;font-size:24px}}
+
           .mb-visual-2026>.mb-visual-photo{animation:none!important;transform:none!important;filter:none!important}
           .mb-visual-2026>.mb-visual-video{animation:none!important;transform:none!important;filter:none!important;opacity:1!important}
           @media(max-width:700px){#heroBrands .brand-tile{flex-basis:117px!important;min-width:117px!important;min-height:63px!important;gap:7px!important;font-size:11px!important}#heroBrands .brand-tile .brand-symbol{flex-basis:27px!important;width:27px!important;height:25px!important}}
@@ -247,6 +260,26 @@ jobs:
             const original=document.querySelector('.mb-brand-strip .brand-tile-list');
             if(destination && original) {
               destination.appendChild(original);
+              // Keep original brand filter buttons and their logos; make names explicit.
+              original.querySelectorAll('[data-choose-brand]').forEach(tile=>{
+                const name=tile.getAttribute('data-choose-brand');
+                let label=tile.querySelector('.mb-brand-visible-name');
+                if(!label){label=document.createElement('strong');label.className='mb-brand-visible-name';tile.append(label)}
+                label.textContent=name;
+                tile.setAttribute('aria-label','Filtrar '+name);
+              });
+              const back=document.createElement('button'),forward=document.createElement('button');
+              back.type=forward.type='button';back.className='mb-brand-arrow mb-brand-arrow-prev';forward.className='mb-brand-arrow mb-brand-arrow-next';
+              back.textContent='‹';forward.textContent='›';back.setAttribute('aria-label','Ver marcas anteriores');forward.setAttribute('aria-label','Ver próximas marcas');
+              destination.prepend(back);destination.append(forward);
+              const update=()=>{
+                back.disabled=original.scrollLeft<=2;
+                forward.disabled=original.scrollLeft+original.clientWidth>=original.scrollWidth-3;
+              };
+              back.addEventListener('click',()=>original.scrollBy({left:-Math.max(165,original.clientWidth*.7),behavior:'smooth'}));
+              forward.addEventListener('click',()=>original.scrollBy({left:Math.max(165,original.clientWidth*.7),behavior:'smooth'}));
+              original.addEventListener('scroll',update,{passive:true});window.addEventListener('resize',update,{passive:true});
+              requestAnimationFrame(update);
               const strip=document.querySelector('.mb-brand-strip');
               if(strip)strip.hidden=true;
               const explore=document.querySelector('.mb-visual-actions .hero-secondary');
@@ -577,6 +610,19 @@ jobs:
           #heroBrands .brand-tile[data-choose-brand="On"]:before{content:'on';font:800 27px/1 'DM Sans',Arial,sans-serif;letter-spacing:-.16em;color:#111}
           #heroBrands .brand-tile[data-choose-brand="On"]{background:#f7f7f8!important}
           #heroBrands .brand-tile:hover,#heroBrands .brand-tile.is-selected{border-color:var(--visual-accent)!important}
+          /* Brand names must remain visible beside the original icons, with touch swipe and arrow navigation. */
+          #heroBrands{display:flex!important;align-items:center!important;gap:8px!important}
+          #heroBrands .brand-tile-list{min-width:0!important;flex:1 1 auto!important;touch-action:pan-x!important;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;padding:6px 2px!important}
+          #heroBrands .brand-tile{position:relative!important;flex-direction:row!important;overflow:visible!important;isolation:auto!important;text-align:center!important;box-sizing:border-box!important;transform:none!important}
+          #heroBrands .brand-tile .brand-symbol{position:relative!important;top:auto!important;right:auto!important;z-index:0!important;opacity:1!important;transform:none!important;background-image:var(--brand-mark)!important;background-repeat:no-repeat!important;background-position:center!important;background-size:contain!important}
+          #heroBrands .brand-tile>span:not(.brand-symbol){display:none!important}
+          #heroBrands .mb-brand-visible-name{display:inline-block!important;position:relative!important;z-index:2!important;visibility:visible!important;opacity:1!important;color:#20232a!important;font:800 12px/1.15 'DM Sans',Arial,sans-serif!important;white-space:nowrap!important;letter-spacing:0!important}
+          #heroBrands .brand-tile[data-choose-brand="On"]::before{content:'on';display:inline-block!important;position:relative!important;margin-right:5px!important;background:none!important}
+          #heroBrands .mb-brand-arrow{display:flex;align-items:center;justify-content:center;flex:0 0 33px;width:33px;height:46px;border:1px solid #ffffff4c;border-radius:10px;background:#ffffff16;color:#fff;font:600 29px/1 Arial,sans-serif;cursor:pointer;touch-action:manipulation}
+          #heroBrands .mb-brand-arrow:disabled{opacity:.24;cursor:default}
+          #heroBrands .mb-brand-arrow:not(:disabled):active{background:var(--visual-accent)}
+          @media(max-width:700px){#heroBrands{gap:4px!important}#heroBrands .brand-tile{flex-basis:131px!important;min-width:131px!important;padding:10px 8px!important;gap:6px!important}#heroBrands .mb-brand-visible-name{font-size:11px!important}#heroBrands .mb-brand-arrow{width:26px;flex-basis:26px;height:44px;font-size:24px}}
+
           .mb-visual-2026>.mb-visual-photo{animation:none!important;transform:none!important;filter:none!important}
           .mb-visual-2026>.mb-visual-video{animation:none!important;transform:none!important;filter:none!important;opacity:1!important}
           @media(max-width:700px){#heroBrands .brand-tile{flex-basis:117px!important;min-width:117px!important;min-height:63px!important;gap:7px!important;font-size:11px!important}#heroBrands .brand-tile .brand-symbol{flex-basis:27px!important;width:27px!important;height:25px!important}}
@@ -618,6 +664,26 @@ jobs:
             const original=document.querySelector('.mb-brand-strip .brand-tile-list');
             if(destination && original) {
               destination.appendChild(original);
+              // Keep original brand filter buttons and their logos; make names explicit.
+              original.querySelectorAll('[data-choose-brand]').forEach(tile=>{
+                const name=tile.getAttribute('data-choose-brand');
+                let label=tile.querySelector('.mb-brand-visible-name');
+                if(!label){label=document.createElement('strong');label.className='mb-brand-visible-name';tile.append(label)}
+                label.textContent=name;
+                tile.setAttribute('aria-label','Filtrar '+name);
+              });
+              const back=document.createElement('button'),forward=document.createElement('button');
+              back.type=forward.type='button';back.className='mb-brand-arrow mb-brand-arrow-prev';forward.className='mb-brand-arrow mb-brand-arrow-next';
+              back.textContent='‹';forward.textContent='›';back.setAttribute('aria-label','Ver marcas anteriores');forward.setAttribute('aria-label','Ver próximas marcas');
+              destination.prepend(back);destination.append(forward);
+              const update=()=>{
+                back.disabled=original.scrollLeft<=2;
+                forward.disabled=original.scrollLeft+original.clientWidth>=original.scrollWidth-3;
+              };
+              back.addEventListener('click',()=>original.scrollBy({left:-Math.max(165,original.clientWidth*.7),behavior:'smooth'}));
+              forward.addEventListener('click',()=>original.scrollBy({left:Math.max(165,original.clientWidth*.7),behavior:'smooth'}));
+              original.addEventListener('scroll',update,{passive:true});window.addEventListener('resize',update,{passive:true});
+              requestAnimationFrame(update);
               const strip=document.querySelector('.mb-brand-strip');
               if(strip)strip.hidden=true;
               const explore=document.querySelector('.mb-visual-actions .hero-secondary');
