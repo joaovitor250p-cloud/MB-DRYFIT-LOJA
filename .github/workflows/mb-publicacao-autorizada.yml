@@ -768,6 +768,109 @@ jobs:
               editor.write_text(src)
               print('Novo site atacadista e editor de mídias:',store)
           PY
+      - name: Adicionar envio seguro de fotos e vídeos no editor do dono
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for store in ('mb-dryfit','mb-for-her'):
+              root=Path('stores')/store/'worker'
+              editor=root/'appearance-editor.js'
+              src=editor.read_text()
+              anchor="  const form=$('#appearanceForm'),frame=$('#appearanceLivePreview');"
+              if src.count(anchor)!=1:raise SystemExit('Editor de mídia incompatível')
+              extra="""
+            // Store owner can choose a local file or use a direct HTTPS link.
+            const mediaPanel=form.querySelector('[data-editor-panel="banner"]');
+            if(mediaPanel){
+              const notice=document.createElement('p');notice.className='help';
+              notice.textContent='Adicione até cinco fotos ou vídeos. Prévia, rascunho e publicação são separados. Caso o armazenamento não esteja habilitado, use o link HTTPS da mídia.';
+              mediaPanel.prepend(notice);
+              for(let n=1;n<=5;n++){
+                const url=form.querySelector('[name="banner_slide_'+n+'_url"]');if(!url)continue;
+                const holder=url.closest('label')||url.parentNode;
+                const zone=document.createElement('div');zone.className='mbw-owner-upload';
+                zone.style.cssText='display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:9px 0 18px';
+                const file=document.createElement('input');file.type='file';file.accept='image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm';
+                file.setAttribute('aria-label','Selecionar mídia da vitrine '+n);
+                const button=document.createElement('button');button.type='button';button.className='secondary';button.textContent='Enviar mídia '+n;
+                const remove=document.createElement('button');remove.type='button';remove.className='secondary';remove.textContent='Remover';
+                const status=document.createElement('small');status.setAttribute('role','status');
+                button.addEventListener('click',async()=>{
+                  const selected=file.files?.[0];if(!selected){status.textContent='Escolha um arquivo.';return}
+                  if(selected.size>(selected.type.startsWith('video/')?10:5)*1048576){status.textContent='Arquivo acima do limite.';return}
+                  button.disabled=true;status.textContent='Enviando…';
+                  try{
+                    const result=await fetch('/api/catalog-media',{method:'POST',headers:{'Content-Type':selected.type},body:selected,credentials:'same-origin'});
+                    const body=await result.json();if(!result.ok)throw Error(body.error||'Falha no armazenamento.');
+                    url.value=body.url;url.dispatchEvent(new Event('input',{bubbles:true}));
+                    const kind=form.querySelector('[name="banner_slide_'+n+'_type"]');
+                    if(kind){kind.value=selected.type.startsWith('video/')?'video':'image';kind.dispatchEvent(new Event('change',{bubbles:true}))}
+                    status.textContent='Enviado. Salve o rascunho e publique para aparecer na loja.';
+                  }catch(e){status.textContent=e.message||'Não foi possível enviar. Use um link HTTPS.'}
+                  finally{button.disabled=false}
+                });
+                remove.onclick=()=>{url.value='';url.dispatchEvent(new Event('input',{bubbles:true}));status.textContent='Mídia retirada deste banner. Salve e publique.'};
+                zone.append(file,button,remove,status);holder.after(zone);
+              }
+            }
+              """
+              src=src.replace(anchor,anchor+extra,1)
+              editor.write_text(src)
+              # R2 is optional. The endpoint returns a truthful 503 when not provisioned.
+              api=root/'api.js'
+              content=api.read_text()
+              get="if(u.pathname.startsWith('/catalogo/fotos/'))"
+              if get not in content:raise SystemExit('Media GET route anchor missing')
+              content=content.replace(get,"""if(u.pathname.startsWith('/catalogo/media/')&&req.method==='GET'){
+              const key=u.pathname.slice('/catalogo/media/'.length);
+              if(!/^[0-9a-f-]{36}$/.test(key))return new Response('Mídia não encontrada',{status:404});
+              if(!env.BUCKET||env.MB_PHOTOS_ENABLED==='0')return new Response('Armazenamento indisponível',{status:503});
+              const object=await env.BUCKET.get('campaign/'+key);
+              if(!object)return new Response('Mídia não encontrada',{status:404});
+              return new Response(object.body,{headers:{'Content-Type':object.httpMetadata?.contentType||'application/octet-stream','X-Content-Type-Options':'nosniff','Cache-Control':'public,max-age=1800'}});
+            }
+            """+get,1)
+              post="if(u.pathname==='/api/upload'&&req.method==='POST')"
+              if post not in content:raise SystemExit('Owner upload route anchor missing')
+              handler="""if(u.pathname==='/api/catalog-media'&&req.method==='POST'){
+              if(!env.BUCKET||env.MB_PHOTOS_ENABLED==='0')return json({error:'O armazenamento de mídia ainda não está habilitado. Enquanto isso, adicione um link HTTPS no editor.'},503);
+              const type=(req.headers.get('Content-Type')||'').split(';')[0].trim().toLowerCase();
+              const types={'image/jpeg':5*1048576,'image/png':5*1048576,'image/webp':5*1048576,'image/gif':5*1048576,'video/mp4':10*1048576,'video/webm':10*1048576};
+              const max=types[type];if(!max)return json({error:'Formatos: JPG, PNG, WebP, GIF, MP4 ou WebM.'},400);
+              const declared=Number(req.headers.get('Content-Length')||0);
+              if(declared>max)return json({error:'Arquivo muito grande.'},413);
+              const bytes=new Uint8Array(await req.arrayBuffer());
+              if(!bytes.length||bytes.length>max)return json({error:'Arquivo vazio ou muito grande.'},413);
+              const str=(offset,length)=>String.fromCharCode(...bytes.slice(offset,offset+length));
+              const valid=type==='image/jpeg'?bytes[0]===255&&bytes[1]===216&&bytes[2]===255:
+                type==='image/png'?str(1,3)==='PNG':
+                type==='image/webp'?str(0,4)==='RIFF'&&str(8,4)==='WEBP':
+                type==='image/gif'?str(0,3)==='GIF'&&['87a','89a'].includes(str(3,3)):
+                type==='video/mp4'?str(4,4)==='ftyp':
+                type==='video/webm'?bytes[0]===26&&bytes[1]===69&&bytes[2]===223&&bytes[3]===163:false;
+              if(!valid)return json({error:'Conteúdo não corresponde ao formato informado.'},400);
+              const id=crypto.randomUUID();
+              try{await env.BUCKET.put('campaign/'+id,bytes,{httpMetadata:{contentType:type}})}
+              catch{return json({error:'Não foi possível armazenar o arquivo.'},503)}
+              return json({url:'/catalogo/media/'+id});
+            }
+            """
+              content=content.replace(post,handler+post,1)
+              api.write_text(content)
+              # Accept only owner-uploaded relative media routes (no arbitrary URL schemes).
+              app=root/'appearance.js'
+              content=app.read_text()
+              marker=".test(url);"
+              pos=content.find("const local=/")
+              if pos<0:raise SystemExit('Banner URL validation unavailable')
+              ending=content.find(marker,pos)
+              if ending<0:raise SystemExit('Banner URL validator end unavailable')
+              ending+=len(marker)
+              original=content[pos:ending]
+              content=content[:pos]+original.replace(marker,".test(url)||/^\\\\/catalogo\\\\/media\\\\/[0-9a-f-]{36}$/.test(url);")+content[ending:]
+              app.write_text(content)
+              print('Painel de mídia e servidor preparado com R2 opcional:',store)
+          PY
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -1560,6 +1663,109 @@ jobs:
               src=src.replace("['banner','Banner']","['banner','Vitrine: imagens e vídeos']")
               editor.write_text(src)
               print('Novo site atacadista e editor de mídias:',store)
+          PY
+      - name: Adicionar envio seguro de fotos e vídeos no editor do dono
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for store in ('mb-dryfit','mb-for-her'):
+              root=Path('stores')/store/'worker'
+              editor=root/'appearance-editor.js'
+              src=editor.read_text()
+              anchor="  const form=$('#appearanceForm'),frame=$('#appearanceLivePreview');"
+              if src.count(anchor)!=1:raise SystemExit('Editor de mídia incompatível')
+              extra="""
+            // Store owner can choose a local file or use a direct HTTPS link.
+            const mediaPanel=form.querySelector('[data-editor-panel="banner"]');
+            if(mediaPanel){
+              const notice=document.createElement('p');notice.className='help';
+              notice.textContent='Adicione até cinco fotos ou vídeos. Prévia, rascunho e publicação são separados. Caso o armazenamento não esteja habilitado, use o link HTTPS da mídia.';
+              mediaPanel.prepend(notice);
+              for(let n=1;n<=5;n++){
+                const url=form.querySelector('[name="banner_slide_'+n+'_url"]');if(!url)continue;
+                const holder=url.closest('label')||url.parentNode;
+                const zone=document.createElement('div');zone.className='mbw-owner-upload';
+                zone.style.cssText='display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:9px 0 18px';
+                const file=document.createElement('input');file.type='file';file.accept='image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm';
+                file.setAttribute('aria-label','Selecionar mídia da vitrine '+n);
+                const button=document.createElement('button');button.type='button';button.className='secondary';button.textContent='Enviar mídia '+n;
+                const remove=document.createElement('button');remove.type='button';remove.className='secondary';remove.textContent='Remover';
+                const status=document.createElement('small');status.setAttribute('role','status');
+                button.addEventListener('click',async()=>{
+                  const selected=file.files?.[0];if(!selected){status.textContent='Escolha um arquivo.';return}
+                  if(selected.size>(selected.type.startsWith('video/')?10:5)*1048576){status.textContent='Arquivo acima do limite.';return}
+                  button.disabled=true;status.textContent='Enviando…';
+                  try{
+                    const result=await fetch('/api/catalog-media',{method:'POST',headers:{'Content-Type':selected.type},body:selected,credentials:'same-origin'});
+                    const body=await result.json();if(!result.ok)throw Error(body.error||'Falha no armazenamento.');
+                    url.value=body.url;url.dispatchEvent(new Event('input',{bubbles:true}));
+                    const kind=form.querySelector('[name="banner_slide_'+n+'_type"]');
+                    if(kind){kind.value=selected.type.startsWith('video/')?'video':'image';kind.dispatchEvent(new Event('change',{bubbles:true}))}
+                    status.textContent='Enviado. Salve o rascunho e publique para aparecer na loja.';
+                  }catch(e){status.textContent=e.message||'Não foi possível enviar. Use um link HTTPS.'}
+                  finally{button.disabled=false}
+                });
+                remove.onclick=()=>{url.value='';url.dispatchEvent(new Event('input',{bubbles:true}));status.textContent='Mídia retirada deste banner. Salve e publique.'};
+                zone.append(file,button,remove,status);holder.after(zone);
+              }
+            }
+              """
+              src=src.replace(anchor,anchor+extra,1)
+              editor.write_text(src)
+              # R2 is optional. The endpoint returns a truthful 503 when not provisioned.
+              api=root/'api.js'
+              content=api.read_text()
+              get="if(u.pathname.startsWith('/catalogo/fotos/'))"
+              if get not in content:raise SystemExit('Media GET route anchor missing')
+              content=content.replace(get,"""if(u.pathname.startsWith('/catalogo/media/')&&req.method==='GET'){
+              const key=u.pathname.slice('/catalogo/media/'.length);
+              if(!/^[0-9a-f-]{36}$/.test(key))return new Response('Mídia não encontrada',{status:404});
+              if(!env.BUCKET||env.MB_PHOTOS_ENABLED==='0')return new Response('Armazenamento indisponível',{status:503});
+              const object=await env.BUCKET.get('campaign/'+key);
+              if(!object)return new Response('Mídia não encontrada',{status:404});
+              return new Response(object.body,{headers:{'Content-Type':object.httpMetadata?.contentType||'application/octet-stream','X-Content-Type-Options':'nosniff','Cache-Control':'public,max-age=1800'}});
+            }
+            """+get,1)
+              post="if(u.pathname==='/api/upload'&&req.method==='POST')"
+              if post not in content:raise SystemExit('Owner upload route anchor missing')
+              handler="""if(u.pathname==='/api/catalog-media'&&req.method==='POST'){
+              if(!env.BUCKET||env.MB_PHOTOS_ENABLED==='0')return json({error:'O armazenamento de mídia ainda não está habilitado. Enquanto isso, adicione um link HTTPS no editor.'},503);
+              const type=(req.headers.get('Content-Type')||'').split(';')[0].trim().toLowerCase();
+              const types={'image/jpeg':5*1048576,'image/png':5*1048576,'image/webp':5*1048576,'image/gif':5*1048576,'video/mp4':10*1048576,'video/webm':10*1048576};
+              const max=types[type];if(!max)return json({error:'Formatos: JPG, PNG, WebP, GIF, MP4 ou WebM.'},400);
+              const declared=Number(req.headers.get('Content-Length')||0);
+              if(declared>max)return json({error:'Arquivo muito grande.'},413);
+              const bytes=new Uint8Array(await req.arrayBuffer());
+              if(!bytes.length||bytes.length>max)return json({error:'Arquivo vazio ou muito grande.'},413);
+              const str=(offset,length)=>String.fromCharCode(...bytes.slice(offset,offset+length));
+              const valid=type==='image/jpeg'?bytes[0]===255&&bytes[1]===216&&bytes[2]===255:
+                type==='image/png'?str(1,3)==='PNG':
+                type==='image/webp'?str(0,4)==='RIFF'&&str(8,4)==='WEBP':
+                type==='image/gif'?str(0,3)==='GIF'&&['87a','89a'].includes(str(3,3)):
+                type==='video/mp4'?str(4,4)==='ftyp':
+                type==='video/webm'?bytes[0]===26&&bytes[1]===69&&bytes[2]===223&&bytes[3]===163:false;
+              if(!valid)return json({error:'Conteúdo não corresponde ao formato informado.'},400);
+              const id=crypto.randomUUID();
+              try{await env.BUCKET.put('campaign/'+id,bytes,{httpMetadata:{contentType:type}})}
+              catch{return json({error:'Não foi possível armazenar o arquivo.'},503)}
+              return json({url:'/catalogo/media/'+id});
+            }
+            """
+              content=content.replace(post,handler+post,1)
+              api.write_text(content)
+              # Accept only owner-uploaded relative media routes (no arbitrary URL schemes).
+              app=root/'appearance.js'
+              content=app.read_text()
+              marker=".test(url);"
+              pos=content.find("const local=/")
+              if pos<0:raise SystemExit('Banner URL validation unavailable')
+              ending=content.find(marker,pos)
+              if ending<0:raise SystemExit('Banner URL validator end unavailable')
+              ending+=len(marker)
+              original=content[pos:ending]
+              content=content[:pos]+original.replace(marker,".test(url)||/^\\\\/catalogo\\\\/media\\\\/[0-9a-f-]{36}$/.test(url);")+content[ending:]
+              app.write_text(content)
+              print('Painel de mídia e servidor preparado com R2 opcional:',store)
           PY
       - uses: actions/setup-node@v4
         with:
