@@ -76,7 +76,7 @@ for store in ('mb-dryfit','mb-for-her'):
  "if(name.length<2||!mbValidWhatsapp(phone)||!agent||!delivery){",
  'valid mobile number',store)
  s=rep(s,"dialog.close();await confirmShopOrder({customer_name:name,customer_whatsapp:phone,agent_id:agent.value,delivery_mode:delivery.value})",
- """try{const key=mbContactStorageKey();if(form.elements.remember_contact.checked)
+ """try{const key=mbContactStorageKey();if(form.elements.remember_contact?.checked)
  localStorage.setItem(key,JSON.stringify({name,phone:mbFormatWhatsapp(phone)}));else localStorage.removeItem(key)}catch{}
  dialog.close();await confirmShopOrder({customer_name:name,customer_whatsapp:mbPhoneDigits(phone),agent_id:agent.value,delivery_mode:delivery.value})""",
  'normalized guest contact and optin',store)
