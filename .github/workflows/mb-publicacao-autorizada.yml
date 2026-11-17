@@ -764,7 +764,8 @@ jobs:
               # Re-enable the already implemented five-slot owner editor, formerly concealed.
               editor=root/'appearance-editor.js'
               src=editor.read_text()
-              src=re.sub(r"'<style>\\[data-editor-section=[\\s\\S]*?</style>'\\+",'',src)
+              src=re.sub(r"'<style>[^']*data-editor-section[^']*display:none!important[^']*</style>'\s*\+",'',src)
+              if 'data-editor-section' in src and 'display:none!important}</style>' in src: raise SystemExit('Painel do editor ainda contém CSS ocultando os controles: '+store)
               src=src.replace("['banner','Banner']","['banner','Vitrine: imagens e vídeos']")
               editor.write_text(src)
               print('Novo site atacadista e editor de mídias:',store)
@@ -1687,7 +1688,8 @@ jobs:
               # Re-enable the already implemented five-slot owner editor, formerly concealed.
               editor=root/'appearance-editor.js'
               src=editor.read_text()
-              src=re.sub(r"'<style>\\[data-editor-section=[\\s\\S]*?</style>'\\+",'',src)
+              src=re.sub(r"'<style>[^']*data-editor-section[^']*display:none!important[^']*</style>'\s*\+",'',src)
+              if 'data-editor-section' in src and 'display:none!important}</style>' in src: raise SystemExit('Painel do editor ainda contém CSS ocultando os controles: '+store)
               src=src.replace("['banner','Banner']","['banner','Vitrine: imagens e vídeos']")
               editor.write_text(src)
               print('Novo site atacadista e editor de mídias:',store)
