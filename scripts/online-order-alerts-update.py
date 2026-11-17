@@ -110,4 +110,16 @@ if(typeof window!=='undefined'){
  p=p.replace('/*__ADMIN_LAYOUT__*/',css+'\n/*__ADMIN_LAYOUT__*/',1)
  p=p.replace("['commerce','%','Cupons e pedidos']","['commerce','%','Pedidos online']",1)
  page.write_text(p)
+ # Count every pending order, not just the 100 entries on the admin listing.
+ backend=Path('stores')/store/'worker'/'shop-commerce.js'
+ code=backend.read_text()
+ anchor="if(path==='/api/shop-admin/orders'&&req.method==='GET')"
+ tail="return commerceReply({items:await shopOrderReceipts(env,results)})}"
+ start=code.find(anchor)
+ if start<0:raise SystemExit('Endpoint de pedidos ausente: '+store)
+ end=code.find(tail,start)
+ if end<0:raise SystemExit('Resposta de pedidos ausente: '+store)
+ new="const pending=await env.DB.prepare(\"SELECT COUNT(*) AS n FROM shop_orders WHERE status IN ('requested','confirmed')\").first();return commerceReply({items:await shopOrderReceipts(env,results),pending_count:Number(pending?.n||0)})}"
+ code=code[:end]+code[end:].replace(tail,new,1)
+ backend.write_text(code)
  print('Painel de pedidos e alerta sonoro configurados:',store)
