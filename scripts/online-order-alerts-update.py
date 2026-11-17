@@ -7,7 +7,7 @@ for store in ('mb-dryfit','mb-for-her'):
  admin="""
  // Resumo permanente e alerta sonoro: som exige clique do usuário devido às políticas do navegador.
  const alertPanel=document.createElement('section');alertPanel.className='panel mb-order-alert-panel';
- alertPanel.innerHTML='<div class="heading"><div><span class="eyebrow">PEDIDOS ONLINE</span><h2>Pedidos para preparar <span id="mbPendingOrders">—</span></h2><p class="help">Recebidos ou confirmados, ainda não concluídos.</p></div><button type="button" class="secondary" id="mbEnableOrderSound">Ativar som de pedidos</button></div>';
+ alertPanel.innerHTML='<div class="heading"><div><span class="eyebrow">PEDIDOS ONLINE</span><h2>Pedidos aguardando <span id="mbPendingOrders">—</span></h2><p class="help">Recebidos ou confirmados. Pedidos concluídos ou cancelados saem deste número.</p></div><button type="button" class="secondary" id="mbEnableOrderSound">Ativar som de pedidos</button></div>';
  view.prepend(alertPanel);
  const soundButton=alertPanel.querySelector('#mbEnableOrderSound');
  soundButton.addEventListener('click',async()=>{
@@ -16,7 +16,7 @@ for store in ('mb-dryfit','mb-for-her'):
    if(!Ctx)throw Error('Este navegador não permite áudio.');
    if(!mbOrderAudio)mbOrderAudio=new Ctx();
    await mbOrderAudio.resume();
-   mbSoundEnabled=true;soundButton.textContent='Som ativado ✓';
+   mbSoundEnabled=true;soundButton.textContent='Som ativado ✓';soundButton.setAttribute('aria-pressed','true');
   }catch{soundButton.textContent='Som indisponível neste navegador';}
  });
  const composer=document.createElement('section');composer.className='panel mb-notice-editor';
@@ -52,12 +52,12 @@ for store in ('mb-dryfit','mb-for-her'):
 // Store-isolated online order alerts; never request private data before owner authentication.
 let mbPendingCount=0,mbOrderKnown=null,mbOrderAudio=null,mbSoundEnabled=false,mbOrderFetchBusy=false;
 function mbUpdateOrderBadge(){
- const link=document.querySelector('#nav [data-page="orders"]');
+ const link=document.querySelector('#nav [data-page="commerce"]');
  if(link){
   let chip=link.querySelector('.mb-order-count');
   if(!chip){chip=document.createElement('span');chip.className='mb-order-count';link.append(chip)}
-  chip.textContent=String(mbPendingCount);
-  chip.setAttribute('aria-label',mbPendingCount+' pedidos para preparar');
+  chip.textContent=mbPendingCount>99?'99+':String(mbPendingCount);
+  chip.setAttribute('aria-label',mbPendingCount+' pedidos aguardando atendimento');link.setAttribute('aria-label','Pedidos online: '+mbPendingCount+' aguardando atendimento');
   chip.hidden=mbPendingCount===0;
  }
  const count=document.getElementById('mbPendingOrders');if(count)count.textContent=String(mbPendingCount);
@@ -83,13 +83,13 @@ async function mbCheckOrders(){
   const pending=(response.items||[]).filter(x=>['requested','confirmed'].includes(x.status));
   const ids=new Set(pending.map(o=>o.id));
   if(mbOrderKnown&&[...ids].some(id=>!mbOrderKnown.has(id)))mbRingNewOrder();
-  mbOrderKnown=ids;mbPendingCount=pending.length;mbUpdateOrderBadge();
+  mbOrderKnown=ids;mbPendingCount=Number.isInteger(response.pending_count)?response.pending_count:pending.length;mbUpdateOrderBadge();
  }catch{}finally{mbOrderFetchBusy=false}
 }
 if(typeof window!=='undefined'){
  setInterval(mbCheckOrders,20000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)mbCheckOrders()});
- document.addEventListener('click',event=>{if(event.target.closest('[data-page="orders"]'))mbCheckOrders()});
+ document.addEventListener('click',event=>{if(event.target.closest('[data-page="commerce"]'))mbCheckOrders()});
  setTimeout(mbCheckOrders,1500);
 }
 """
@@ -108,5 +108,6 @@ if(typeof window!=='undefined'){
 .mb-notice-editor .form-grid textarea{min-height:95px}
 """
  p=p.replace('/*__ADMIN_LAYOUT__*/',css+'\n/*__ADMIN_LAYOUT__*/',1)
+ p=p.replace("['commerce','%','Cupons e pedidos']","['commerce','%','Pedidos online']",1)
  page.write_text(p)
- print('Painel de pedidos, som opt-in e comunicados pronto:',store)
+ print('Painel de pedidos e alerta sonoro configurados:',store)
