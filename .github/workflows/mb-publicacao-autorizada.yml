@@ -379,6 +379,43 @@ jobs:
               change('storefront.html','</style></head>',styles+'</style></head>')
               print('Banner configuravel de 5 posicoes preparado:',store)
           PY
+      - name: Remover abertura e marcas dos dois catálogos
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for store in ('mb-dryfit','mb-for-her'):
+              page=Path('stores')/store/'worker'/'storefront.html'
+              html=page.read_text()
+              if 'mb-hero' not in html or 'id="colecao"' not in html:
+                  raise SystemExit('Estrutura inesperada: '+store)
+              # Preserve shopping/product HTML and legacy hooks for tests, without displaying the disliked campaign.
+              css="""
+          /* Simplified catalog: no hero, video carousel, brand row, or duplicated campaigns. */
+          .mb-hero,.mb-hero.mb-landing-2026,.mb-hero.mb-visual-2026,
+          .brand-selection,.brand-selection.mb-brand-strip,
+          #heroBrands,#marcas,.mb-visual-bottom,.mb-slide-deck,
+          .hero-category-links,.hero-actions,.hero-motion-video{display:none!important}
+          .campaign-main,.collection-section{margin-top:0!important;padding-top:0!important}
+          .campaign-header{margin-bottom:0!important}
+          @media(max-width:700px){.collection-section{padding-top:20px!important}}
+              """
+              html=html.replace('</style></head>',css+'</style></head>')
+              # Stop hidden media from playing after rendering. Works on mobile and desktop.
+              guard="""<script>
+          (() => {
+            const stop = () => {
+              document.querySelectorAll('.mb-hero video').forEach(v=>{
+                v.pause();v.autoplay=false;v.removeAttribute('autoplay');
+              });
+            };
+            stop();
+            document.addEventListener('DOMContentLoaded',stop,{once:true});
+          })();
+          </script>"""
+              html=html.replace('</body></html>',guard+'</body></html>')
+              page.write_text(html)
+              print('Abertura removida do catálogo de',store)
+          PY
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -782,6 +819,43 @@ jobs:
               """
               change('storefront.html','</style></head>',styles+'</style></head>')
               print('Banner configuravel de 5 posicoes preparado:',store)
+          PY
+      - name: Remover abertura e marcas dos dois catálogos
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for store in ('mb-dryfit','mb-for-her'):
+              page=Path('stores')/store/'worker'/'storefront.html'
+              html=page.read_text()
+              if 'mb-hero' not in html or 'id="colecao"' not in html:
+                  raise SystemExit('Estrutura inesperada: '+store)
+              # Preserve shopping/product HTML and legacy hooks for tests, without displaying the disliked campaign.
+              css="""
+          /* Simplified catalog: no hero, video carousel, brand row, or duplicated campaigns. */
+          .mb-hero,.mb-hero.mb-landing-2026,.mb-hero.mb-visual-2026,
+          .brand-selection,.brand-selection.mb-brand-strip,
+          #heroBrands,#marcas,.mb-visual-bottom,.mb-slide-deck,
+          .hero-category-links,.hero-actions,.hero-motion-video{display:none!important}
+          .campaign-main,.collection-section{margin-top:0!important;padding-top:0!important}
+          .campaign-header{margin-bottom:0!important}
+          @media(max-width:700px){.collection-section{padding-top:20px!important}}
+              """
+              html=html.replace('</style></head>',css+'</style></head>')
+              # Stop hidden media from playing after rendering. Works on mobile and desktop.
+              guard="""<script>
+          (() => {
+            const stop = () => {
+              document.querySelectorAll('.mb-hero video').forEach(v=>{
+                v.pause();v.autoplay=false;v.removeAttribute('autoplay');
+              });
+            };
+            stop();
+            document.addEventListener('DOMContentLoaded',stop,{once:true});
+          })();
+          </script>"""
+              html=html.replace('</body></html>',guard+'</body></html>')
+              page.write_text(html)
+              print('Abertura removida do catálogo de',store)
           PY
       - uses: actions/setup-node@v4
         with:
