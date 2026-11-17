@@ -82,14 +82,14 @@ for store in ('mb-dryfit','mb-for-her'):
  'normalized guest contact and optin',store)
  s=rep(s,"dialog.showModal();fetch('/api/shop/sellers').then(async response=>{const data=await response.json();if(!response.ok)throw Error();",
  """dialog.showModal();
- const phoneInput=form.elements.customer_whatsapp;
+ const phoneInput=form.querySelector('[name=customer_whatsapp]');
  phoneInput.addEventListener('input',()=>{const start=phoneInput.selectionStart;phoneInput.value=mbFormatWhatsapp(phoneInput.value);phoneInput.setCustomValidity('')});
  phoneInput.addEventListener('blur',()=>{phoneInput.setCustomValidity(phoneInput.value&&!mbValidWhatsapp(phoneInput.value)?'Informe um WhatsApp celular com DDD no formato (11) 99999-9999.':'')});
  try{const remembered=JSON.parse(localStorage.getItem(mbContactStorageKey())||'null');
  if(remembered&&typeof remembered.name==='string'&&typeof remembered.phone==='string'){
-  form.elements.customer_name.value=remembered.name;
+  form.querySelector('[name=customer_name]').value=remembered.name;
   phoneInput.value=mbFormatWhatsapp(remembered.phone);
-  form.elements.remember_contact.checked=true;
+  form.querySelector('[name=remember_contact]').checked=true;
  }}catch{}
  const deliveryPanel=form.querySelector('#guestSellerCards')?.closest('fieldset');
  const previousChange=form.onchange;
