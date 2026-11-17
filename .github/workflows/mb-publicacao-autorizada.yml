@@ -833,6 +833,7 @@ jobs:
               post="if(u.pathname==='/api/upload'&&req.method==='POST')"
               if post not in content:raise SystemExit('Owner upload route anchor missing')
               handler="""if(u.pathname==='/api/catalog-media'&&req.method==='POST'){
+              if(!owner)return json({error:'Apenas o dono pode enviar mídias.'},403);
               if(!env.BUCKET||env.MB_PHOTOS_ENABLED==='0')return json({error:'O armazenamento de mídia ainda não está habilitado. Enquanto isso, adicione um link HTTPS no editor.'},503);
               const type=(req.headers.get('Content-Type')||'').split(';')[0].trim().toLowerCase();
               const types={'image/jpeg':5*1048576,'image/png':5*1048576,'image/webp':5*1048576,'image/gif':5*1048576,'video/mp4':10*1048576,'video/webm':10*1048576};
@@ -1734,6 +1735,7 @@ jobs:
               post="if(u.pathname==='/api/upload'&&req.method==='POST')"
               if post not in content:raise SystemExit('Owner upload route anchor missing')
               handler="""if(u.pathname==='/api/catalog-media'&&req.method==='POST'){
+              if(!owner)return json({error:'Apenas o dono pode enviar mídias.'},403);
               if(!env.BUCKET||env.MB_PHOTOS_ENABLED==='0')return json({error:'O armazenamento de mídia ainda não está habilitado. Enquanto isso, adicione um link HTTPS no editor.'},503);
               const type=(req.headers.get('Content-Type')||'').split(';')[0].trim().toLowerCase();
               const types={'image/jpeg':5*1048576,'image/png':5*1048576,'image/webp':5*1048576,'image/gif':5*1048576,'video/mp4':10*1048576,'video/webm':10*1048576};
