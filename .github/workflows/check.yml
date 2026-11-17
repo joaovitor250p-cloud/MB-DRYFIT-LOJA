@@ -14,7 +14,6 @@ jobs:
         with:
           node-version: '24'
           cache: npm
-      - run: python3 -m py_compile scripts/fix-media-studio.py
       - run: python3 -m py_compile scripts/online-order-alerts-update.py scripts/fix-media-studio.py
       - uses: actions/checkout@v4
         with:
@@ -30,7 +29,7 @@ jobs:
             node --check "stores/$store/worker/owner-commerce.js"
             node --check "stores/$store/worker/shop-commerce.js"
             grep -q "pending_count" "stores/$store/worker/shop-commerce.js"
-            grep -q "data-page=\\\"commerce\\\"" "stores/$store/worker/owner-commerce.js"
+            grep -q 'mbUpdateOrderBadge' "stores/$store/worker/owner-commerce.js"
           done
       - run: npm ci
       - run: npm run check
