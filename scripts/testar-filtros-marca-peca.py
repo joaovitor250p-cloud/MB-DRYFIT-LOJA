@@ -27,6 +27,12 @@ with TemporaryDirectory() as d:
         admin=(folder/'page.html').read_text()
         assert '<nav class="main-nav"' not in shop
         assert 'mb-header-filters' in shop
+        assert 'collection.insertBefore(host,collection.firstElementChild)' in shop
+        assert '#colecao .catalog-toolbar #count{display:none!important}' in shop
+        assert '#colecao .catalog-toolbar #search' in shop
+        assert '#colecao #catalogBrandChips' in shop
+        assert 'mb-collection-paper' in shop
+        assert '<div class="mb-header-filters" id="mbHeaderFilters"' not in shop
         assert 'mbHeaderBrands' in shop and 'mbHeaderPieces' in shop
         assert 'mb-paper-roll' in shop
         assert 'Limpar filtros' in shop
