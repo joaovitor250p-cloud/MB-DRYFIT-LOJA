@@ -61,17 +61,24 @@ jobs:
               assert 'mbOpenModelExport' in admin and 'makeZip(files)' in admin
               assert 'mbAutomaticBarcode' in admin
               assert 'Excluir modelo' in admin
-              assert "['coupons','%','Cupons']" in admin
-              assert "page==='commerce'||page==='coupons'" in admin
-              assert 'mbShowCommercePage()' in (root/'owner-commerce.js').read_text()
-              assert 'mb-commerce-hidden' in admin
-              assert '#nav [data-page="commerce"] .mb-order-count' in admin
+              assert "['orders','≡','Pedidos online']" in admin
+              assert "['commerce','%','Cupons']" in admin
+              assert "if(page==='orders'&&staff()){renderOnlineOrders();return}" in admin
+              owner_commerce=(root/'owner-commerce.js').read_text()
+              assert 'mbMountOrderSoundPanel' in owner_commerce
+              assert "document.querySelector('#nav [data-page=\"orders\"]')" in owner_commerce
+              assert "api('retail/orders?state=received&offset=0')" in owner_commerce
+              assert 'view.prepend(alertPanel);' not in owner_commerce
+              assert 'mb-commerce-hidden' in owner_commerce
+              assert '#nav [data-page="orders"] .mb-order-count' in admin
+              assert 'mbMountOrderSoundPanel(view)' in (root/'staff-workspace.js').read_text()
               assert 'Ver vitrine ↗' not in admin
               assert 'Importação Nex</button>' not in admin
               assert 'showArchivedModels()' not in admin
               with tempfile.TemporaryDirectory() as tmp:
                   subprocess.run(['node','--check',str(root/'storefront-cart.js')],check=True)
                   subprocess.run(['node','--check',str(root/'owner-commerce.js')],check=True)
+                  subprocess.run(['node','--check',str(root/'staff-workspace.js')],check=True)
                   for page in (html,admin):
                       for i,inline in enumerate(re.findall(r'<script>(.*?)</script>',page,flags=re.S)):
                           if not inline.strip():continue
