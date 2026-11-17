@@ -29,7 +29,7 @@ for store in ('mb-dryfit','mb-for-her'):
   const brand=make('Marca','mbFilterBrand','Todas as marcas'),piece=make('Peça','mbFilterPiece','Todas as peças');
   toolbar.insertAdjacentElement('afterend',region);
   const distinct=items=>[...new Set(items.map(v=>String(v||'').trim()).filter(Boolean))];
-  const list=value=>typeof value==='string'?distinct(value.split(/\\r?\\n/)):[];
+  const list=value=>typeof value==='string'?distinct(value.split(/\r?\n/)):[];
   const fill=(field,names,all,selected)=>{field.replaceChildren(new Option(all,''));for(const name of distinct(names))field.add(new Option(name,name));field.value=selected||''};
   const update=settings=>{
     const data=Array.isArray(products)?products:[];
@@ -95,9 +95,9 @@ for store in ('mb-dryfit','mb-for-her'):
    const rows=document.createElement('div');
    const add=document.createElement('button');add.className='mb-filter-editor-add';add.type='button';add.textContent='+ Adicionar '+(key==='catalog_brands'?'marca':'peça');
    wrapper.append(h,note,rows,add);field.closest('[data-editor-panel]').append(wrapper);
-   const sync=()=>{field.value=[...rows.querySelectorAll('input')].map(x=>x.value.trim()).filter(Boolean).join('\\n');field.dispatchEvent(new Event('input',{bubbles:true}))};
+   const sync=()=>{field.value=[...rows.querySelectorAll('input')].map(x=>x.value.trim()).filter(Boolean).join('\n');field.dispatchEvent(new Event('input',{bubbles:true}))};
    const row=value=>{if(rows.children.length>=24)return;const box=document.createElement('div');box.className='mb-filter-editor-row';const input=document.createElement('input');input.value=value;input.maxLength=45;input.setAttribute('aria-label','Nome da opção '+name);input.oninput=sync;const remove=document.createElement('button');remove.type='button';remove.textContent='Remover';remove.onclick=()=>{box.remove();sync()};box.append(input,remove);rows.append(box);return input};
-   field.value.split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean).forEach(row);
+   field.value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).forEach(row);
    add.onclick=()=>{const input=row('');input?.focus()};
   }
  }
