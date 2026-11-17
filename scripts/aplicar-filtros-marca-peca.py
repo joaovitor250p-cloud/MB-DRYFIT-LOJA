@@ -48,9 +48,9 @@ for store in ('mb-dryfit','mb-for-her'):
    .then(data=>update(data.appearance||{})).catch(()=>update({}));
  })();
  """
- if html.count('</style></head>')!=1 or html.count('</script></body></html>')!=1:raise SystemExit('Catálogo não reconhecido: '+store)
- html=html.replace('</style></head>','<style>'+css+'</style></head>',1)
- html=html.replace('</script></body></html>',js+'</script></body></html>',1)
+ if '</head>' not in html or '</body>' not in html:raise SystemExit('Catálogo não reconhecido: '+store)
+ html=html.replace('</head>','<style>'+css+'</style></head>',1)
+ html=html.replace('</body>','<script>'+js+'</script></body>',1)
  storefront.write_text(html)
 
  admin=root/'page.html'
@@ -102,8 +102,8 @@ for store in ('mb-dryfit','mb-for-her'):
   }
  }
  """
- if page.count('</style></head>')!=1 or page.count('</script></body></html>')!=1:raise SystemExit('Modo dono inválido: '+store)
- page=page.replace('</style></head>','<style>'+style+'</style></head>',1)
- page=page.replace('</script></body></html>',adminjs+'</script></body></html>',1)
+ if '</head>' not in page or '</body>' not in page:raise SystemExit('Modo dono inválido: '+store)
+ page=page.replace('</head>','<style>'+style+'</style></head>',1)
+ page=page.replace('</body>','<script>'+adminjs+'</script></body>',1)
  admin.write_text(page)
  print('Filtros Marca / Peça instalados:',store)
