@@ -41,15 +41,23 @@ for store in ("mb-dryfit","mb-for-her"):
     old_start=code.index("async function openCameraScanner(){")
     old_end=code.index("async function startCameraDevice(",old_start)
     code=code[:old_start]+CAMERA_OPEN+code[old_end:]
-    start="let cameraControls=null,cameraSession=0,cameraAccepted=false,cameraDevices=[],cameraReader=null,cameraLastCode='',cameraLastSeen=0,cameraScanBusy=false,cameraAudio=null;"
-    if code.count(start)!=1:raise SystemExit("Camera variables changed: "+store)
-    code=code.replace(start,start+"\nlet cameraScanningHeld=false,cameraSingleArmed=false,cameraPressAccepted=false,cameraPressStarted=0,cameraTorchOn=false;",1)
+    first_line=code.splitlines()[0]
+    if not first_line.startswith("let cameraControls=null,cameraSession=0,"):
+        raise SystemExit("Camera variables changed: "+store)
+    code=code.replace(first_line,first_line+"\nlet cameraScanningHeld=false,cameraSingleArmed=false,cameraPressAccepted=false,cameraPressStarted=0,cameraTorchOn=false;",1)
     old="function stopCamera(){cameraSession++;cameraScanBusy=false;"
     if code.count(old)!=1:raise SystemExit("Stop camera changed: "+store)
     code=code.replace(old,"function stopCamera(){cameraScanningHeld=false;cameraSingleArmed=false;cameraTorchOn=false;cameraSession++;cameraScanBusy=false;",1)
+    # Two compatible reader implementations exist in the frozen release and
+    # the newer working copy. Both must obey the physical scan button.
     found="if(session!==cameraSession||!dialog.open||!result)return;"
-    if code.count(found)!=1:raise SystemExit("Camera recognized hook changed: "+store)
-    code=code.replace(found,"if(session!==cameraSession||!dialog.open||!result)return;if($('#cameraScanButton')&&!cameraScanningHeld&&!cameraSingleArmed)return;",1)
+    legacy="if(session!==cameraSession||!dialog.open)return;if(!result){"
+    if found in code:
+        code=code.replace(found,found+"if($('#cameraScanButton')&&!cameraScanningHeld&&!cameraSingleArmed)return;",1)
+    elif legacy in code:
+        code=code.replace(legacy,legacy.replace("if(!result){","if($('#cameraScanButton')&&!cameraScanningHeld&&!cameraSingleArmed)return;if(!result){"),1)
+    else:
+        raise SystemExit("Camera recognized hook changed: "+store)
     old="cameraAccepted=true;cameraLastCode=code;cameraLastSeen=now;cameraScanBusy=true;"
     if code.count(old)!=1:raise SystemExit("Camera code acceptance changed: "+store)
     code=code.replace(old,"cameraAccepted=true;cameraPressAccepted=true;cameraSingleArmed=false;cameraLastCode=code;cameraLastSeen=now;cameraScanBusy=true;",1)
@@ -68,6 +76,7 @@ for store in ("mb-dryfit","mb-for-her"):
     # One success beep is emitted by queueCameraCode for camera operations.
     code=code.replace("try{navigator.vibrate?.(50)}catch{}","",1)
     code=code.replace("if(line&&!error)cameraBip();","if(line&&!error&&(cameraScanningHeld||cameraPressAccepted))cameraBip();",1)
+    code=code.replace("if(accepted&&line&&!error)cameraBip();","if(accepted&&line&&!error&&(cameraScanningHeld||cameraPressAccepted))cameraBip();",1)
     # Feedback should no longer promise automatic reads.
     code=code.replace("Próxima etiqueta: leitura automática.","Pressione para a próxima peça.",1)
     camera.write_text(code,encoding="utf-8")
@@ -85,8 +94,14 @@ for store in ("mb-dryfit","mb-for-her"):
     if s.count(scan)!=1:raise SystemExit("Sales scanner entry changed: "+store)
     s=s.replace(scan,scan+"if(typeof prepareCameraAudio==='function')prepareCameraAudio();",1)
     success="saleCart.set(p.barcode,{product:p,quantity});drawSaleCart()"
-    if s.count(success)!=1:raise SystemExit("Sale success event changed: "+store)
-    s=s.replace(success,"saleCart.set(p.barcode,{product:p,quantity});drawSaleCart();if(!cameraScanBusy&&typeof cameraBip==='function')cameraBip()",1)
+    old_release="saleCart.set(p.barcode,{product:p,quantity});acceptedProduct=p;drawSaleCart()"
+    replacement="if(!cameraScanBusy&&typeof cameraBip==='function')cameraBip()"
+    if old_release in s:
+        s=s.replace(old_release,old_release+";"+replacement,1)
+    elif success in s:
+        s=s.replace(success,success+";"+replacement,1)
+    else:
+        raise SystemExit("Sale success event changed: "+store)
     if "</head>" not in s:raise SystemExit("Admin HTML missing head: "+store)
     s=s.replace("</head>","<style>"+CAMERA_STYLE+"</style></head>",1)
     page.write_text(s,encoding="utf-8")
