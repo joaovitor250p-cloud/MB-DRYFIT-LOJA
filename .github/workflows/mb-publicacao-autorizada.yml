@@ -1,4 +1,4 @@
-name: Publicar MB Dryfit e For Her (autorizado, sem fotos)
+name: Publicar MB Dryfit e For Her (com R2 verificado)
 on:
   push:
     branches:
@@ -1785,8 +1785,27 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - name: Preparar Workers existentes sem fotos nem migrações novas
+      - name: Preparar Workers sem migrações novas
         run: node scripts/cloudflare-prepare.mjs cloudflare.domains.config.json
+      - name: Verificar ou criar R2 separado por loja e habilitar somente o binding
+        run: node catalogos-atuais/scripts/activate-r2.mjs
+      - name: Testar gravação e leitura no R2 com arquivos temporários
+        shell: bash
+        run: |
+          set -euo pipefail
+          temp="$(mktemp -d)"
+          trap 'rm -rf "$temp"' EXIT
+          printf 'MB-R2-HEALTH-CHECK\n' > "$temp/smoke.txt"
+          for loja in dryfit her; do
+            if [ "$loja" = dryfit ]; then bucket="mb-dryfit-fotos"; else bucket="mb-for-her-fotos"; fi
+            key="_mb-r2-health/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.txt"
+            npx --no-install wrangler r2 object put "$bucket/$key" --file "$temp/smoke.txt" --remote
+            npx --no-install wrangler r2 object get "$bucket/$key" --file "$temp/received.txt" --remote
+            cmp "$temp/smoke.txt" "$temp/received.txt"
+            npx --no-install wrangler r2 object delete "$bucket/$key" --remote
+            rm -f "$temp/received.txt"
+            echo "Leitura e escrita R2 aprovadas para $loja"
+          done
       - name: Dry-run de ambas as lojas (sem deploy)
         run: |
           npx --no-install wrangler deploy --dry-run --config cloudflare-dist/dryfit/wrangler.json
@@ -1804,5 +1823,14 @@ jobs:
           for page in https://mbdryfit.com.br/acesso https://mbdryfit.com.br/catalogo https://forher.mbdryfit.com.br/catalogo; do
             echo "Conferindo $page"
             curl --fail --location --silent --show-error --max-time 25 --user-agent "Mozilla/5.0 (compatible; MB-release-check/1.0)" --output /dev/null "$page"
+          done
+          # Owner uploads must never be publicly writable.
+          for host in https://mbdryfit.com.br https://forher.mbdryfit.com.br; do
+            status="$(curl --silent --show-error --max-time 25 -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: image/png' --data-binary 'teste-sem-login' "$host/api/catalog-media")"
+            if [ "$status" != 401 ] && [ "$status" != 403 ]; then
+              echo "::error::Rota de mídia pública sem autenticação ($status): $host"
+              exit 1
+            fi
+            echo "Upload não autorizado bloqueado em $host (HTTP $status)"
           done
           echo "Publicação das duas lojas concluída, páginas responderam com HTTP 2xx/3xx."
