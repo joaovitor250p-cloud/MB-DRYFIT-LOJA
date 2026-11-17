@@ -907,6 +907,10 @@ jobs:
         run: python3 catalogos-atuais/scripts/limpar-catalogos-publicos.py
       - name: Instalar filtros Marca e Peça no catálogo e no modo Dono
         run: python3 catalogos-atuais/scripts/aplicar-filtros-marca-peca.py
+      - name: Corrigir carrinho para abrir sem rolar a tela
+        run: python3 catalogos-atuais/scripts/carrinho-tela-imediata.py
+      - name: Organizar modelos, exportação e layouts móveis
+        run: python3 catalogos-atuais/scripts/organizar-modelos-export-mobile.py
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -1835,6 +1839,10 @@ jobs:
         run: python3 catalogos-atuais/scripts/limpar-catalogos-publicos.py
       - name: Instalar filtros Marca e Peça no catálogo e no modo Dono
         run: python3 catalogos-atuais/scripts/aplicar-filtros-marca-peca.py
+      - name: Corrigir carrinho para abrir sem rolar a tela
+        run: python3 catalogos-atuais/scripts/carrinho-tela-imediata.py
+      - name: Organizar modelos, exportação e layouts móveis
+        run: python3 catalogos-atuais/scripts/organizar-modelos-export-mobile.py
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
