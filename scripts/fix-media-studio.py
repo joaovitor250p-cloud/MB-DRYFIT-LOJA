@@ -52,7 +52,7 @@ for store in ('mb-dryfit','mb-for-her'):
         const url=file?(localUrl=URL.createObjectURL(file)):field.value.trim();
         preview.replaceChildren();
         if(!url){const hint=document.createElement('small');hint.textContent='Espaço '+n+' — nenhuma imagem selecionada';preview.append(hint);return}
-        if(!file&&!(/^\x2f(?:catalogo\x2fmedia\x2f|brand-assets\x2f)/.test(url)||/^https:\/\//i.test(url))){const hint=document.createElement('small');hint.textContent='Use um link HTTPS válido ou envie um arquivo.';preview.append(hint);return}
+        if(!file&&!(url.startsWith('/catalogo/media/')||url.startsWith('/brand-assets/')||/^https:\/\//i.test(url))){const hint=document.createElement('small');hint.textContent='Use um link HTTPS válido ou envie um arquivo.';preview.append(hint);return}
         const kind=form.querySelector('[name="banner_slide_'+n+'_type"]');
         const video=file?file.type.startsWith('video/'):kind?.value==='video'||/\.(mp4|webm)(?:[?#]|$)/i.test(url);
         const media=document.createElement(video?'video':'img');
