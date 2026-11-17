@@ -501,7 +501,7 @@ jobs:
              const raw=input[key]===undefined?'':input[key];
              if(typeof raw!=='string'||raw.length>1100)throw Error('Confira os filtros e marcas.');
              const names=raw.split(/\\r?\\n/).map(s=>s.trim()).filter(Boolean);
-             if(names.length>24||names.some(s=>s.length>45||!/^[\\p{L}\\p{N} ._&()/-]+$/u.test(s)))throw Error('Use até 24 nomes curtos em cada lista.');
+             if(names.length>24||names.some(s=>s.length>45||!/^[\\p{L}\\p{N} ._&()-]+$/u.test(s)))throw Error('Use até 24 nomes curtos em cada lista.');
              if(new Set(names.map(s=>s.toLocaleLowerCase('pt-BR'))).size!==names.length)throw Error('Não repita filtros ou marcas.');
              out[key]=names.join('\\n');
            }
@@ -1067,7 +1067,7 @@ jobs:
              const raw=input[key]===undefined?'':input[key];
              if(typeof raw!=='string'||raw.length>1100)throw Error('Confira os filtros e marcas.');
              const names=raw.split(/\\r?\\n/).map(s=>s.trim()).filter(Boolean);
-             if(names.length>24||names.some(s=>s.length>45||!/^[\\p{L}\\p{N} ._&()/-]+$/u.test(s)))throw Error('Use até 24 nomes curtos em cada lista.');
+             if(names.length>24||names.some(s=>s.length>45||!/^[\\p{L}\\p{N} ._&()-]+$/u.test(s)))throw Error('Use até 24 nomes curtos em cada lista.');
              if(new Set(names.map(s=>s.toLocaleLowerCase('pt-BR'))).size!==names.length)throw Error('Não repita filtros ou marcas.');
              out[key]=names.join('\\n');
            }
