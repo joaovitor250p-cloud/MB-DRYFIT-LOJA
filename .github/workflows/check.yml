@@ -97,11 +97,12 @@ jobs:
           node scripts/testar-camera-pdv-local.mjs
       - name: Testar estoque, REF, WhatsApp, pedidos, reposição e impressora nas duas lojas
         run: |
-          python3 -m py_compile scripts/ajustes-ref-estoque-tamanhos.py scripts/ajustes-pedido-whatsapp-impressao.py
-          cp scripts/ajustes-ref-estoque-tamanhos.py scripts/ajustes-pedido-whatsapp-impressao.py release-smoke/scripts/
+          python3 -m py_compile scripts/ajustes-ref-estoque-tamanhos.py scripts/ajustes-pedido-whatsapp-impressao.py scripts/corrigir-opcoes-filtros.py
+          cp scripts/ajustes-ref-estoque-tamanhos.py scripts/ajustes-pedido-whatsapp-impressao.py scripts/corrigir-opcoes-filtros.py release-smoke/scripts/
           cd release-smoke
           python3 scripts/ajustes-ref-estoque-tamanhos.py
           python3 scripts/ajustes-pedido-whatsapp-impressao.py
+          python3 scripts/corrigir-opcoes-filtros.py
           for store in mb-dryfit mb-for-her; do
             node --check "stores/$store/worker/staff-workspace.js"
             node --check "stores/$store/worker/storefront-cart.js"
@@ -110,6 +111,10 @@ jobs:
             node --check "stores/$store/worker/model-management.js"
             node --check "stores/$store/worker/api.js"
             node --check "stores/$store/worker/native-print.js"
+            node --check "stores/$store/worker/appearance.js"
+            grep -q 'catalog_hidden_brands' "stores/$store/worker/appearance.js"
+            grep -q 'mbColorExhausted' "stores/$store/worker/storefront.html"
+            grep -q 'mbOwnerFilterLines' "stores/$store/worker/page.html"
           done
       - name: Testar suite completa sobre a versão congelada com alterações aplicadas
         run: |
