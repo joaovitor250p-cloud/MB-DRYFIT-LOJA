@@ -69,6 +69,15 @@ for store in ("mb-dryfit","mb-for-her"):
     led="const track=video.srcObject?.getVideoTracks?.()[0];"
     if code.count(led)!=1:raise SystemExit("Torch track hook changed: "+store)
     code=code.replace(led,led+"\n  const torch=$('#cameraTorch');if(torch){const supported=!!track?.getCapabilities?.()?.torch&&!!track?.applyConstraints;torch.disabled=!supported;torch.title=supported?'Ligar flash':'Flash não disponível';torch.setAttribute('aria-pressed','false');cameraTorchOn=false}",1)
+    # The older mobile scanner previously bound a second torch button in
+    # the zoom/focus section. The new flash control owns that button and must
+    # not be redeclared or overwritten by those old handlers.
+    legacy_start=code.find("const torch=$('#cameraTorch'),focus=$('#cameraFocus');")
+    if legacy_start>=0:
+        legacy_end=code.find("  try{const capabilities=track?.getCapabilities?.();",legacy_start)
+        if legacy_end<0:
+            raise SystemExit("Legacy torch block changed: "+store)
+        code=code[:legacy_start]+code[legacy_end:]
     # Show retry only if the camera fails.
     denied="message.textContent=cameraErrorMessage(error);"
     if code.count(denied)!=1:raise SystemExit("Camera error hook changed: "+store)
