@@ -261,6 +261,91 @@ jobs:
             path.write_text(h)
             print('Updated photographic landing; preserved catalog:',store)
           PY
+      - name: Adicionar carrossel editável de até cinco banners às duas lojas
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for store in ('mb-dryfit','mb-for-her'):
+              root=Path('stores')/store/'worker'
+              def change(name,old,new):
+                  p=root/name
+                  data=p.read_text()
+                  if old not in data:
+                      raise RuntimeError('Trecho nao encontrado no '+str(p)+': '+old[:90])
+                  p.write_text(data.replace(old,new,1))
+              validation = """
+           for i in range(1,6):
+            pass
+              """
+              # Validate five optional media slots separately inside the existing server-side appearance validator.
+              rules = """
+           for(let i=1;i<=5;i++){
+            const type=String(input['banner_slide_'+i+'_type']||'image');
+            if(!['image','video'].includes(type))throw Error('Tipo de banner inválido.');
+            const url=String(input['banner_slide_'+i+'_url']||'').trim();
+            const local=/^\\/brand-assets\\/[a-zA-Z0-9._-]+\\.(?:png|jpe?g|webp|gif|mp4|webm)$/i.test(url);
+            out['banner_slide_'+i+'_url']=url&&!local?safeURL(url):url;
+            if(url.length>2000)throw Error('Link de banner longo demais.');
+            out['banner_slide_'+i+'_type']=type;
+           }
+           const seconds=Number(input.banner_slide_seconds??6);
+           if(!Number.isInteger(seconds)||seconds<4||seconds>12)throw Error('Tempo dos banners inválido.');
+           out.banner_slide_seconds=seconds;
+              """
+              change('appearance.js',' return out;\n}',rules+' return out;\n}')
+              # Reuse owner studio drafts, preview, undo and published revision history.
+              editor="<div class=\"mb-banner-slots\"><h4>Até 5 banners alternando em loop</h4><p class=\"help\">Cole links diretos HTTPS de imagens, GIFs ou vídeos. Para enviar arquivo do celular será preciso ativar uma galeria segura.</p>"
+              controls = "'"+editor+"'+[1,2,3,4,5].map(i=>'<div class=\"mb-banner-slot\"><strong>Banner '+i+'</strong>'+select('banner_slide_'+i+'_type','Tipo',[['image','Imagem ou GIF'],['video','Vídeo sem som']])+input('banner_slide_'+i+'_url','Link da mídia',2000,'url')+'</div>').join('')+select('banner_slide_seconds','Intervalo',[[4,'4 segundos'],[6,'6 segundos'],[8,'8 segundos'],[12,'12 segundos']])+'</div>'"
+              change('appearance-editor.js',"+select('banner_align','Alinhamento'","+"+controls+"+select('banner_align','Alinhamento'")
+              change('appearance-editor.js',"for(const key of ['columns','spacing','radius'])data[key]=Number(data[key]);","for(const key of ['columns','spacing','radius','banner_slide_seconds'])data[key]=Number(data[key]);")
+              change('appearance-editor.js','featured_products:[]};','featured_products:[],banner_slide_seconds:6};')
+              carousel = """
+            let bannerTimer=null;
+            function renderBanner(a){
+              const hero=document.querySelector('.mb-hero.mb-visual-2026');if(!hero)return;
+              if(bannerTimer){clearInterval(bannerTimer);bannerTimer=null}
+              hero.querySelector('.mb-slide-deck')?.remove();hero.classList.remove('has-slide-deck');
+              const list=[];
+              for(let i=1;i<=5;i++){const url=a['banner_slide_'+i+'_url'];if(typeof url==='string'&&url.trim())list.push({url:url.trim(),type:a['banner_slide_'+i+'_type']==='video'?'video':'image'});}
+              if(!list.length)return;
+              const deck=document.createElement('div');deck.className='mb-slide-deck';deck.setAttribute('aria-label','Banners da loja');
+              const slides=list.map(({url,type},i)=>{
+                const wrap=document.createElement('div');wrap.className='mb-slide-frame';wrap.setAttribute('aria-hidden',String(i!==0));
+                if(type==='video'){
+                  const video=document.createElement('video');video.src=url;video.muted=true;video.loop=true;video.playsInline=true;video.preload=i===0?'metadata':'none';video.setAttribute('muted','');video.setAttribute('playsinline','');wrap.append(video);
+                }else{const image=document.createElement('img');image.src=url;image.alt='';image.decoding='async';image.loading=i===0?'eager':'lazy';wrap.append(image)}
+                deck.append(wrap);return wrap;
+              });
+              const dots=document.createElement('nav');dots.className='mb-slide-dots';dots.setAttribute('aria-label','Escolher banner');
+              let active=0;const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+              function show(next){active=next;slides.forEach((s,i)=>{const selected=i===active;s.classList.toggle('active',selected);s.setAttribute('aria-hidden',String(!selected));const v=s.querySelector('video');if(v){if(selected&&!reduced&&!document.hidden&&!navigator.connection?.saveData)v.play().catch(()=>{});else v.pause()}});[...dots.children].forEach((b,i)=>b.setAttribute('aria-current',String(i===active)));}
+              list.forEach((_,i)=>{const b=document.createElement('button');b.type='button';b.setAttribute('aria-label','Banner '+(i+1));b.addEventListener('click',()=>show(i));dots.append(b)});
+              deck.append(dots);hero.prepend(deck);hero.classList.add('has-slide-deck');show(0);
+              if(list.length>1&&!reduced&&!navigator.connection?.saveData)bannerTimer=setInterval(()=>{if(!document.hidden)show((active+1)%list.length)},(Number(a.banner_slide_seconds)||6)*1000);
+              if(!hero.dataset.mbSlideVisibility){hero.dataset.mbSlideVisibility='1';document.addEventListener('visibilitychange',()=>{const v=hero.querySelector('.mb-slide-frame.active video');if(v){if(document.hidden)v.pause();else if(!reduced&&!navigator.connection?.saveData)v.play().catch(()=>{})}})}
+            }
+              """
+              change('appearance-client.js','  function apply(a){',carousel+'\n  function apply(a){')
+              change('appearance-client.js','currentAppearance=a;renderCurated(a);','currentAppearance=a;renderCurated(a);renderBanner(a);')
+              styles = """
+          /* Owner-controlled campaign banners, adapted to mobile and desktop. */
+          .mb-hero.has-slide-deck{position:relative;isolation:isolate}
+          .mb-hero.has-slide-deck>.hero-backdrop,.mb-hero.has-slide-deck>.mb-visual-photo,.mb-hero.has-slide-deck>.mb-visual-video{visibility:hidden!important}
+          .mb-slide-deck{position:absolute!important;inset:0;z-index:1!important;pointer-events:none;overflow:hidden}
+          .mb-slide-frame{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .5s ease}
+          .mb-slide-frame.active{opacity:1;visibility:visible}
+          .mb-slide-frame img,.mb-slide-frame video{width:100%;height:100%;object-fit:cover;display:block;object-position:center}
+          .mb-hero.has-slide-deck>.mb-visual-shade{z-index:2!important;pointer-events:none}
+          .mb-hero.has-slide-deck>.mb-visual-copy,.mb-hero.has-slide-deck>.mb-visual-bottom{z-index:3!important}
+          .mb-slide-dots{position:absolute;bottom:93px;right:24px;z-index:5;display:flex;gap:7px;pointer-events:auto}
+          .mb-slide-dots button{width:28px;height:5px;border:0;border-radius:2px;background:#ffffff77;padding:0;cursor:pointer}
+          .mb-slide-dots button[aria-current=true]{background:var(--visual-accent,#ff7928)}
+          @media(max-width:700px){.mb-slide-frame img,.mb-slide-frame video{object-position:62% center}.mb-slide-dots{right:15px;bottom:92px}.mb-slide-dots button{width:23px}}
+          @media(prefers-reduced-motion:reduce){.mb-slide-frame{transition:none}}
+              """
+              change('storefront.html','</style></head>',styles+'</style></head>')
+              print('Banner configuravel de 5 posicoes preparado:',store)
+          PY
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -546,6 +631,91 @@ jobs:
             h=h.replace('class="mb-visual-video" muted loop','class="mb-visual-video" muted loop')
             path.write_text(h)
             print('Updated photographic landing; preserved catalog:',store)
+          PY
+      - name: Adicionar carrossel editável de até cinco banners às duas lojas
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for store in ('mb-dryfit','mb-for-her'):
+              root=Path('stores')/store/'worker'
+              def change(name,old,new):
+                  p=root/name
+                  data=p.read_text()
+                  if old not in data:
+                      raise RuntimeError('Trecho nao encontrado no '+str(p)+': '+old[:90])
+                  p.write_text(data.replace(old,new,1))
+              validation = """
+           for i in range(1,6):
+            pass
+              """
+              # Validate five optional media slots separately inside the existing server-side appearance validator.
+              rules = """
+           for(let i=1;i<=5;i++){
+            const type=String(input['banner_slide_'+i+'_type']||'image');
+            if(!['image','video'].includes(type))throw Error('Tipo de banner inválido.');
+            const url=String(input['banner_slide_'+i+'_url']||'').trim();
+            const local=/^\\/brand-assets\\/[a-zA-Z0-9._-]+\\.(?:png|jpe?g|webp|gif|mp4|webm)$/i.test(url);
+            out['banner_slide_'+i+'_url']=url&&!local?safeURL(url):url;
+            if(url.length>2000)throw Error('Link de banner longo demais.');
+            out['banner_slide_'+i+'_type']=type;
+           }
+           const seconds=Number(input.banner_slide_seconds??6);
+           if(!Number.isInteger(seconds)||seconds<4||seconds>12)throw Error('Tempo dos banners inválido.');
+           out.banner_slide_seconds=seconds;
+              """
+              change('appearance.js',' return out;\n}',rules+' return out;\n}')
+              # Reuse owner studio drafts, preview, undo and published revision history.
+              editor="<div class=\"mb-banner-slots\"><h4>Até 5 banners alternando em loop</h4><p class=\"help\">Cole links diretos HTTPS de imagens, GIFs ou vídeos. Para enviar arquivo do celular será preciso ativar uma galeria segura.</p>"
+              controls = "'"+editor+"'+[1,2,3,4,5].map(i=>'<div class=\"mb-banner-slot\"><strong>Banner '+i+'</strong>'+select('banner_slide_'+i+'_type','Tipo',[['image','Imagem ou GIF'],['video','Vídeo sem som']])+input('banner_slide_'+i+'_url','Link da mídia',2000,'url')+'</div>').join('')+select('banner_slide_seconds','Intervalo',[[4,'4 segundos'],[6,'6 segundos'],[8,'8 segundos'],[12,'12 segundos']])+'</div>'"
+              change('appearance-editor.js',"+select('banner_align','Alinhamento'","+"+controls+"+select('banner_align','Alinhamento'")
+              change('appearance-editor.js',"for(const key of ['columns','spacing','radius'])data[key]=Number(data[key]);","for(const key of ['columns','spacing','radius','banner_slide_seconds'])data[key]=Number(data[key]);")
+              change('appearance-editor.js','featured_products:[]};','featured_products:[],banner_slide_seconds:6};')
+              carousel = """
+            let bannerTimer=null;
+            function renderBanner(a){
+              const hero=document.querySelector('.mb-hero.mb-visual-2026');if(!hero)return;
+              if(bannerTimer){clearInterval(bannerTimer);bannerTimer=null}
+              hero.querySelector('.mb-slide-deck')?.remove();hero.classList.remove('has-slide-deck');
+              const list=[];
+              for(let i=1;i<=5;i++){const url=a['banner_slide_'+i+'_url'];if(typeof url==='string'&&url.trim())list.push({url:url.trim(),type:a['banner_slide_'+i+'_type']==='video'?'video':'image'});}
+              if(!list.length)return;
+              const deck=document.createElement('div');deck.className='mb-slide-deck';deck.setAttribute('aria-label','Banners da loja');
+              const slides=list.map(({url,type},i)=>{
+                const wrap=document.createElement('div');wrap.className='mb-slide-frame';wrap.setAttribute('aria-hidden',String(i!==0));
+                if(type==='video'){
+                  const video=document.createElement('video');video.src=url;video.muted=true;video.loop=true;video.playsInline=true;video.preload=i===0?'metadata':'none';video.setAttribute('muted','');video.setAttribute('playsinline','');wrap.append(video);
+                }else{const image=document.createElement('img');image.src=url;image.alt='';image.decoding='async';image.loading=i===0?'eager':'lazy';wrap.append(image)}
+                deck.append(wrap);return wrap;
+              });
+              const dots=document.createElement('nav');dots.className='mb-slide-dots';dots.setAttribute('aria-label','Escolher banner');
+              let active=0;const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+              function show(next){active=next;slides.forEach((s,i)=>{const selected=i===active;s.classList.toggle('active',selected);s.setAttribute('aria-hidden',String(!selected));const v=s.querySelector('video');if(v){if(selected&&!reduced&&!document.hidden&&!navigator.connection?.saveData)v.play().catch(()=>{});else v.pause()}});[...dots.children].forEach((b,i)=>b.setAttribute('aria-current',String(i===active)));}
+              list.forEach((_,i)=>{const b=document.createElement('button');b.type='button';b.setAttribute('aria-label','Banner '+(i+1));b.addEventListener('click',()=>show(i));dots.append(b)});
+              deck.append(dots);hero.prepend(deck);hero.classList.add('has-slide-deck');show(0);
+              if(list.length>1&&!reduced&&!navigator.connection?.saveData)bannerTimer=setInterval(()=>{if(!document.hidden)show((active+1)%list.length)},(Number(a.banner_slide_seconds)||6)*1000);
+              if(!hero.dataset.mbSlideVisibility){hero.dataset.mbSlideVisibility='1';document.addEventListener('visibilitychange',()=>{const v=hero.querySelector('.mb-slide-frame.active video');if(v){if(document.hidden)v.pause();else if(!reduced&&!navigator.connection?.saveData)v.play().catch(()=>{})}})}
+            }
+              """
+              change('appearance-client.js','  function apply(a){',carousel+'\n  function apply(a){')
+              change('appearance-client.js','currentAppearance=a;renderCurated(a);','currentAppearance=a;renderCurated(a);renderBanner(a);')
+              styles = """
+          /* Owner-controlled campaign banners, adapted to mobile and desktop. */
+          .mb-hero.has-slide-deck{position:relative;isolation:isolate}
+          .mb-hero.has-slide-deck>.hero-backdrop,.mb-hero.has-slide-deck>.mb-visual-photo,.mb-hero.has-slide-deck>.mb-visual-video{visibility:hidden!important}
+          .mb-slide-deck{position:absolute!important;inset:0;z-index:1!important;pointer-events:none;overflow:hidden}
+          .mb-slide-frame{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .5s ease}
+          .mb-slide-frame.active{opacity:1;visibility:visible}
+          .mb-slide-frame img,.mb-slide-frame video{width:100%;height:100%;object-fit:cover;display:block;object-position:center}
+          .mb-hero.has-slide-deck>.mb-visual-shade{z-index:2!important;pointer-events:none}
+          .mb-hero.has-slide-deck>.mb-visual-copy,.mb-hero.has-slide-deck>.mb-visual-bottom{z-index:3!important}
+          .mb-slide-dots{position:absolute;bottom:93px;right:24px;z-index:5;display:flex;gap:7px;pointer-events:auto}
+          .mb-slide-dots button{width:28px;height:5px;border:0;border-radius:2px;background:#ffffff77;padding:0;cursor:pointer}
+          .mb-slide-dots button[aria-current=true]{background:var(--visual-accent,#ff7928)}
+          @media(max-width:700px){.mb-slide-frame img,.mb-slide-frame video{object-position:62% center}.mb-slide-dots{right:15px;bottom:92px}.mb-slide-dots button{width:23px}}
+          @media(prefers-reduced-motion:reduce){.mb-slide-frame{transition:none}}
+              """
+              change('storefront.html','</style></head>',styles+'</style></head>')
+              print('Banner configuravel de 5 posicoes preparado:',store)
           PY
       - uses: actions/setup-node@v4
         with:
