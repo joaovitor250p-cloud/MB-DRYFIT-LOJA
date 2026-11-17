@@ -6,7 +6,7 @@ O sistema usa **dois bancos Cloudflare D1 separados**. Fotos R2, quando configur
 
 O fluxo **Exportação criptografada D1 - MB** em `.github/workflows/mb-backup-d1-criptografado.yml` foi preparado. É **manual e inativo até configurar** a chave de criptografia `MB_BACKUP_PASSPHRASE` nos segredos do ambiente `cloudflare-producao` do GitHub Actions, com pelo menos 20 caracteres. Jamais colocar essa senha em commits, prints ou mensagens.
 
-Depois de configurar, executar **Actions → Exportação criptografada D1 - MB → Run workflow**. A rotina lê cada D1 separadamente sem aplicar migrações e valida o resultado com descriptografia, restauração SQL em banco SQLite temporário e `PRAGMA integrity_check`. Apenas após essa validação envia dois arquivos `.sql.enc` cifrados ao artifact do GitHub, com retenção de 7 dias.
+Depois de configurar, executar **Actions → Exportação criptografada D1 - MB → Run workflow** e preencher o campo de confirmação com `EXPORTAR` (maiúsculas). A execução recusa qualquer outro valor. A rotina também confere se os IDs D1 das duas lojas são diferentes e correspondem às configurações de cada Worker. A rotina lê cada D1 separadamente sem aplicar migrações e valida o resultado com descriptografia, restauração SQL em banco SQLite temporário e `PRAGMA integrity_check`. Apenas após essa validação envia dois arquivos `.sql.enc` cifrados ao artifact do GitHub, com retenção de 7 dias.
 
 **Limitações importantes:** este artifact não inclui fotos R2, contas Firebase nem variáveis secretas da hospedagem. A rotina ainda não foi executada com credenciais reais. A verificação local automatizada não substitui um teste de recuperação do aplicativo completo em um ambiente de homologação. Não afirmar que existe backup completo até validar ambos.
 
