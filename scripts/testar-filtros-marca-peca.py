@@ -10,7 +10,7 @@ with TemporaryDirectory() as d:
         dest.mkdir(parents=True)
         (dest/'storefront.html').write_text(
             '<html><head><style></style></head><body>'
-            '<nav class="main-nav" aria-label="Navegação principal"><a href="#colecao">Coleção</a><a href="#filters">Categorias</a><a href="#atendimento">Contato</a></nav>'
+            '<header class="campaign-header" id="siteHeader"><a class="logo">MB</a><nav class="main-nav" aria-label="Navegação principal"><a href="#colecao">Coleção</a><a href="#filters">Categorias</a><a href="#atendimento">Contato</a></nav><div class="shop-header-tools"></div></header>'
             '<main><section id="colecao"><div class="catalog-toolbar"></div><div id="catalog">Peças preservadas</div></section></main>'
             '<script>let products=[],category="",brandFilter="";function render(){}</script></body></html>',encoding='utf-8')
         (dest/'page.html').write_text(
@@ -26,8 +26,12 @@ with TemporaryDirectory() as d:
         shop=(folder/'storefront.html').read_text()
         admin=(folder/'page.html').read_text()
         assert '<nav class="main-nav"' not in shop
-        assert 'mb-filter-pair' in shop
-        assert 'mbFilterBrand' in shop and 'mbFilterPiece' in shop
+        assert 'mb-header-filters' in shop
+        assert 'mbHeaderBrands' in shop and 'mbHeaderPieces' in shop
+        assert 'mb-paper-roll' in shop
+        assert 'Limpar filtros' in shop
+        assert 'brandFilter=v' in shop and 'category=v' in shop
+        assert "brandFilter='';category=''" in shop
         assert 'Peças preservadas' in shop
         assert 'renderOwnerFilters()' in admin
         assert 'Filtros do catálogo' in admin
