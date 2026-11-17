@@ -653,6 +653,121 @@ jobs:
               page.write_text(html)
               print('Colecao em portugues, filtros expandidos, cards preservados:',store)
           PY
+      - name: Restaurar vitrine atacadista igual ao modelo e editor de mídias
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          for store in ('mb-dryfit','mb-for-her'):
+              root=Path('stores')/store/'worker'
+              female=store=='mb-for-her'
+              path=root/'storefront.html'
+              html=path.read_text()
+              if '<main class="campaign-main">' not in html or 'id="catalog"' not in html: raise SystemExit('Catálogo não reconhecido')
+              headline='Moda feminina' if female else 'Moda esportiva'
+              subtitle='Peças versáteis para treino, dia a dia e estilo.' if female else 'Roupas de alta performance para treino, ar livre e dia a dia.'
+              accent='#c44e71' if female else '#fc621d'
+              wash='#f9e3eb' if female else '#ffe4d6'
+              logo='MB FOR HER' if female else 'MB DRYFIT'
+              hero=('<section class="mbw-hero" id="atacado" aria-label="Moda no atacado">'
+               '<div class="mbw-copy"><span class="mbw-short-line"></span><h1>'+headline+'<br><em>no atacado</em></h1>'
+               '<p>'+subtitle+'</p><div class="mbw-actions"><a class="mbw-main-cta" href="#colecao">Ver coleção →</a>'
+               '<a class="mbw-contact-cta" href="#atendimento" data-contact-vendors>▣ Pedir no atacado</a></div>'
+               '<p class="mbw-wholesale">◈ Venda no atacado &nbsp;│&nbsp; Pedido mínimo: consulte as condições</p></div>'
+               '<div class="mbw-art"><div class="mbw-sweep"></div><div class="mbw-fabric"><i></i><i></i><i>MB</i></div>'
+               '<div class="mbw-media" aria-label="Imagens e vídeos de produtos"></div><nav class="mbw-dots" aria-label="Escolher banner"></nav>'
+               '</div></section>')
+              html=html.replace('<main class="campaign-main">',hero+'<main class="campaign-main">',1)
+              # Retain all original card nodes, filters and search functionality.
+              cat='<nav class="filters" id="filters" aria-label="Tipos de peça"></nav>'
+              if html.count(cat)!=1:raise SystemExit('Filtro não reconhecido')
+              html=html.replace(cat,'<div class="mbw-categories">'+cat+'</div>',1)
+              html=re.sub(r'<nav class="main-nav" aria-label="Navegação principal">.*?</nav>',
+                '<nav class="main-nav" aria-label="Navegação principal"><a href="#colecao">Coleção</a><a href="#atacado">Atacado</a><a href="#filters">Categorias</a><a href="#atendimento" data-contact-vendors>Contato</a></nav>',html,count=1)
+              html=html.replace('SPORT & LIFESTYLE','MODA ESPORTIVA').replace('FITNESS & LIFESTYLE','MODA FITNESS')
+              html=re.sub(r'(<div class="editorial-heading reveal"><div><span class="section-kicker">)[^<]*(</span><h2>)[^<]*(</h2>)',
+                r'\1'+logo+r' / COLEÇÃO\2Destaques da coleção\3',html,count=1)
+              css="""
+          /* MB wholesale: original approved art direction; nothing touches .card or product grids. */
+          @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+          :root{--mbw-accent:ACCENT;--mbw-wash:WASH}
+          .mbw-hero,.mbw-categories{font-family:'Manrope',Inter,Arial,sans-serif}
+          .mbw-hero{max-width:1440px;margin:auto;min-height:385px;display:grid;grid-template-columns:49% 51%;background:#fff;overflow:hidden}
+          .mbw-copy{padding:54px clamp(22px,5.5vw,90px);display:flex;justify-content:center;flex-direction:column;z-index:1}
+          .mbw-short-line{width:38px;height:4px;background:var(--mbw-accent);border-radius:2px;margin-bottom:17px}
+          .mbw-copy h1{font:800 clamp(38px,4.2vw,62px)/1.06 'Manrope',Arial,sans-serif;letter-spacing:-.06em;color:#222428;margin:0 0 16px}
+          .mbw-copy h1 em{font-style:normal;color:var(--mbw-accent)}
+          .mbw-copy>p:not(.mbw-wholesale){font:400 clamp(13px,1.3vw,17px)/1.6 'Manrope',Arial,sans-serif;color:#454952;max-width:410px;margin:0 0 24px}
+          .mbw-actions{display:flex;flex-wrap:wrap;gap:11px}
+          .mbw-actions a{min-height:48px;padding:13px 19px;border-radius:10px;display:inline-flex;align-items:center;gap:10px;text-decoration:none;font:700 12px 'Manrope',Arial,sans-serif}
+          .mbw-main-cta{background:var(--mbw-accent);color:white!important}
+          .mbw-contact-cta{border:1px solid #cfd2d7;background:#fff;color:#24262b!important}
+          .mbw-wholesale{font:500 11px 'Manrope',Arial,sans-serif;color:#60646b;margin:23px 0 0}
+          .mbw-art{position:relative;min-height:350px;isolation:isolate;background:linear-gradient(135deg,var(--mbw-wash),#f5f5f6)}
+          .mbw-sweep{position:absolute;inset:-20%;background:var(--mbw-accent);clip-path:polygon(40% 0,58% 0,10% 100%,0 100%);opacity:.82}
+          .mbw-fabric{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transform:rotate(-9deg)}
+          .mbw-fabric i{position:absolute;width:44%;height:35%;border-radius:20px 20px 8px 8px;background:#242a32;box-shadow:0 18px 30px #0003,inset 0 4px 7px #ffffff35}
+          .mbw-fabric i:first-child{background:var(--mbw-accent);transform:translate(17%,35%)}
+          .mbw-fabric i:nth-child(2){background:#666a75;transform:translate(8%,17%)}
+          .mbw-fabric i:last-child{font:800 22px 'Manrope',Arial,sans-serif;color:white;display:flex;align-items:center;justify-content:center}
+          .mbw-media{position:absolute;inset:0;z-index:2;pointer-events:none}
+          .mbw-media-item{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .45s}
+          .mbw-media-item.active{opacity:1;visibility:visible}
+          .mbw-media-item img,.mbw-media-item video{width:100%;height:100%;object-fit:cover}
+          .mbw-hero.has-media .mbw-fabric{display:none}
+          .mbw-dots{position:absolute;bottom:18px;right:22px;z-index:3;display:flex;gap:8px}
+          .mbw-dots button{width:9px;height:9px;border-radius:50%;border:0;background:#ffffffaf;padding:0}
+          .mbw-dots button[aria-current=true]{background:var(--mbw-accent)}
+          .mbw-categories{max-width:1330px;margin:15px auto 0;padding:8px 30px 4px}
+          .mbw-categories #filters{display:flex!important;gap:11px!important;flex-wrap:nowrap!important;overflow-x:auto!important;scrollbar-width:none;scroll-snap-type:x proximity;border:0!important}
+          .mbw-categories #filters button{min-height:50px!important;flex:1 0 auto!important;min-width:126px!important;background:#fafafb!important;border:1px solid #e2e3e7!important;border-radius:13px!important;color:#27292e!important;font:700 12px 'Manrope',Arial,sans-serif!important}
+          .mbw-categories #filters button.on{background:var(--mbw-wash)!important;color:var(--mbw-accent)!important;border-color:var(--mbw-wash)!important}
+          #colecao{padding-top:16px!important}
+          #colecao .editorial-heading h2{font:800 clamp(23px,2.7vw,33px) 'Manrope',Arial,sans-serif!important;letter-spacing:-.05em!important}
+          html[data-theme=dark] .mbw-hero{background:#16181e}
+          html[data-theme=dark] .mbw-copy h1{color:white}
+          html[data-theme=dark] .mbw-copy>p,html[data-theme=dark] .mbw-wholesale{color:#e5e5e5}
+          @media(max-width:700px){.mbw-hero{grid-template-columns:1fr;min-height:0}.mbw-copy{padding:28px 21px 20px}.mbw-copy h1{font-size:clamp(32px,8.6vw,49px)}.mbw-copy>p:not(.mbw-wholesale){font-size:13px;margin-bottom:17px}.mbw-actions a{font-size:11px;min-height:45px}.mbw-wholesale{font-size:10px;margin-top:16px}.mbw-art{min-height:180px}.mbw-fabric i{width:30%;height:51%}.mbw-categories{padding:7px 12px 0;margin-top:6px}.mbw-categories #filters button{min-width:97px!important;min-height:49px!important;font-size:10px!important}}
+          @media(prefers-reduced-motion:reduce){.mbw-media-item{transition:none}}
+              """.replace('ACCENT',accent).replace('WASH',wash)
+              html=html.replace('</style></head>',css+'</style></head>',1)
+              script="""
+          <script>
+          (() => {
+           const hero=document.querySelector('.mbw-hero'),gallery=hero?.querySelector('.mbw-media'),dots=hero?.querySelector('.mbw-dots');
+           const filters=document.querySelector('#filters'),bar=document.querySelector('.mbw-categories');
+           if(bar&&hero)hero.insertAdjacentElement('afterend',bar);
+           if(filters){const update=()=>{for(const b of filters.querySelectorAll('button')){if(b.dataset.mbwReady)continue;const key=String(b.dataset.category||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase();const mark=key.includes('camis')?'♧':key.includes('bermud')||key.includes('short')?'▱':key.includes('calc')||key.includes('legg')?'♙':key.includes('conjun')?'▣':key.includes('top')?'♡':key.includes('import')?'✈':'◇';b.textContent=mark+'  '+b.textContent;b.dataset.mbwReady='1'}};new MutationObserver(update).observe(filters,{childList:true});update()}
+           if(!hero||!gallery||!dots)return;
+           let slides=[],index=0,timer;const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+           const valid=url=>{try{const u=new URL(url,location.origin);return u.protocol==='https:'||u.origin===location.origin&&u.protocol==='http:'}catch{return false}};
+           function show(i){index=i;slides.forEach((el,j)=>{const active=i===j;el.classList.toggle('active',active);const v=el.querySelector('video');if(v){if(active&&!reduced&&!document.hidden&&!navigator.connection?.saveData)v.play().catch(()=>{});else v.pause()}});[...dots.children].forEach((d,j)=>d.setAttribute('aria-current',String(i===j)))}
+           function apply(settings){
+             if(!settings||typeof settings!=='object')return;
+             clearInterval(timer);index=0;slides=[];gallery.replaceChildren();dots.replaceChildren();
+             let media=[];for(let i=1;i<=5;i++){const url=settings['banner_slide_'+i+'_url'];if(typeof url==='string'&&url&&valid(url))media.push({url,video:settings['banner_slide_'+i+'_type']==='video'})}
+             if(!media.length&&settings.media_url&&valid(settings.media_url))media.push({url:settings.media_url,video:settings.media_type==='video'});
+             hero.classList.toggle('has-media',!!media.length);
+             media.forEach((entry,i)=>{const box=document.createElement('div');box.className='mbw-media-item';const el=document.createElement(entry.video?'video':'img');el.src=entry.url;if(entry.video){el.muted=true;el.loop=true;el.playsInline=true;el.preload=i===0?'metadata':'none'}else{el.alt='Peças da coleção';el.loading=i===0?'eager':'lazy'}box.append(el);gallery.append(box);slides.push(box);const dot=document.createElement('button');dot.type='button';dot.setAttribute('aria-label','Imagem '+(i+1));dot.onclick=()=>show(i);dots.append(dot)});
+             if(slides.length){show(0);if(slides.length>1&&!reduced&&!navigator.connection?.saveData)timer=setInterval(()=>{if(!document.hidden)show((index+1)%slides.length)},Math.max(4,Number(settings.banner_slide_seconds)||6)*1000)}
+           }
+           const preview=location.search.includes('preview=appearance');
+           fetch(preview?'/api/storefront-settings':'/api/shop/appearance',{credentials:'same-origin',cache:'no-store'}).then(r=>r.ok?r.json():null).then(result=>apply(result?.published||result?.draft||result?.appearance||result)).catch(()=>{});
+           addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.type==='mb-appearance-preview')apply(e.data.appearance)});
+           document.addEventListener('visibilitychange',()=>{if(document.hidden)hero.querySelectorAll('video').forEach(v=>v.pause());else if(slides.length)show(index)});
+          })();
+          </script>
+              """
+              html=html.replace('</body></html>',script+'</body></html>',1)
+              path.write_text(html)
+              # Re-enable the already implemented five-slot owner editor, formerly concealed.
+              editor=root/'appearance-editor.js'
+              src=editor.read_text()
+              src=re.sub(r"'<style>\\[data-editor-section=[\\s\\S]*?</style>'\\+",'',src)
+              src=src.replace("['banner','Banner']","['banner','Vitrine: imagens e vídeos']")
+              editor.write_text(src)
+              print('Novo site atacadista e editor de mídias:',store)
+          PY
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -1330,6 +1445,121 @@ jobs:
               html=html.replace('</style></head>',css+'</style></head>',1)
               page.write_text(html)
               print('Colecao em portugues, filtros expandidos, cards preservados:',store)
+          PY
+      - name: Restaurar vitrine atacadista igual ao modelo e editor de mídias
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          for store in ('mb-dryfit','mb-for-her'):
+              root=Path('stores')/store/'worker'
+              female=store=='mb-for-her'
+              path=root/'storefront.html'
+              html=path.read_text()
+              if '<main class="campaign-main">' not in html or 'id="catalog"' not in html: raise SystemExit('Catálogo não reconhecido')
+              headline='Moda feminina' if female else 'Moda esportiva'
+              subtitle='Peças versáteis para treino, dia a dia e estilo.' if female else 'Roupas de alta performance para treino, ar livre e dia a dia.'
+              accent='#c44e71' if female else '#fc621d'
+              wash='#f9e3eb' if female else '#ffe4d6'
+              logo='MB FOR HER' if female else 'MB DRYFIT'
+              hero=('<section class="mbw-hero" id="atacado" aria-label="Moda no atacado">'
+               '<div class="mbw-copy"><span class="mbw-short-line"></span><h1>'+headline+'<br><em>no atacado</em></h1>'
+               '<p>'+subtitle+'</p><div class="mbw-actions"><a class="mbw-main-cta" href="#colecao">Ver coleção →</a>'
+               '<a class="mbw-contact-cta" href="#atendimento" data-contact-vendors>▣ Pedir no atacado</a></div>'
+               '<p class="mbw-wholesale">◈ Venda no atacado &nbsp;│&nbsp; Pedido mínimo: consulte as condições</p></div>'
+               '<div class="mbw-art"><div class="mbw-sweep"></div><div class="mbw-fabric"><i></i><i></i><i>MB</i></div>'
+               '<div class="mbw-media" aria-label="Imagens e vídeos de produtos"></div><nav class="mbw-dots" aria-label="Escolher banner"></nav>'
+               '</div></section>')
+              html=html.replace('<main class="campaign-main">',hero+'<main class="campaign-main">',1)
+              # Retain all original card nodes, filters and search functionality.
+              cat='<nav class="filters" id="filters" aria-label="Tipos de peça"></nav>'
+              if html.count(cat)!=1:raise SystemExit('Filtro não reconhecido')
+              html=html.replace(cat,'<div class="mbw-categories">'+cat+'</div>',1)
+              html=re.sub(r'<nav class="main-nav" aria-label="Navegação principal">.*?</nav>',
+                '<nav class="main-nav" aria-label="Navegação principal"><a href="#colecao">Coleção</a><a href="#atacado">Atacado</a><a href="#filters">Categorias</a><a href="#atendimento" data-contact-vendors>Contato</a></nav>',html,count=1)
+              html=html.replace('SPORT & LIFESTYLE','MODA ESPORTIVA').replace('FITNESS & LIFESTYLE','MODA FITNESS')
+              html=re.sub(r'(<div class="editorial-heading reveal"><div><span class="section-kicker">)[^<]*(</span><h2>)[^<]*(</h2>)',
+                r'\1'+logo+r' / COLEÇÃO\2Destaques da coleção\3',html,count=1)
+              css="""
+          /* MB wholesale: original approved art direction; nothing touches .card or product grids. */
+          @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+          :root{--mbw-accent:ACCENT;--mbw-wash:WASH}
+          .mbw-hero,.mbw-categories{font-family:'Manrope',Inter,Arial,sans-serif}
+          .mbw-hero{max-width:1440px;margin:auto;min-height:385px;display:grid;grid-template-columns:49% 51%;background:#fff;overflow:hidden}
+          .mbw-copy{padding:54px clamp(22px,5.5vw,90px);display:flex;justify-content:center;flex-direction:column;z-index:1}
+          .mbw-short-line{width:38px;height:4px;background:var(--mbw-accent);border-radius:2px;margin-bottom:17px}
+          .mbw-copy h1{font:800 clamp(38px,4.2vw,62px)/1.06 'Manrope',Arial,sans-serif;letter-spacing:-.06em;color:#222428;margin:0 0 16px}
+          .mbw-copy h1 em{font-style:normal;color:var(--mbw-accent)}
+          .mbw-copy>p:not(.mbw-wholesale){font:400 clamp(13px,1.3vw,17px)/1.6 'Manrope',Arial,sans-serif;color:#454952;max-width:410px;margin:0 0 24px}
+          .mbw-actions{display:flex;flex-wrap:wrap;gap:11px}
+          .mbw-actions a{min-height:48px;padding:13px 19px;border-radius:10px;display:inline-flex;align-items:center;gap:10px;text-decoration:none;font:700 12px 'Manrope',Arial,sans-serif}
+          .mbw-main-cta{background:var(--mbw-accent);color:white!important}
+          .mbw-contact-cta{border:1px solid #cfd2d7;background:#fff;color:#24262b!important}
+          .mbw-wholesale{font:500 11px 'Manrope',Arial,sans-serif;color:#60646b;margin:23px 0 0}
+          .mbw-art{position:relative;min-height:350px;isolation:isolate;background:linear-gradient(135deg,var(--mbw-wash),#f5f5f6)}
+          .mbw-sweep{position:absolute;inset:-20%;background:var(--mbw-accent);clip-path:polygon(40% 0,58% 0,10% 100%,0 100%);opacity:.82}
+          .mbw-fabric{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transform:rotate(-9deg)}
+          .mbw-fabric i{position:absolute;width:44%;height:35%;border-radius:20px 20px 8px 8px;background:#242a32;box-shadow:0 18px 30px #0003,inset 0 4px 7px #ffffff35}
+          .mbw-fabric i:first-child{background:var(--mbw-accent);transform:translate(17%,35%)}
+          .mbw-fabric i:nth-child(2){background:#666a75;transform:translate(8%,17%)}
+          .mbw-fabric i:last-child{font:800 22px 'Manrope',Arial,sans-serif;color:white;display:flex;align-items:center;justify-content:center}
+          .mbw-media{position:absolute;inset:0;z-index:2;pointer-events:none}
+          .mbw-media-item{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .45s}
+          .mbw-media-item.active{opacity:1;visibility:visible}
+          .mbw-media-item img,.mbw-media-item video{width:100%;height:100%;object-fit:cover}
+          .mbw-hero.has-media .mbw-fabric{display:none}
+          .mbw-dots{position:absolute;bottom:18px;right:22px;z-index:3;display:flex;gap:8px}
+          .mbw-dots button{width:9px;height:9px;border-radius:50%;border:0;background:#ffffffaf;padding:0}
+          .mbw-dots button[aria-current=true]{background:var(--mbw-accent)}
+          .mbw-categories{max-width:1330px;margin:15px auto 0;padding:8px 30px 4px}
+          .mbw-categories #filters{display:flex!important;gap:11px!important;flex-wrap:nowrap!important;overflow-x:auto!important;scrollbar-width:none;scroll-snap-type:x proximity;border:0!important}
+          .mbw-categories #filters button{min-height:50px!important;flex:1 0 auto!important;min-width:126px!important;background:#fafafb!important;border:1px solid #e2e3e7!important;border-radius:13px!important;color:#27292e!important;font:700 12px 'Manrope',Arial,sans-serif!important}
+          .mbw-categories #filters button.on{background:var(--mbw-wash)!important;color:var(--mbw-accent)!important;border-color:var(--mbw-wash)!important}
+          #colecao{padding-top:16px!important}
+          #colecao .editorial-heading h2{font:800 clamp(23px,2.7vw,33px) 'Manrope',Arial,sans-serif!important;letter-spacing:-.05em!important}
+          html[data-theme=dark] .mbw-hero{background:#16181e}
+          html[data-theme=dark] .mbw-copy h1{color:white}
+          html[data-theme=dark] .mbw-copy>p,html[data-theme=dark] .mbw-wholesale{color:#e5e5e5}
+          @media(max-width:700px){.mbw-hero{grid-template-columns:1fr;min-height:0}.mbw-copy{padding:28px 21px 20px}.mbw-copy h1{font-size:clamp(32px,8.6vw,49px)}.mbw-copy>p:not(.mbw-wholesale){font-size:13px;margin-bottom:17px}.mbw-actions a{font-size:11px;min-height:45px}.mbw-wholesale{font-size:10px;margin-top:16px}.mbw-art{min-height:180px}.mbw-fabric i{width:30%;height:51%}.mbw-categories{padding:7px 12px 0;margin-top:6px}.mbw-categories #filters button{min-width:97px!important;min-height:49px!important;font-size:10px!important}}
+          @media(prefers-reduced-motion:reduce){.mbw-media-item{transition:none}}
+              """.replace('ACCENT',accent).replace('WASH',wash)
+              html=html.replace('</style></head>',css+'</style></head>',1)
+              script="""
+          <script>
+          (() => {
+           const hero=document.querySelector('.mbw-hero'),gallery=hero?.querySelector('.mbw-media'),dots=hero?.querySelector('.mbw-dots');
+           const filters=document.querySelector('#filters'),bar=document.querySelector('.mbw-categories');
+           if(bar&&hero)hero.insertAdjacentElement('afterend',bar);
+           if(filters){const update=()=>{for(const b of filters.querySelectorAll('button')){if(b.dataset.mbwReady)continue;const key=String(b.dataset.category||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase();const mark=key.includes('camis')?'♧':key.includes('bermud')||key.includes('short')?'▱':key.includes('calc')||key.includes('legg')?'♙':key.includes('conjun')?'▣':key.includes('top')?'♡':key.includes('import')?'✈':'◇';b.textContent=mark+'  '+b.textContent;b.dataset.mbwReady='1'}};new MutationObserver(update).observe(filters,{childList:true});update()}
+           if(!hero||!gallery||!dots)return;
+           let slides=[],index=0,timer;const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+           const valid=url=>{try{const u=new URL(url,location.origin);return u.protocol==='https:'||u.origin===location.origin&&u.protocol==='http:'}catch{return false}};
+           function show(i){index=i;slides.forEach((el,j)=>{const active=i===j;el.classList.toggle('active',active);const v=el.querySelector('video');if(v){if(active&&!reduced&&!document.hidden&&!navigator.connection?.saveData)v.play().catch(()=>{});else v.pause()}});[...dots.children].forEach((d,j)=>d.setAttribute('aria-current',String(i===j)))}
+           function apply(settings){
+             if(!settings||typeof settings!=='object')return;
+             clearInterval(timer);index=0;slides=[];gallery.replaceChildren();dots.replaceChildren();
+             let media=[];for(let i=1;i<=5;i++){const url=settings['banner_slide_'+i+'_url'];if(typeof url==='string'&&url&&valid(url))media.push({url,video:settings['banner_slide_'+i+'_type']==='video'})}
+             if(!media.length&&settings.media_url&&valid(settings.media_url))media.push({url:settings.media_url,video:settings.media_type==='video'});
+             hero.classList.toggle('has-media',!!media.length);
+             media.forEach((entry,i)=>{const box=document.createElement('div');box.className='mbw-media-item';const el=document.createElement(entry.video?'video':'img');el.src=entry.url;if(entry.video){el.muted=true;el.loop=true;el.playsInline=true;el.preload=i===0?'metadata':'none'}else{el.alt='Peças da coleção';el.loading=i===0?'eager':'lazy'}box.append(el);gallery.append(box);slides.push(box);const dot=document.createElement('button');dot.type='button';dot.setAttribute('aria-label','Imagem '+(i+1));dot.onclick=()=>show(i);dots.append(dot)});
+             if(slides.length){show(0);if(slides.length>1&&!reduced&&!navigator.connection?.saveData)timer=setInterval(()=>{if(!document.hidden)show((index+1)%slides.length)},Math.max(4,Number(settings.banner_slide_seconds)||6)*1000)}
+           }
+           const preview=location.search.includes('preview=appearance');
+           fetch(preview?'/api/storefront-settings':'/api/shop/appearance',{credentials:'same-origin',cache:'no-store'}).then(r=>r.ok?r.json():null).then(result=>apply(result?.published||result?.draft||result?.appearance||result)).catch(()=>{});
+           addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.type==='mb-appearance-preview')apply(e.data.appearance)});
+           document.addEventListener('visibilitychange',()=>{if(document.hidden)hero.querySelectorAll('video').forEach(v=>v.pause());else if(slides.length)show(index)});
+          })();
+          </script>
+              """
+              html=html.replace('</body></html>',script+'</body></html>',1)
+              path.write_text(html)
+              # Re-enable the already implemented five-slot owner editor, formerly concealed.
+              editor=root/'appearance-editor.js'
+              src=editor.read_text()
+              src=re.sub(r"'<style>\\[data-editor-section=[\\s\\S]*?</style>'\\+",'',src)
+              src=src.replace("['banner','Banner']","['banner','Vitrine: imagens e vídeos']")
+              editor.write_text(src)
+              print('Novo site atacadista e editor de mídias:',store)
           PY
       - uses: actions/setup-node@v4
         with:
