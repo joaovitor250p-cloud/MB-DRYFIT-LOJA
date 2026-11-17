@@ -104,6 +104,39 @@ jobs:
           }
           @media(prefers-reduced-motion:reduce){.mb-visual-video{display:none!important}}
             """.replace('ACCENT',accent)
+            # Keep original catalog DOM for existing tests, but remove obsolete oversized logo/about panel from display.
+            css += """
+          /* Last pass: hide old brand-logo panel in both storefronts. */
+          .about-section,#sobre.about-section{display:none!important}
+          /* Real dark moving background, not a screenshot of the proposed page. */
+          .mb-hero.mb-visual-2026{width:100%!important;min-width:0!important;border-radius:0!important;box-sizing:border-box!important}
+          .mb-visual-2026>.mb-visual-photo{z-index:0!important;filter:brightness(.68) contrast(1.12) saturate(.85)}
+          .mb-visual-2026>.mb-visual-video{z-index:1!important;filter:brightness(.7) contrast(1.16) saturate(.85)}
+          .mb-visual-2026>.mb-visual-shade{z-index:2!important;background:linear-gradient(90deg,#06070bea 0%,#06070bbd 48%,#06070b45 100%),linear-gradient(0deg,#06070be0 0%,transparent 50%)!important}
+          .mb-visual-2026>.mb-visual-copy,.mb-visual-2026>.mb-visual-bottom{z-index:3!important}
+          .mb-visual-2026>.mb-visual-copy{display:block!important;box-sizing:border-box!important;width:100%!important;max-width:850px!important;min-width:0!important;margin:auto 0!important;transform:none!important;left:auto!important;right:auto!important}
+          .mb-visual-2026 h1{overflow-wrap:normal!important;word-break:normal!important;text-wrap:balance}
+          .mb-visual-2026 .mb-visual-actions{justify-content:flex-start!important}
+          .mb-visual-2026 .mb-visual-photo{animation:mbFilmPan 22s ease-in-out infinite alternate}
+          @keyframes mbFilmPan{from{transform:scale(1.02) translateX(-1%)}to{transform:scale(1.11) translateX(1.5%)}}
+          @media(max-width:700px){
+            .mb-hero.mb-visual-2026{min-height:595px!important}
+            .mb-visual-2026>.mb-visual-copy{padding:76px 22px 80px!important;max-width:100%!important}
+            .mb-visual-2026 h1{font-size:clamp(33px,8.8vw,57px)!important;letter-spacing:-.055em!important;line-height:1.09!important;white-space:normal!important}
+            .mb-visual-2026 .mb-visual-copy>p{max-width:295px!important}
+            .mb-visual-2026>.mb-visual-photo{object-position:69% center!important}
+            .mb-visual-2026>.mb-visual-video{object-position:65% center!important}
+          }
+          @media(prefers-reduced-motion:reduce){.mb-visual-2026 .mb-visual-photo{animation:none!important}}
+          """
+            if store=='mb-for-her':
+              css += """
+          .mb-visual-2026 h1{font-family:Georgia,'Times New Roman',serif!important;font-weight:700!important;letter-spacing:-.05em!important}
+          .mb-visual-2026 h1 em{font-style:italic!important}
+          .mb-visual-2026>.mb-visual-photo{object-position:58% 35%!important}
+          .mb-visual-2026>.mb-visual-shade{background:linear-gradient(90deg,#110c15eb 0%,#110c15c3 53%,#110c154d 100%),linear-gradient(0deg,#100b14d9,transparent 50%)!important}
+          @media(max-width:700px){.mb-visual-2026 h1{font-size:clamp(33px,8.7vw,55px)!important}}
+              """
             h=h.replace('</style></head>',css+'</style></head>')
             path.write_text(h)
             print('Updated photographic landing; preserved catalog:',store)
@@ -237,6 +270,39 @@ jobs:
           }
           @media(prefers-reduced-motion:reduce){.mb-visual-video{display:none!important}}
             """.replace('ACCENT',accent)
+            # Keep original catalog DOM for existing tests, but remove obsolete oversized logo/about panel from display.
+            css += """
+          /* Last pass: hide old brand-logo panel in both storefronts. */
+          .about-section,#sobre.about-section{display:none!important}
+          /* Real dark moving background, not a screenshot of the proposed page. */
+          .mb-hero.mb-visual-2026{width:100%!important;min-width:0!important;border-radius:0!important;box-sizing:border-box!important}
+          .mb-visual-2026>.mb-visual-photo{z-index:0!important;filter:brightness(.68) contrast(1.12) saturate(.85)}
+          .mb-visual-2026>.mb-visual-video{z-index:1!important;filter:brightness(.7) contrast(1.16) saturate(.85)}
+          .mb-visual-2026>.mb-visual-shade{z-index:2!important;background:linear-gradient(90deg,#06070bea 0%,#06070bbd 48%,#06070b45 100%),linear-gradient(0deg,#06070be0 0%,transparent 50%)!important}
+          .mb-visual-2026>.mb-visual-copy,.mb-visual-2026>.mb-visual-bottom{z-index:3!important}
+          .mb-visual-2026>.mb-visual-copy{display:block!important;box-sizing:border-box!important;width:100%!important;max-width:850px!important;min-width:0!important;margin:auto 0!important;transform:none!important;left:auto!important;right:auto!important}
+          .mb-visual-2026 h1{overflow-wrap:normal!important;word-break:normal!important;text-wrap:balance}
+          .mb-visual-2026 .mb-visual-actions{justify-content:flex-start!important}
+          .mb-visual-2026 .mb-visual-photo{animation:mbFilmPan 22s ease-in-out infinite alternate}
+          @keyframes mbFilmPan{from{transform:scale(1.02) translateX(-1%)}to{transform:scale(1.11) translateX(1.5%)}}
+          @media(max-width:700px){
+            .mb-hero.mb-visual-2026{min-height:595px!important}
+            .mb-visual-2026>.mb-visual-copy{padding:76px 22px 80px!important;max-width:100%!important}
+            .mb-visual-2026 h1{font-size:clamp(33px,8.8vw,57px)!important;letter-spacing:-.055em!important;line-height:1.09!important;white-space:normal!important}
+            .mb-visual-2026 .mb-visual-copy>p{max-width:295px!important}
+            .mb-visual-2026>.mb-visual-photo{object-position:69% center!important}
+            .mb-visual-2026>.mb-visual-video{object-position:65% center!important}
+          }
+          @media(prefers-reduced-motion:reduce){.mb-visual-2026 .mb-visual-photo{animation:none!important}}
+          """
+            if store=='mb-for-her':
+              css += """
+          .mb-visual-2026 h1{font-family:Georgia,'Times New Roman',serif!important;font-weight:700!important;letter-spacing:-.05em!important}
+          .mb-visual-2026 h1 em{font-style:italic!important}
+          .mb-visual-2026>.mb-visual-photo{object-position:58% 35%!important}
+          .mb-visual-2026>.mb-visual-shade{background:linear-gradient(90deg,#110c15eb 0%,#110c15c3 53%,#110c154d 100%),linear-gradient(0deg,#100b14d9,transparent 50%)!important}
+          @media(max-width:700px){.mb-visual-2026 h1{font-size:clamp(33px,8.7vw,55px)!important}}
+              """
             h=h.replace('</style></head>',css+'</style></head>')
             path.write_text(h)
             print('Updated photographic landing; preserved catalog:',store)
