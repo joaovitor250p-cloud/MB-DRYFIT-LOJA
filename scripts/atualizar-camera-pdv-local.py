@@ -123,4 +123,25 @@ for store in ("mb-dryfit","mb-for-her"):
     new="if(typeof owner==='function'&&owner()&&typeof mbMountOrderSoundPanel==='function')"
     if old in s:s=s.replace(old,new,1)
     workspace.write_text(s,encoding="utf-8")
+    # Update the frozen end-to-end camera-flow test to perform the same press
+    # that real operators must perform. Preserve every order/return assertion.
+    business_test=root.parent/"tests"/"camera-business-flow.test.mjs"
+    if business_test.exists():
+        cases=business_test.read_text(encoding="utf-8")
+        first="await ctx.openCameraScanner();const read=async code=>"
+        if cases.count(first)!=1:
+            raise SystemExit("Camera business-flow fixture changed: "+store)
+        cases=cases.replace(first,
+            "await ctx.openCameraScanner();vm.runInContext('cameraScanningHeld=true',ctx);const read=async code=>",1)
+        repeat="document.querySelector('#nextCameraScan').onclick();"
+        if cases.count(repeat)!=3:
+            raise SystemExit("Camera repeat test changed: "+store)
+        cases=cases.replace(repeat,
+            "vm.runInContext(\"cameraLastCode='';cameraLastSeen=0;cameraPressAccepted=false;\",ctx);")
+        second="await ctx.openCameraScanner();await read('00001234');"
+        if cases.count(second)!=1:
+            raise SystemExit("Returns camera-flow fixture changed: "+store)
+        cases=cases.replace(second,
+            "await ctx.openCameraScanner();vm.runInContext('cameraScanningHeld=true',ctx);await read('00001234');",1)
+        business_test.write_text(cases,encoding="utf-8")
     print("Press/tap scan, in-camera flash and local POS draft ready:",store)
