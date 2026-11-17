@@ -62,7 +62,7 @@ jobs:
           trap 'rm -rf "$dir"' EXIT
           export MB_BACKUP_PASSPHRASE='chave-ficticia-apenas-para-testes-locais-2026'
           for store in dryfit her; do
-            printf '%s\\n' 'CREATE TABLE teste(id INTEGER PRIMARY KEY, valor TEXT);' "INSERT INTO teste(valor) VALUES ('exemplo');" > "$dir/$store.sql"
+            printf '%s\n' 'CREATE TABLE teste(id INTEGER PRIMARY KEY, valor TEXT);' "INSERT INTO teste(valor) VALUES ('exemplo');" > "$dir/$store.sql"
             openssl enc -aes-256-cbc -pbkdf2 -iter 250000 -salt -in "$dir/$store.sql" -out "$dir/$store.sql.enc" -pass env:MB_BACKUP_PASSPHRASE
             rm "$dir/$store.sql"
           done
