@@ -40,6 +40,7 @@ on:
       - scripts/mb-online-alerts-v2.js
       - scripts/aplicar-ultimos-ajustes-2026.py
       - scripts/mb-final-order-2026.test.mjs
+      - scripts/ajustar-fixtures-ultimos-2026.py
   workflow_dispatch:
 permissions:
   contents: read
@@ -2136,6 +2137,8 @@ jobs:
           done
       - name: Testar câmera, contador, promoções compactas e status finalizado
         run: node --test catalogos-atuais/scripts/mb-final-order-2026.test.mjs
+      - name: Atualizar apenas testes legados dos rótulos de pedidos
+        run: python3 catalogos-atuais/scripts/ajustar-fixtures-ultimos-2026.py
       - name: Revalidar a suíte completa após otimização da versão final
         run: npm run check
       - name: Empacotar módulos das promoções e pedidos em Workers únicos
