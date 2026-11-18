@@ -131,6 +131,55 @@ def admin_fix(s):
   '', 'eager vendor scripts')
  return s
 
+def startup_fix(s):
+ # The first dashboard paints after /api/me, then its already-existing
+ # /api/retail/overview supplies totals and six low-stock rows. Avoid a
+ # multi-megabyte request for all products and all historical sales at login.
+ helper="""const mbViewData={productsReady:false,salesReady:false,productRequest:null,salesRequest:null};
+function mbNeedsInitialProducts(tab){
+ return tab!=='overview'&&!['settings','vendorAccess','commerce','clients'].includes(tab);
+}
+function mbNeedsInitialSales(tab){
+ return ['sales','returns','cash','productivity','sellerTotals','productPerformance'].includes(tab);
+}
+function mbLoadTabDataset(name){
+ const ready=name==='products'?'productsReady':'salesReady',pending=name==='products'?'productRequest':'salesRequest';
+ if(mbViewData[ready])return Promise.resolve();
+ if(mbViewData[pending])return mbViewData[pending];
+ mbViewData[pending]=api(name).then(rows=>{
+  if(!Array.isArray(rows))throw Error('Lista de '+name+' indisponível.');
+  if(name==='products')products=rows;else sales=rows;
+  mbViewData[ready]=true;
+ }).finally(()=>{mbViewData[pending]=null});
+ return mbViewData[pending];
+}
+function mbGateInitialView(view){
+ const tab=page,jobs=[];
+ if(mbNeedsInitialProducts(tab)&&!mbViewData.productsReady)jobs.push(mbLoadTabDataset('products'));
+ if(mbNeedsInitialSales(tab)&&!mbViewData.salesReady)jobs.push(mbLoadTabDataset('sales'));
+ if(!jobs.length)return false;
+ view.innerHTML='<div class="heading"><div><span class="eyebrow">MB / '+(tab==='sell'?'VENDA':tab==='products'?'ESTOQUE':'GESTÃO')+'</span><h2>Carregando '+(tab==='products'?'peças e modelos':'dados da aba')+'…</h2></div></div><section class="panel" role="status" aria-live="polite"><p class="sub">Preparando os dados desta seção.</p></section>';
+ Promise.all(jobs).then(()=>{
+  if(page===tab&&!document.querySelector('dialog[open]'))render();
+ }).catch(error=>{
+  if(page===tab){
+   view.innerHTML='<section class="panel" role="alert"><h2>Não foi possível carregar esta aba.</h2><p class="sub">'+esc(error.message)+'</p><button class="primary" type="button" id="mbRetryTabLoad">Tentar novamente</button></section>';
+   view.querySelector('#mbRetryTabLoad').onclick=()=>render();
+  }
+ });
+ return true;
+}
+"""
+ s=once(s,"async function refresh(){[products,sales]=await Promise.all([api('products'),api('sales')]);render()}",
+   helper+"async function refresh(){[products,sales]=await Promise.all([api('products'),api('sales')]);mbViewData.productsReady=true;mbViewData.salesReady=true;render()}",'lazy data bootstrap')
+ s=once(s,"async function refreshProductsOnly(){products=await api('products');render()}",
+   "async function refreshProductsOnly(){products=await api('products');mbViewData.productsReady=true;render()}",'products ready marker')
+ s=once(s,"nav();const view=$('#view');",
+   "nav();const view=$('#view');if(mbGateInitialView(view))return;",'tab skeleton and late fetch')
+ s=once(s,"setInterval(rememberStaffSession,900000)}await refresh();if(owner()",
+   "setInterval(rememberStaffSession,900000)}render();if(owner()", 'immediate first dashboard render')
+ return s
+
 def camera_fix(s):
  marker='async function startCameraDevice(deviceId,forceFallback=false,preserveHeld=false){'
  assert marker in s
@@ -179,6 +228,7 @@ for shop in ('mb-dryfit','mb-for-her'):
  save(root/'camera.js',camera_fix)
  save(root/'native-print.js',print_fix)
  save(root/'page.html',add_loader)
+ save(root/'page.html',startup_fix)
  save(root/'api.js',bootstrap_guard)
  cart=(root/'storefront-cart.js').read_text()
  contacts=(root/'storefront-contacts.js').read_text()
