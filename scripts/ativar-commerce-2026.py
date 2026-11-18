@@ -4,7 +4,7 @@ The frozen production checkout is patched, never seeded/reset/migrated.
 from pathlib import Path
 
 ROOT=Path("stores")
-SRC=Path("catalogos-atuais/scripts")
+SRC=Path("catalogos-atuais/scripts") if Path("catalogos-atuais/scripts").exists() else Path("scripts")
 
 def single(content,old,new,where):
  n=content.count(old)
