@@ -24,7 +24,7 @@ old = old.replace(before, after, 1)
 
 marker = "/* Keep the full product photograph visible: quick purchase controls belong below it,"
 assert new.count(marker) == 1
-fix_css = marker + new.split(marker, 1)[1].split("</style>", 1)[0]
+fix_css = marker + new.split(marker, 1)[1].split("/* MB size and stock picker:", 1)[0]
 assert ".catalog-product-card.picker-open .catalog-quick-picker{display:block" in fix_css
 assert marker not in old
 style_end = old.rfind("</style>")
