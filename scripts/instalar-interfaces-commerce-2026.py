@@ -100,6 +100,7 @@ if(typeof render==='function'){
  page=root/"page.html"
  s=page.read_text(encoding="utf-8")
  ui=(SRC/"mb-staff-commerce-ui.js").read_text(encoding="utf-8")
+ ui+="\n"+(SRC/"mb-next-staff-editor.js").read_text(encoding="utf-8")
  s=replace_one(s,"function render(){",ui+"\nfunction render(){",store+" owner screens")
  s=replace_one(s,"nav();const view=$('#view');",
    """nav();if(owner()){let entry=document.querySelector('#mbPromotionsNav');if(!entry){entry=document.createElement('button');entry.id='mbPromotionsNav';entry.type='button';entry.textContent='Promoções por cor e tamanho';document.querySelector('#nav')?.append(entry)}entry.onclick=()=>{page='mbPromotions';render()};entry.classList.toggle('active',page==='mbPromotions')}const view=$('#view');if(page==='mbPromotions'&&owner()){renderMBPromotions();return}""",
