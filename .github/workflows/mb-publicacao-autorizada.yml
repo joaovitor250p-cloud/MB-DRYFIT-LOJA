@@ -30,6 +30,9 @@ on:
       - scripts/mb-customer-checkout-ui.js
       - scripts/mb-staff-commerce-ui.js
       - scripts/mb-promotion-catalog-ui.js
+      - scripts/latency-overlays-2026.py
+      - scripts/mb-externalize-worker.mjs
+      - scripts/mb-prepare-assets-patch.mjs
       - scripts/mb-promo-checkout-trigger.sql
       - scripts/mb-promo-checkout-guard.mjs
       - scripts/test-promo-checkout-trigger.py
@@ -44,6 +47,12 @@ on:
       - scripts/aplicar-ultimos-ajustes-2026.py
       - scripts/mb-final-order-2026.test.mjs
       - scripts/ajustar-fixtures-ultimos-2026.py
+  pull_request:
+    paths:
+      - .github/workflows/mb-publicacao-autorizada.yml
+      - scripts/latency-overlays-2026.py
+      - scripts/mb-externalize-worker.mjs
+      - scripts/mb-prepare-assets-patch.mjs
   workflow_dispatch:
 permissions:
   contents: read
@@ -63,7 +72,7 @@ jobs:
       - name: Buscar apenas os catálogos atualizados
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.event.pull_request.head.sha || 'main' }}
           path: catalogos-atuais
           persist-credentials: false
       - name: Instalar codificador de frames para vídeos leves
@@ -1034,9 +1043,14 @@ jobs:
         shell: bash
         run: |
           node --input-type=module <<'NODE'
-          import {readFileSync} from 'node:fs';
+          import {readFileSync,readdirSync} from 'node:fs';
           for (const store of ['dryfit','her']) {
-            const built=readFileSync('cloudflare-dist/'+store+'/worker.js','utf8');
+            const dir='cloudflare-dist/'+store;
+            const worker=readFileSync(dir+'/worker.js','utf8');
+            if(Buffer.byteLength(worker)>=1000000)throw Error(store+': Worker excede 1 MB');
+            const staticDir=dir+'/public/_mb/static';
+            const built=worker+'\n'+readdirSync(staticDir).filter(x=>x.endsWith('.js')).map(x=>readFileSync(staticDir+'/'+x,'utf8')).join('\n');
+            if(!worker.includes('/_mb/private/'))throw Error(store+': dados Nex sem bloqueio');
             for (const term of ['mbPrinterToken','function mountDirectPrinter','function reviewLabelBatch','mbBridgeRequest','Salvar e conectar uma vez','mbPrinterConnectedPanel','/downloads/mb-impressao-elgin-windows.zip','Tutorial de instalação em computador novo','function mbPrinterAllowPaint()','Preparando lista:']) {
               if(!built.includes(term))throw Error(store+': campo ou integração de impressão ausente no Worker final: '+term);
             }
@@ -1062,6 +1076,7 @@ jobs:
           }
           NODE
   publicar:
+    if: github.event_name != 'pull_request'
     name: Publicar Workers da Cloudflare
     needs: preparar
     runs-on: ubuntu-latest
@@ -1084,7 +1099,7 @@ jobs:
       - name: Buscar apenas os catálogos atualizados
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.event.pull_request.head.sha || 'main' }}
           path: catalogos-atuais
           persist-credentials: false
       - name: Instalar codificador de frames para vídeos leves
@@ -2142,6 +2157,8 @@ jobs:
         run: node --test catalogos-atuais/scripts/mb-final-order-2026.test.mjs
       - name: Atualizar apenas testes legados dos rótulos de pedidos
         run: python3 catalogos-atuais/scripts/ajustar-fixtures-ultimos-2026.py
+      - name: Aplicar otimizações finais de desempenho sem alterar o visual nem dados
+        run: python3 catalogos-atuais/scripts/latency-overlays-2026.py
       - name: Revalidar a suíte completa após otimização da versão final
         run: npm run check
       - name: Empacotar módulos das promoções e pedidos em Workers únicos
@@ -2151,6 +2168,10 @@ jobs:
             node --check "stores/$store/scripts/build.mjs"
           done
       - run: npm run build
+      - name: Extrair UI, bibliotecas e dados Nex privados do Worker
+        run: |
+          node catalogos-atuais/scripts/mb-externalize-worker.mjs
+          node catalogos-atuais/scripts/mb-prepare-assets-patch.mjs
       - name: Preparar Workers sem migrações novas
         run: node scripts/cloudflare-prepare.mjs cloudflare.domains.config.json
       - name: Garantir campo de pareamento no Worker final antes do deploy
