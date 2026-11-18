@@ -22,6 +22,7 @@ on:
       - scripts/checkout-pdv-sempre-visivel.py
       - scripts/corrigir-salvar-modelos.py
       - scripts/atualizar-fixtures-ref.py
+      - scripts/aplicar-correcao-fotos-catalogo.py
   workflow_dispatch:
 permissions:
   contents: read
@@ -2072,6 +2073,8 @@ jobs:
               target.write_text(old,encoding='utf-8')
               print('Startup da gestão protegido para',store)
           PY
+      - name: Aplicar correção aprovada do catálogo MB Dryfit à versão de publicação
+        run: python3 catalogos-atuais/scripts/aplicar-correcao-fotos-catalogo.py
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
