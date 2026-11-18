@@ -4,7 +4,7 @@ async function mbBridgeRequest(path,method='GET',data){
  const token=localStorage.getItem('mb-local-printer-token')||'';
  const headers={'X-MB-Token':token};
  if(method==='POST')headers['Content-Type']='application/json';
- const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),12000);
+ const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),method==='POST'?60000:12000);
  try{
   const response=await fetch('http://127.0.0.1:17425'+path,{method,headers,body:data?JSON.stringify(data):undefined,signal:controller.signal,cache:'no-store'});
   const result=await response.json();
@@ -104,20 +104,53 @@ async function previewNativeLabels(items){
  host.innerHTML='';for(const canvas of canvases){canvas.className='native-label-preview';canvas.setAttribute('aria-label','Prévia das etiquetas com referência lateral e código de barras');host.append(canvas)}
 }
 function selectedPrintJob(test=false){const items=test?[{name:'MB DRYFIT TESTE',color:'PRETO',size:'M',extra_code:'REF.10162',barcode:'12345678'},{name:'MB DRYFIT TESTE',color:'BRANCO',size:'G',extra_code:'REF.10163',barcode:'87654321'}].slice(0,labelConfig.columns):labelItems().map(p=>({name:p.name,color:p.color,size:p.size,extra_code:p.extra_code,barcode:p.barcode}));return checkPrintJob({items,config:{...labelConfig,start:test?1:labelConfig.start}})}
-async function printDirect(test=false){
- if(printerBusy)return;
+function splitNativePrintJob(job, rowsPerBatch=8){
+ const batches=[];let index=0;
+ const columns=job.config.columns;
+ while(index<job.items.length){
+  const start=index===0?job.config.start:1;
+  const capacity=columns*rowsPerBatch-(start-1);
+  const items=job.items.slice(index,index+capacity);
+  batches.push({items,config:{...job.config,start}});
+  index+=items.length;
+ }
+ return batches;
+}
+async function printDirect(test=false, confirmedJob=null, onProgress=null){
+ if(printerBusy)return {ok:false,queued:0,error:'Já existe um lote sendo enviado. Aguarde concluir.'};
  printerBusy=true;document.querySelectorAll('[data-direct-print]').forEach(b=>b.disabled=true);
+ let queued=0,expected=0;
  try{
-  const job=selectedPrintJob(test);
+  const job=confirmedJob?checkPrintJob(confirmedJob):selectedPrintJob(test);
+  expected=job.items.length;
   const printer=$('#labelPrinter')?.value||localStorage.getItem('mb-label-printer');
-  if(!printer)throw Error('Conecte o programa MB Impressão e escolha a Elgin.');
-  printerStatus('Enviando '+job.items.length+' etiquetas à Elgin…');
-  const zpl=await buildNativeLabelJob(job);
-  await mbBridgeRequest('/print','POST',{printer,zpl});
-  printerStatus('Lote enviado à fila da Elgin. Confira as etiquetas.');
-  toast('Lote enviado à impressora.');
- }catch(e){printerStatus(e.message||'Não foi possível imprimir.',true);toast(e.message||'Falha na impressão.')}
- finally{printerBusy=false;document.querySelectorAll('[data-direct-print]').forEach(b=>b.disabled=false)}
+  if(!printer)throw Error('Conecte o MB Impressão e escolha a Elgin nas configurações.');
+  const batches=splitNativePrintJob(job);
+  for(const batch of batches){
+   const pending='Preparando etiquetas '+(queued+1)+' a '+(queued+batch.items.length)+' de '+expected+'…';
+   printerStatus(pending);
+   if(onProgress)onProgress(pending,{queued,expected});
+   const zpl=await buildNativeLabelJob(batch);
+   // Envia blocos pequenos, na ordem correta das duas colunas, sem ultrapassar
+   // o limite de 5 MB do aplicativo Windows e sem reabrir uma confirmação.
+   await mbBridgeRequest('/print','POST',{printer,zpl});
+   queued+=batch.items.length;
+   const status='Enviadas '+queued+' de '+expected+' etiquetas à fila da Elgin.';
+   printerStatus(status);
+   if(onProgress)onProgress(status,{queued,expected});
+  }
+  const success='Lote enviado à fila da Elgin: '+queued+' etiqueta(s). Confira a saída da impressora.';
+  printerStatus(success);toast(success);
+  return {ok:true,queued,expected};
+ }catch(e){
+  const base=e?.message||'Não foi possível enviar o lote.';
+  const message=queued?'Foram enviadas '+queued+' de '+expected+' etiquetas. '+base+' Confira a fila e as etiquetas antes de tentar de novo para não duplicar.':base;
+  printerStatus(message,true);toast(message);
+  if(onProgress)onProgress(message,{queued,expected,error:true});
+  return {ok:false,queued,expected,error:message};
+ }finally{
+  printerBusy=false;document.querySelectorAll('[data-direct-print]').forEach(b=>b.disabled=false);
+ }
 }
 function reviewLabelBatch(){
  const entries=[...selected].map(([id,quantity])=>({product:products.find(p=>p.id===id),quantity:Number(quantity)})).filter(entry=>entry.product&&Number.isInteger(entry.quantity)&&entry.quantity>0);
@@ -158,11 +191,33 @@ function reviewLabelBatch(){
    inputs.push(input);amount.append(input);tr.append(piece,variant,amount);body.append(tr);
  }
  table.append(header,body);tableWrap.append(table);
- confirm.onclick=()=>{
-   if(confirm.disabled)return;
-   const next=new Map(selected);
-   for(const {product} of entries){const n=draft.get(product.id)||0;if(n)next.set(product.id,n);else next.delete(product.id)}
-   selected=next;dialog.close();drawLabelModels();previewLabels();printDirect(false);
+ confirm.onclick=async()=>{
+   if(confirm.disabled||printerBusy)return;
+   const next=new Map(selected),items=[];
+   for(const {product} of entries){
+     const n=draft.get(product.id)||0;
+     if(n)next.set(product.id,n);else next.delete(product.id);
+     for(let i=0;i<n;i++)items.push({name:product.name,color:product.color,size:product.size,extra_code:product.extra_code,barcode:product.barcode});
+   }
+   const job={items,config:{...labelConfig}};
+   try{checkPrintJob(job)}catch(e){error.textContent=e.message;error.style.color='#b43e27';return}
+   // Não atualize toda a grade de modelos nem gere a prévia antes da impressão:
+   // isso podia interromper o clique mesmo com a impressora funcionando.
+   selected=next;
+   confirm.disabled=true;cancel.disabled=true;error.style.color='#426b46';
+   const result=await printDirect(false,job,(message,progress)=>{
+     error.style.color=progress.error?'#b43e27':'#426b46';
+     error.textContent=message;
+   });
+   if(result.ok){
+     dialog.close();
+     // Atualização visual independente do envio; nunca pode cancelar o lote.
+     setTimeout(()=>{try{if(document.getElementById('labelModels'))drawLabelModels();if(document.getElementById('labelPreview'))previewLabels()}catch(e){console.error('Atualização da grade após impressão:',e)}},0);
+   }else if(result.queued){
+     confirm.textContent='Conferir etiquetas já enviadas';
+     confirm.onclick=()=>dialog.close();
+     confirm.disabled=false;cancel.disabled=false;
+   }else{confirm.disabled=false;cancel.disabled=false;recalc()}
  };
  actions.append(cancel,confirm);
  dialog.append(heading,help,tableWrap,summary,error,actions);recalc();dialog.showModal();
