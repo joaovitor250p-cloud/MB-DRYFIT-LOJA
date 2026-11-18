@@ -220,29 +220,21 @@ function swapCatalogPhoto(container,p,preferMain=false){
  if(!container)return;
  const image=container.querySelector('img'),src=preferMain?p.main_photo||p.photo:p.photo||p.main_photo;
  if(!image)return;
- // Never retain the previous color as a CSS background beneath the current photo.
+ // The previous image must never remain as a background underneath this one.
  container.style.backgroundImage='';
  image.style.opacity='1';
  if(!src){image.removeAttribute('src');image.alt='Foto indisponível de '+p.color;return}
  image.alt=p.name+' · '+p.color;
- if(image.dataset.requestedSrc===src)return;
- image.dataset.requestedSrc=src;
  if(image.getAttribute('src')===src)return;
- const preload=new Image();
- preload.onload=()=>{
-  // Rapid color changes must not allow an older request to replace the latest selection.
-  if(!image.isConnected||image.dataset.requestedSrc!==src)return;
-  image.src=src;image.style.opacity='1';container.removeAttribute('aria-label');
- };
- preload.onerror=()=>{
-  if(image.dataset.requestedSrc!==src)return;
-  container.setAttribute('aria-label','Foto indisponível de '+p.color);
- };
- preload.src=src;
+ // Set the image directly: avoids asynchronous stale-color updates and works in DOM tests.
+ image.dataset.requestedSrc=src;
+ image.onerror=()=>{if(image.dataset.requestedSrc===src)container.setAttribute('aria-label','Foto indisponível de '+p.color)};
+ image.onload=()=>{if(image.dataset.requestedSrc===src)container.removeAttribute('aria-label')};
+ image.src=src;
 }
 function chooseCatalogColor(g,index){const current=selectedCatalogVariant(g),next=pickColorVariant(g,current,index),draft=selectionDraft(g);if(!next)return;if(draft.variantId)draft.variantId=next.available&&next.size===current.size?next.id:null;chosen.set(g.key,next.id);const card=productCardRegistry.get(g.key);if(card?.isConnected!==false&&card)updateCatalogCard(g,card);if($('#productDetails')?.open&&$('#productDetails').dataset.model===g.key)updateProductDetails(g)}
 function selectLuxuryVariant(g,id,explicit=false){const p=g.variants.find(p=>p.id===id);if(!p)return;chosen.set(g.key,id);if(explicit)selectionDraft(g).variantId=p.available?id:null;else if(selectionDraft(g).variantId!==id)selectionDraft(g).variantId=null;const card=productCardRegistry.get(g.key);if(card?.isConnected!==false&&card)updateCatalogCard(g,card);if($('#productDetails')?.open&&$('#productDetails').dataset.model===g.key)updateProductDetails(g)}
-function bindColorPreviews(root,g){root.querySelectorAll('[data-luxury-color]').forEach(b=>{const choose=()=>chooseCatalogColor(g,Number(b.dataset.luxuryColor));b.onclick=choose})}
+function bindColorPreviews(root,g){root.querySelectorAll('[data-luxury-color]').forEach(b=>{const choose=()=>chooseCatalogColor(g,Number(b.dataset.luxuryColor));b.onclick=choose;b.onmouseenter=choose;b.onfocus=choose})}
 function catalogSizesHTML(g,attribute){const p=selectedCatalogVariant(g),draft=selectionDraft(g);return g.variants.filter(v=>v.color===p.color).sort((a,b)=>sizesOrder.indexOf(a.size)-sizesOrder.indexOf(b.size)).map((v,i)=>'<button type="button" '+attribute+'="'+i+'" data-variant-id="'+v.id+'" class="'+(draft.variantId===v.id?'selected ':'')+(v.available?'':'out')+'" aria-pressed="'+(draft.variantId===v.id)+'" '+(!v.available?'disabled':'')+' aria-label="Tamanho '+esc(v.size)+(v.available?' disponível':' esgotado')+'">'+esc(v.size)+'</button>').join('')}
 function quantityPickerHTML(g,scope){const max=selectionQuantityLimit(g),draft=selectionDraft(g);draft.quantity=Math.max(1,Math.min(max||1,draft.quantity));return '<div class="quantity-stepper"><button type="button" data-draft-minus="'+scope+'" aria-label="Diminuir quantidade">−</button><input type="number" min="1" max="'+Math.max(1,max)+'" step="1" data-draft-quantity="'+scope+'" value="'+draft.quantity+'" aria-label="Quantidade de '+esc(g.variants[0].name)+'"><button type="button" data-draft-plus="'+scope+'" aria-label="Aumentar quantidade">+</button></div>'}
 function bindSelectionQuantity(root,g){const draft=selectionDraft(g),max=selectionQuantityLimit(g),busy=selectionAddsBusy.has(g.key);draft.quantity=Math.max(1,Math.min(draft.quantity,max||1));root.querySelectorAll('[data-draft-minus]').forEach(button=>{button.disabled=busy||draft.quantity<=1;button.onclick=()=>{draft.quantity=Math.max(1,draft.quantity-1);syncSelectionQuantities(g)}});root.querySelectorAll('[data-draft-plus]').forEach(button=>{button.disabled=busy||!max||draft.quantity>=max;button.onclick=()=>{draft.quantity=Math.min(max,draft.quantity+1);syncSelectionQuantities(g)}});root.querySelectorAll('[data-draft-quantity]').forEach(input=>{input.max=Math.max(1,max);input.value=draft.quantity;input.disabled=busy||!max;input.onchange=()=>{const n=Number(input.value);if(Number.isInteger(n)&&n>=1){draft.quantity=Math.max(1,Math.min(n,max||1));if(n>max)cartNotice('Você pode adicionar até '+max+' unidades desta cor e tamanho.')}else draft.quantity=1;syncSelectionQuantities(g)}});root.querySelectorAll('[data-add-selection]').forEach(button=>{button.disabled=busy||!draft.variantId||!max;button.textContent=busy?'Adicionando…':!max?'Limite de estoque atingido':draft.variantId?'Adicionar ao carrinho':'Escolha o tamanho';button.onclick=async()=>{if(selectionAddsBusy.has(g.key))return;selectionAddsBusy.add(g.key);syncSelectionQuantities(g);try{await addSelectionToCart(g)}finally{selectionAddsBusy.delete(g.key);syncSelectionQuantities(g)}}})}
