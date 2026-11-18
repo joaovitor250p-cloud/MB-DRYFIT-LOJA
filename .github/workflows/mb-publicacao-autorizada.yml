@@ -929,6 +929,14 @@ jobs:
         run: python3 catalogos-atuais/scripts/ajustes-pedido-whatsapp-impressao.py
       - name: Corrigir filtros do catálogo e painel do dono
         run: python3 catalogos-atuais/scripts/corrigir-opcoes-filtros.py
+      - name: Otimizar sobreposições e janelas da gestão
+        shell: bash
+        run: |
+          python3 catalogos-atuais/scripts/otimizar-sobreposicoes.py
+          for store in mb-dryfit mb-for-her; do
+            grep -q 'dialog::backdrop{background:rgba(9,12,20,.58);backdrop-filter:none}' "stores/$store/worker/page.html"
+            grep -q 'function drawModelColors(changedKey)' "stores/$store/worker/page.html"
+          done
       - name: Preparar lista de conferência do lote de etiquetas
         run: |
           python3 catalogos-atuais/scripts/aplicar-revisao-lote-etiquetas.py
@@ -1906,6 +1914,14 @@ jobs:
         run: python3 catalogos-atuais/scripts/ajustes-pedido-whatsapp-impressao.py
       - name: Corrigir filtros do catálogo e painel do dono
         run: python3 catalogos-atuais/scripts/corrigir-opcoes-filtros.py
+      - name: Otimizar sobreposições e janelas da gestão
+        shell: bash
+        run: |
+          python3 catalogos-atuais/scripts/otimizar-sobreposicoes.py
+          for store in mb-dryfit mb-for-her; do
+            grep -q 'dialog::backdrop{background:rgba(9,12,20,.58);backdrop-filter:none}' "stores/$store/worker/page.html"
+            grep -q 'function drawModelColors(changedKey)' "stores/$store/worker/page.html"
+          done
       - name: Preparar lista de conferência do lote de etiquetas
         run: |
           python3 catalogos-atuais/scripts/aplicar-revisao-lote-etiquetas.py
