@@ -1033,8 +1033,14 @@ jobs:
       - run: npm ci
       - name: Ajustar fixtures históricas aos cadastros com REF obrigatória
         run: python3 catalogos-atuais/scripts/atualizar-fixtures-ref.py
+      - name: Aplicar otimizações finais ao pacote de pré-verificação congelado
+        run: python3 catalogos-atuais/scripts/latency-overlays-2026.py
       - run: npm run check
       - run: npm run test:hosting
+      - name: Extrair arquivos estáticos e privados na pré-verificação
+        run: |
+          node catalogos-atuais/scripts/mb-externalize-worker.mjs
+          node catalogos-atuais/scripts/mb-prepare-assets-patch.mjs
       - name: Preparar apenas o código, sem ativar R2 nem aplicar a migração 0042
         env:
           MB_RELEASE_CODE_ONLY: '1'
