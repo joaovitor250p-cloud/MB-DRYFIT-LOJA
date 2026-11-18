@@ -34,6 +34,7 @@ on:
       - scripts/ajustar-cliente-2026.py
       - scripts/instalar-interfaces-commerce-2026.py
       - scripts/ajustar-fixtures-comercio-2026.py
+      - scripts/mb-commerce-2026.test.mjs
   workflow_dispatch:
 permissions:
   contents: read
@@ -2122,6 +2123,11 @@ jobs:
         run: python3 catalogos-atuais/scripts/atualizar-teste-estoque-catalogo.py
       - name: Testar entrega com endereço e recuperação desativada
         run: python3 catalogos-atuais/scripts/ajustar-fixtures-comercio-2026.py
+      - name: Verificar promoções e pedidos usando bancos de teste das duas lojas
+        run: |
+          for store in mb-dryfit mb-for-her; do
+            cp catalogos-atuais/scripts/mb-commerce-2026.test.mjs "stores/$store/tests/mb-commerce-2026.test.mjs"
+          done
       - name: Revalidar a suíte completa após otimização da versão final
         run: npm run check
       - run: npm run build
