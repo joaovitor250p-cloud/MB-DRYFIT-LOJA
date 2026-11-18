@@ -28,17 +28,6 @@ def cart_changes(s):
         "let mbCartIndexSource=null,mbCartIndex=null;\nfunction cartPublicProduct(id){if(mbCartIndexSource!==products){mbCartIndexSource=products;mbCartIndex=new Map(products.map(p=>[p.id,p]))}return mbCartIndex.get(id)}",
         "memoized cart product lookup")
     s = replace_once(s,
-        "function refreshShopCartQuote(){",
-        """function markShopCartQuotePending(){
- const panel=document.querySelector('#shopCartDialog');
- if(!panel||!panel.open||panel.hidden)return;
- const status=panel.querySelector('.cart-check-status');
- if(status)status.textContent='Conferindo preços e estoque…';
- const checkout=panel.querySelector('#cartCheckout');
- if(checkout){checkout.disabled=true;checkout.setAttribute('aria-disabled','true');checkout.style.pointerEvents='none'}
-}
-function refreshShopCartQuote(){""",
-        "pending quote update") if "function refreshShopCartQuote(){" in s else replace_once(s,
         "async function refreshShopCartQuote(){",
         """function markShopCartQuotePending(){
  const panel=document.querySelector('#shopCartDialog');
