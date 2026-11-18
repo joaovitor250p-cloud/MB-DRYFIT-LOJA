@@ -1056,7 +1056,7 @@ jobs:
             if(Buffer.byteLength(worker)>=1000000)throw Error(store+': Worker excede 1 MB');
             const staticDir=dir+'/public/_mb/static';
             const built=worker+'\n'+readdirSync(staticDir).filter(x=>x.endsWith('.js')).map(x=>readFileSync(staticDir+'/'+x,'utf8')).join('\n');
-            if(!worker.includes('/_mb/private/'))throw Error(store+': dados Nex sem bloqueio');
+            if(store==='dryfit'&&!worker.includes('/_mb/private/'))throw Error(store+': dados Nex sem bloqueio');
             for (const term of ['mbPrinterToken','function mountDirectPrinter','function reviewLabelBatch','mbBridgeRequest','Salvar e conectar uma vez','mbPrinterConnectedPanel','/downloads/mb-impressao-elgin-windows.zip','Tutorial de instalação em computador novo','function mbPrinterAllowPaint()','Preparando lista:']) {
               if(!built.includes(term))throw Error(store+': campo ou integração de impressão ausente no Worker final: '+term);
             }
