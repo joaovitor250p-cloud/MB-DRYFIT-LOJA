@@ -55,11 +55,22 @@ for store in ('mb-dryfit','mb-for-her'):
  # Current seller remains visible to customer, original seller is retained in audit.
  s=s.replace("'<p>'+esc(o.customer_name)+' · '+esc(o.agent_name)+'</p>'",
              "'<p>'+esc(o.customer_name)+' · Separado por '+esc(o.agent_name)+'</p>'")
- # Show the address only to the buyer authorized to view their own order.
- needle="'<p>Pagamento: '+esc(customerPaymentLabels[o.payment_method]||'A combinar com o vendedor')"
- s=swap(s,needle,
-  "'<p>'+((o.delivery_mode!=='pickup'&&o.delivery_address)?'Entrega: '+esc([o.delivery_address.street+', '+o.delivery_address.number,o.delivery_address.complement,o.delivery_address.district,o.delivery_address.city+' - '+o.delivery_address.state,o.delivery_address.postcode].filter(Boolean).join(' · ')):'')+'</p><p>Pagamento: '+esc(customerPaymentLabels[o.payment_method]||'A combinar com o vendedor')",
-  store+' client shipping receipt')
+ # Show the delivery address only inside the buyer-owned order dialog.
+ # Inject near its open operation to tolerate earlier copy/layout changes.
+ a=s.index('function openCustomerOrderDetails(o){')
+ b=s.index('function showOrderSuccess(',a)
+ detail=s[a:b]
+ marker='d.showModal()'
+ assert detail.count(marker)==1,store+' buyer details dialog changed'
+ extra="""if(o.delivery_mode!=='pickup'&&o.delivery_address){
+  const locationLine=document.createElement('p');
+  locationLine.className='mb-customer-shipping-address';
+  const a=o.delivery_address;
+  locationLine.textContent='Endereço de entrega: '+[a.street+', '+a.number,a.complement,a.district,a.city+' - '+a.state,a.postcode].filter(Boolean).join(' · ');
+  d.append(locationLine);
+ }"""
+ detail=detail.replace(marker,extra+';'+marker,1)
+ s=s[:a]+detail+s[b:]
  orders.write_text(s,encoding='utf-8')
 
  html=root/'storefront.html'
