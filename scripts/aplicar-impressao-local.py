@@ -14,6 +14,10 @@ for store in ('mb-dryfit', 'mb-for-her'):
     assert 'function reviewLabelBatch()' in code, store
     assert "await mbBridgeRequest('/print','POST',{printer,zpl})" in code, store
     assert "primary.onclick=e=>{e.preventDefault();reviewLabelBatch()}" in code, store
+    assert 'function splitNativePrintJob(job, rowsPerBatch=8)' in code, store
+    assert 'async function printDirect(test=false, confirmedJob=null, onProgress=null)' in code, store
+    assert 'const result=await printDirect(false,job' in code, store
+    assert 'drawLabelModels();previewLabels();printDirect(false)' not in code, store
     assert 'qz.websocket.connect(' not in code, store
     destination.write_text(code, encoding='utf-8')
     page = Path('stores') / store / 'worker/page.html'
@@ -28,6 +32,8 @@ for store in ('mb-dryfit', 'mb-for-her'):
     test_destination = Path('stores') / store / 'tests/native-printer.test.mjs'
     test_code = test_source.read_text(encoding='utf-8')
     assert "direct print sends ZPL to the selected local Windows printer" in test_code, store
+    assert "confirmed batch reaches the printer before a slow or broken catalog redraw" in test_code, store
+    assert "large batch preserves physical row order" in test_code, store
     assert "ctx.mbBridgeRequest" in test_code, store
     assert "forceRaw" not in test_code, store
     test_destination.write_text(test_code, encoding='utf-8')
