@@ -52,11 +52,19 @@ for store in ("mb-dryfit","mb-for-her"):
  html=root/"storefront.html"
  s=html.read_text(encoding="utf-8")
  source=(SRC/"mb-promotion-catalog-ui.js").read_text(encoding="utf-8")
- s=replace_one(s,"const productCardRegistry=new Map();","const productCardRegistry=new Map();\n"+source,store+" inject promotions")
- s=replace_one(s,
- "const more=$('#loadMoreCatalog');if(more)more.onclick=()=>{render.limit=(render.limit||60)+60;render()};updateBrandFilterUI()}",
- "const more=$('#loadMoreCatalog');if(more)more.onclick=()=>{render.limit=(render.limit||60)+60;render()};updateBrandFilterUI();if(typeof mbRenderPromotionCollection==='function')mbRenderPromotionCollection()}",
- store+" promotions rerender")
+ s=replace_one(s,"const productCardRegistry=new Map();",
+     "const productCardRegistry=new Map();\n"+source+"""
+// Wrap only when the full renderer exists (isolated product-card tests do
+// not load render and must still be able to exercise selection and cart).
+if(typeof render==='function'){
+ const mbRenderOriginalCollection=render;
+ render=function(...args){
+  const result=mbRenderOriginalCollection.apply(this,args);
+  if(typeof mbRenderPromotionCollection==='function')mbRenderPromotionCollection();
+  return result;
+ };
+}
+""",store+" inject promotions")
  # Prices change when the buyer chooses another color or size.
  old="card.querySelector('.catalog-product-price').textContent=money(p.price);"
  s=replace_one(s,old,old+"mbSetPriceDisplay(card,p);",store+" card sale price")
