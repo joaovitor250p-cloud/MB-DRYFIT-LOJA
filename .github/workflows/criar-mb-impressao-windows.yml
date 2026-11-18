@@ -1,0 +1,36 @@
+name: Criar MB Impressão para Windows
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - printer-bridge/**
+      - .github/workflows/criar-mb-impressao-windows.yml
+permissions:
+  contents: read
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verificar código do aplicativo
+        run: python -m py_compile printer-bridge/mb_impressao.py
+      - name: Instalar dependências para criar o aplicativo
+        run: python -m pip install --disable-pip-version-check pywin32 pyinstaller
+      - name: Compilar aplicativo Windows
+        run: python -m PyInstaller --noconfirm --clean --onefile --windowed --name MB-Impressao-Elgin printer-bridge/mb_impressao.py
+      - name: Montar pacote para instalação
+        shell: pwsh
+        run: |
+          New-Item -Type Directory -Force release\MB-Impressao | Out-Null
+          Copy-Item dist\MB-Impressao-Elgin.exe release\MB-Impressao\
+          Copy-Item printer-bridge\LEIA-ME.txt release\MB-Impressao\
+          Compress-Archive -Path release\MB-Impressao\* -DestinationPath release\MB-Impressao-Elgin-Windows.zip -Force
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MB-Impressao-Elgin-Windows
+          path: release/MB-Impressao-Elgin-Windows.zip
+          retention-days: 30
