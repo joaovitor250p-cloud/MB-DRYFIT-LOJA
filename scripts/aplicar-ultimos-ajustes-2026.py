@@ -139,8 +139,12 @@ for shop in ("mb-dryfit","mb-for-her"):
   ("os pedidos feitos permanecem no histórico","os pedidos finalizados permanecem no histórico"),
  ]
  for old,new in updates:
-  if old in text:text=text.replace(old,new)
-  elif old not in ("'FEITO':'RECEBIDO'",):raise SystemExit(shop+" missing customer status label "+old)
+  text=text.replace(old,new)
+ # Some earlier order-center revisions already use "Processado" and
+ # "Em andamento". Keep the stored received/done states unchanged.
+ text=text.replace("'PROCESSADO':'EM ANDAMENTO'","'FINALIZADO':'EM ANDAMENTO'")
+ text=text.replace("data-customer-order-state=\"done\">Processados","data-customer-order-state=\"done\">Finalizados")
+ text=text.replace("?'processados':'em andamento'","?'finalizados':'em andamento'")
  begin=text.index("function openCustomerOrderDetails(o){")
  finish=text.index("\nfunction showOrderSuccess(",begin)
  detail=text[begin:finish]
