@@ -133,5 +133,23 @@ jobs:
           node --check stores/mb-dryfit/worker/staff-workspace.js
           (cd stores/mb-dryfit && node --test tests/storefront-cart.test.mjs)
           npm run check
+      - name: Testar integração de promoções e pedidos das duas lojas
+        run: |
+          cp scripts/mb-variant-promotions.js scripts/mb-order-adjustments.js scripts/mb-customer-checkout-ui.js scripts/mb-staff-commerce-ui.js scripts/mb-promotion-catalog-ui.js scripts/ativar-commerce-2026.py scripts/ajustar-cliente-2026.py scripts/instalar-interfaces-commerce-2026.py release-smoke/scripts/
+          cd release-smoke
+          python3 scripts/ativar-commerce-2026.py
+          python3 scripts/ajustar-cliente-2026.py
+          python3 scripts/instalar-interfaces-commerce-2026.py
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/worker/mb-variant-promotions.js"
+            node --check "stores/$store/worker/mb-order-adjustments.js"
+            node --check "stores/$store/worker/staff-workspace.js"
+            node --check "stores/$store/worker/storefront-cart.js"
+            node --check "stores/$store/worker/storefront-orders.js"
+            node --check "stores/$store/worker/catalog-cart.js"
+            node --check "stores/$store/worker/shop-commerce.js"
+            node --check "stores/$store/worker/api.js"
+          done
+          npm run check
       - run: npm ci
       - run: npm run check
