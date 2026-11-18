@@ -77,16 +77,23 @@ async function mbGuestSellers({refresh=false}={}){
  return s
 
 def contacts_fix(s):
- s=once(s,"const data=await mbCachedContactSellers();","const data=await mbGuestSellers();","shared seller cache")
+ # Runtime: one shared cache in mbGuestSellers (loaded with the shopping scripts).
+ # Isolated contact-only test harnesses retain a self-contained fallback.
  start=s.index('async function mbCachedContactSellers(){')
  end=s.index('async function openContactChooser(',start)
- s=s[:start]+"""async function mbCachedContactSellers(){return mbGuestSellers()}
+ s=s[:start]+"""async function mbCachedContactSellers(){
+ if(typeof mbGuestSellers==='function')return mbGuestSellers();
+ if(mbContactCache&&Date.now()<mbContactCacheUntil)return mbContactCache;
+ const response=await fetch('/api/shop/sellers'),data=await response.json();
+ if(!response.ok||!Array.isArray(data.items))throw Error('Vendedores indisponíveis');
+ mbContactCache=data;mbContactCacheUntil=Date.now()+300000;return data;
+}
 """+s[end:]
  needle="function initStoreContacts(){"
  prefetch="""function mbPrefetchContacts(){
  const job=()=>{if(typeof mbGuestSellers==='function')mbGuestSellers().catch(()=>{})};
  if(typeof requestIdleCallback==='function')requestIdleCallback(job,{timeout:1600});
- else setTimeout(job,180);
+ else if(typeof setTimeout==='function')setTimeout(job,180);
 }
 """
  s=once(s,needle,prefetch+needle+"mbPrefetchContacts();", "idle sellers warmup")
