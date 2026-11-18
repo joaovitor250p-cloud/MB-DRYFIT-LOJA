@@ -52,7 +52,7 @@ for store in ("mb-dryfit","mb-for-her"):
  html=root/"storefront.html"
  s=html.read_text(encoding="utf-8")
  source=(SRC/"mb-promotion-catalog-ui.js").read_text(encoding="utf-8")
- s=replace_one(s,"/*__SHOP_EXPERIENCE__*/",source+"\n/*__SHOP_EXPERIENCE__*/",store+" inject promotions")
+ s=replace_one(s,"const productCardRegistry=new Map();","const productCardRegistry=new Map();\n"+source,store+" inject promotions")
  s=replace_one(s,
  "const more=$('#loadMoreCatalog');if(more)more.onclick=()=>{render.limit=(render.limit||60)+60;render()};updateBrandFilterUI()}",
  "const more=$('#loadMoreCatalog');if(more)more.onclick=()=>{render.limit=(render.limit||60)+60;render()};updateBrandFilterUI();mbRenderPromotionCollection()}",
