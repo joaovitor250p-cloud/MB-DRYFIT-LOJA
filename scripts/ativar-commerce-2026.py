@@ -95,6 +95,11 @@ for shop in ("mb-dryfit","mb-for-her"):
  needle="export async function handleOrderHistory("
  assert needle in code,shop+" private history export missing"
  code=single(code,needle,"export async function handleOrderHistory(",shop+" history function")
+ code=single(code,
+   "delivery_mode:order.delivery_mode,payment_method:order.payment_method||null",
+   "delivery_mode:order.delivery_mode,delivery_address:(()=>{try{return JSON.parse(order.delivery_notes||'{}').shipping_address||null}catch{return null}})(),payment_method:order.payment_method||null",
+   shop+" include private shipping address in order receipt")
+ orders.write_text(code,encoding="utf-8")
  # The API layer intercepts the obsolete public endpoint; no new access codes.
  api_code=api.read_text(encoding="utf-8")
  api_code=single(api_code,
