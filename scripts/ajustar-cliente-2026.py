@@ -76,6 +76,9 @@ for store in ('mb-dryfit','mb-for-her'):
  html=root/'storefront.html'
  s=html.read_text(encoding='utf-8')
  inline=((Path("catalogos-atuais/scripts") if Path("catalogos-atuais/scripts").exists() else Path("scripts"))/"mb-customer-checkout-ui.js").read_text(encoding='utf-8')
+ if store=='mb-for-her':
+  inline=inline.replace("const MB_PICKUP_ADDRESS='Rua Monsenhor Andrade, 811, Loja L1390, 1º andar, Brás, São Paulo - SP, Brasil';","const MB_PICKUP_ADDRESS='';")
+  assert 'Rua Monsenhor Andrade' not in inline
  s=swap(s,"const productCardRegistry=new Map();","const productCardRegistry=new Map();\n"+inline,store+' checkout injection')
  overlay_css="""
 /* The order center stays above the catalog, without full-page relayout. */
