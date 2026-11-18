@@ -1,0 +1,55 @@
+name: Publicar instalador MB Impressão no R2
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/publicar-mb-impressao-installer.yml
+permissions:
+  contents: read
+  actions: read
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: cloudflare-producao
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_R2_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Baixar executável original gerado pelo GitHub Actions
+        uses: actions/download-artifact@v4
+        with:
+          name: MB-Impressao-Elgin-Windows
+          run-id: 44296175144
+          github-token: ${{ github.token }}
+          path: install-download
+      - name: Conferir integridade e conteúdo antes de disponibilizar
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib,zipfile
+          from pathlib import Path
+          file=Path('install-download/MB-Impressao-Elgin-Windows.zip')
+          assert file.is_file() and file.stat().st_size>5_000_000, 'Instalador não encontrado'
+          digest=hashlib.sha256(file.read_bytes()).hexdigest()
+          assert digest=='448e4dc5e5d8e5f7a5b2adcc88e18fda791c1f3abae84f8c221420b487f6483b', 'Hash inesperado: '+digest
+          with zipfile.ZipFile(file) as package:
+              assert {'MB-Impressao-Elgin.exe','LEIA-ME.txt'}.issubset(set(package.namelist()))
+          print('Instalador íntegro, verificado por SHA-256.')
+          PY
+      - name: Publicar download durável sem alterar fotos existentes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "::error::Falta acesso ao R2"; exit 1; }
+          npx --no-install wrangler r2 object put "mb-dryfit-fotos/software/MB-Impressao-Elgin-Windows.zip" --file "install-download/MB-Impressao-Elgin-Windows.zip" --remote
+          npx --no-install wrangler r2 object get "mb-dryfit-fotos/software/MB-Impressao-Elgin-Windows.zip" --file "$RUNNER_TEMP/mb-installer-confirmado.zip" --remote
+          cmp "install-download/MB-Impressao-Elgin-Windows.zip" "$RUNNER_TEMP/mb-installer-confirmado.zip"
+          echo "Instalador verificado e publicado no R2."
