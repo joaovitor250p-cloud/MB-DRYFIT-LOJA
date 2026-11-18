@@ -84,10 +84,15 @@ dialog[open]{animation:none!important}
         "label grid map use")
     # Align the redraw to one browser frame; keep synchronous behavior for
     # tests or environments where requestAnimationFrame isn't defined.
-    s = replace_once(s,
-        "$('#labelSearch').oninput=e=>{labelQuery=e.target.value;drawLabelModels()}",
-        "$('#labelSearch').oninput=e=>{labelQuery=e.target.value;if(typeof requestAnimationFrame!=='function'){drawLabelModels();return}if(window.mbLabelSearchFrame)cancelAnimationFrame(window.mbLabelSearchFrame);window.mbLabelSearchFrame=requestAnimationFrame(()=>{window.mbLabelSearchFrame=0;if($('#labelModels'))drawLabelModels()})}",
-        "coalesce rapid label search")
+    # Some release scripts already install their own label-search handler.
+    # Keep that version rather than overwrite a newer filtering workflow.
+    exact = "$('#labelSearch').oninput=e=>{labelQuery=e.target.value;drawLabelModels()}"
+    if s.count(exact) == 1:
+        s = s.replace(exact,
+            "$('#labelSearch').oninput=e=>{labelQuery=e.target.value;if(typeof requestAnimationFrame!=='function'){drawLabelModels();return}if(window.mbLabelSearchFrame)cancelAnimationFrame(window.mbLabelSearchFrame);window.mbLabelSearchFrame=requestAnimationFrame(()=>{window.mbLabelSearchFrame=0;if($('#labelModels'))drawLabelModels()})}", 1)
+    else:
+        assert "$('#labelSearch').oninput" in s, "Label search missing unexpectedly"
+        print("Preserving existing label-search handler")
     return s
 
 def order_changes(s):
