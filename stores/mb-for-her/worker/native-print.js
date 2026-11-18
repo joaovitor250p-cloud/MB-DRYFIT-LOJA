@@ -1,5 +1,5 @@
 let printerBusy=false;
-function printerStatus(message,error=false){const el=$('#printerStatus');if(el){el.textContent=message;el.style.color=error?'#b43e27':'#578044'}}
+function printerStatus(message,error=false){for(const id of ['#printerStatus','#mbPrinterConnectedStatus']){const el=$(id);if(el){el.textContent=message;el.style.color=error?'#b43e27':'#578044'}}}
 async function mbBridgeRequest(path,method='GET',data){
  const token=localStorage.getItem('mb-local-printer-token')||'';
  const headers={'X-MB-Token':token};
@@ -16,6 +16,18 @@ async function mbBridgeRequest(path,method='GET',data){
   throw e;
  }finally{clearTimeout(timeout)}
 }
+function mbShowPrinterConnected(name){
+ const panel=document.getElementById('mbPrinterSetupPanel'),compact=document.getElementById('mbPrinterConnectedPanel');
+ if(!panel||!compact)return;
+ panel.hidden=true;panel.style.display='none';
+ compact.hidden=false;compact.style.display='block';
+ const nameEl=compact.querySelector('[data-mb-printer-name]');if(nameEl)nameEl.textContent=name;
+}
+function mbShowPrinterSetup(){
+ const panel=document.getElementById('mbPrinterSetupPanel'),compact=document.getElementById('mbPrinterConnectedPanel');
+ if(panel){panel.hidden=false;panel.style.display=''}
+ if(compact){compact.hidden=true;compact.style.display='none'}
+}
 async function connectLabelPrinter(){
  const token=(localStorage.getItem('mb-local-printer-token')||'').trim();
  if(!/^[a-f0-9]{64}$/.test(token))throw Error('Informe o código de pareamento exibido no programa MB Impressão.');
@@ -31,6 +43,7 @@ async function connectLabelPrinter(){
  localStorage.setItem('mb-label-printer',select.value);
  select.onchange=()=>localStorage.setItem('mb-label-printer',select.value);
  printerStatus('Impressora pronta · '+select.value);
+ mbShowPrinterConnected(select.value);
  return select.value;
 }
 function monochromeZpl(image,width,height){const stride=Math.ceil(width/8),total=stride*height;let hex='';for(let y=0;y<height;y++)for(let b=0;b<stride;b++){let value=0;for(let bit=0;bit<8;bit++){const x=b*8+bit;if(x>=width)continue;const i=(y*width+x)*4;if(image[i+3]>128&&(image[i]+image[i+1]+image[i+2])/3<160)value|=128>>bit}hex+=value.toString(16).padStart(2,'0').toUpperCase()}return '^XA\n^PW'+width+'\n^LL'+height+'\n^MNY\n^LH0,0\n^FO0,0^GFA,'+total+','+total+','+stride+','+hex+'^FS\n^PQ1\n^XZ\n'}
@@ -154,13 +167,18 @@ function reviewLabelBatch(){
 }
 
 function mountDirectPrinter(){
- const host=document.createElement('section');host.className='panel';
+ const host=document.createElement('section');host.className='panel';host.id='mbPrinterSetupPanel';
  host.innerHTML='<div class="heading"><div><span class="eyebrow">IMPRESSÃO DIRETA / USB</span><h2 style="margin-top:8px">Elgin L42 Pro Full · Bobina 40 × 25</h2><div class="sub">Escolha sua impressora uma vez. Depois, confira os modelos e mande imprimir sem novas janelas de confirmação do QZ Tray.</div></div><button class="primary" id="connectElgin" type="button">Conectar impressora</button></div>'+
  '<div class="form-grid"><label>Código de pareamento do MB Impressão<input id="mbPrinterToken" type="password" spellcheck="false" autocomplete="off" placeholder="Cole o código do programa local" aria-label="Código de pareamento"></label><label>Impressora do Windows<select id="labelPrinter"><option value="">Conecte para escolher a Elgin</option></select></label></div>'+
  '<div class="toolbar"><button type="button" class="secondary" id="mbSavePrinter">Salvar e conectar uma vez</button><button type="button" class="secondary" data-direct-print id="directTest">Imprimir duas etiquetas de teste</button></div>'+
  '<p class="sub" id="printerStatus" role="status">Abra o programa MB Impressão no computador conectado à Elgin.</p>'+
  '<details style="margin-top:14px"><summary style="cursor:pointer">Primeira configuração — uma única vez</summary><ol class="sub" style="line-height:1.9"><li>Instale e abra o MB Impressão neste computador Windows. O driver da Elgin já instalado será reutilizado.</li><li>Clique em Copiar código no programa e cole o código de pareamento acima.</li><li>Clique em Salvar e conectar e escolha ELGIN L42PRO FULL. Essa escolha fica salva neste navegador.</li><li>Depois, use Imprimir lote para ver os nomes e quantidades antes do envio direto.</li></ol><p class="help">O programa precisa permanecer aberto durante as impressões. O navegador pode pedir uma autorização inicial para conectar à rede local. Não depende do QZ Tray.</p></details>';
  $('#view').insertBefore(host,$('#view').firstChild);
+ const compact=document.createElement('section');
+ compact.id='mbPrinterConnectedPanel';compact.className='panel';compact.hidden=true;compact.style.display='none';
+ compact.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><strong>✓ Impressora conectada</strong><div class="sub" data-mb-printer-name>Elgin</div></div><button type="button" class="secondary" id="mbChangePrinter">Alterar impressora</button></div><p class="sub" id="mbPrinterConnectedStatus" role="status" style="margin:8px 0 0">Pronta para imprimir seus lotes.</p>';
+ host.parentNode.insertBefore(compact,host);
+ $('#mbChangePrinter').onclick=()=>{mbShowPrinterSetup();$('#mbPrinterToken')?.focus()};
  const tokenInput=$('#mbPrinterToken');tokenInput.value=localStorage.getItem('mb-local-printer-token')||'';
  const connect=async()=>{
   const b=$('#mbSavePrinter');b.disabled=true;
