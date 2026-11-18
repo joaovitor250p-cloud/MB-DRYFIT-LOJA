@@ -46,11 +46,12 @@ async function packageShop(shop){
  const publicDir=join(root,'dist/mb-public'),privateDir=join(publicDir,'_mb/private'),staticDir=join(publicDir,'_mb/static');
  for(const dir of [privateDir,staticDir,join(publicDir,'vendor'),join(publicDir,'brand-assets')])await mkdir(dir,{recursive:true});
  let s=await readFile(file,'utf8'),before=Buffer.byteLength(s);
- for(const [name,asset] of [['NEX_IMPORT_DATA','nex-import.json'],['NEX_REGROUP_DATA','nex-regroup.json']]){
+ if(shop==='mb-dryfit')for(const [name,asset] of [['NEX_IMPORT_DATA','nex-import.json'],['NEX_REGROUP_DATA','nex-regroup.json']]){
   const result=popConstant(s,name);s=result.code;
   if(typeof result.data!=='object'||!result.data)throw Error(name+' invalid');
   await writeFile(join(privateDir,asset),JSON.stringify(result.data));
  }
+ if(shop==='mb-dryfit'){
  const loader=[
   'const mbPrivateNexCache=new Map();',
   'async function mbLoadPrivateNex(env,name){',
@@ -72,6 +73,7 @@ async function packageShop(shop){
   const matches=[...s.matchAll(new RegExp('\\b'+name+'\\b','g'))];
   if(matches.length<2||matches.length>10)throw Error(name+' refs unexpected: '+matches.length);
   s=s.replace(new RegExp('\\b'+name+'\\b','g'),(found,offset)=>s.slice(Math.max(0,offset-8),offset).includes('const ')?found:'await mbLoadPrivateNex(env,"'+asset+'")');
+ }
  }
  let result=popConstant(s,'BRAND_ASSETS');s=result.code;
  s=once(s,'const BRAND_ASSETS=null;','const BRAND_ASSETS={};');
