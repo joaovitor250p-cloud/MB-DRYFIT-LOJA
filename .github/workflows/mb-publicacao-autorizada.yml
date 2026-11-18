@@ -960,6 +960,19 @@ jobs:
         env:
           MB_RELEASE_CODE_ONLY: '1'
         run: node scripts/cloudflare-prepare.mjs cloudflare.domains.config.json
+      - name: Garantir campo de pareamento no Worker final antes do deploy
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import {readFileSync} from 'node:fs';
+          for (const store of ['dryfit','her']) {
+            const built=readFileSync('cloudflare-dist/'+store+'/worker.js','utf8');
+            for (const term of ['mbPrinterToken','function mountDirectPrinter','function reviewLabelBatch','mbBridgeRequest','Salvar e conectar uma vez']) {
+              if(!built.includes(term))throw Error(store+': campo ou integração de impressão ausente no Worker final: '+term);
+            }
+            console.log('CONFIRMADO no Worker final da loja '+store+': campo de código, conector local e conferência do lote.');
+          }
+          NODE
       - name: Confirmar que os dois Workers estão sem fotos e sem a migração 0042
         run: |
           node --input-type=module <<'NODE'
@@ -1972,6 +1985,19 @@ jobs:
       - run: npm run build
       - name: Preparar Workers sem migrações novas
         run: node scripts/cloudflare-prepare.mjs cloudflare.domains.config.json
+      - name: Garantir campo de pareamento no Worker final antes do deploy
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import {readFileSync} from 'node:fs';
+          for (const store of ['dryfit','her']) {
+            const built=readFileSync('cloudflare-dist/'+store+'/worker.js','utf8');
+            for (const term of ['mbPrinterToken','function mountDirectPrinter','function reviewLabelBatch','mbBridgeRequest','Salvar e conectar uma vez']) {
+              if(!built.includes(term))throw Error(store+': campo ou integração de impressão ausente no Worker final: '+term);
+            }
+            console.log('CONFIRMADO no Worker final da loja '+store+': campo de código, conector local e conferência do lote.');
+          }
+          NODE
       - name: Verificar ou criar R2 separado por loja e habilitar somente o binding
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_R2_API_TOKEN }}
