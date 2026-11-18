@@ -130,6 +130,7 @@ async function printDirect(test=false, confirmedJob=null, onProgress=null){
    const pending='Preparando etiquetas '+(queued+1)+' a '+(queued+batch.items.length)+' de '+expected+'…';
    printerStatus(pending);
    if(onProgress)onProgress(pending,{queued,expected});
+   await mbPrinterAllowPaint();
    const zpl=await buildNativeLabelJob(batch);
    // Envia blocos pequenos, na ordem correta das duas colunas, sem ultrapassar
    // o limite de 5 MB do aplicativo Windows e sem reabrir uma confirmação.
@@ -152,33 +153,66 @@ async function printDirect(test=false, confirmedJob=null, onProgress=null){
   printerBusy=false;document.querySelectorAll('[data-direct-print]').forEach(b=>b.disabled=false);
  }
 }
+function mbPrinterAllowPaint(){
+ if(typeof requestAnimationFrame!=='function')return Promise.resolve();
+ return new Promise(resolve=>requestAnimationFrame(()=>setTimeout(resolve,0)));
+}
 function reviewLabelBatch(){
- const entries=[...selected].map(([id,quantity])=>({product:products.find(p=>p.id===id),quantity:Number(quantity)})).filter(entry=>entry.product&&Number.isInteger(entry.quantity)&&entry.quantity>0);
+ const byId=new Map(products.map(product=>[product.id,product]));
+ const entries=[...selected].map(([id,quantity])=>({product:byId.get(id),quantity:Number(quantity)})).filter(entry=>entry.product&&Number.isInteger(entry.quantity)&&entry.quantity>0);
  if(!entries.length){printerStatus('Escolha as peças e as quantidades antes de imprimir.',true);toast('Selecione pelo menos uma etiqueta.');return}
  let dialog=document.getElementById('mbBatchPrintReview');
- if(!dialog){dialog=document.createElement('dialog');dialog.id='mbBatchPrintReview';dialog.style.cssText='width:min(820px,calc(100vw - 24px));max-height:90vh;padding:24px;border:1px solid #dfe2e7;border-radius:16px;box-shadow:0 22px 70px #10121a44;overflow:auto';document.body.append(dialog)}
+ if(!dialog){
+  dialog=document.createElement('dialog');dialog.id='mbBatchPrintReview';
+  dialog.style.cssText='width:min(820px,calc(100vw - 24px));max-height:90vh;padding:20px;border:1px solid #dfe2e7;border-radius:16px;box-shadow:0 12px 30px #10121a22;overflow:auto';
+  document.body.append(dialog);
+ }
+ const buildVersion=String(Number(dialog.dataset.mbBuildVersion||0)+1);
+ dialog.dataset.mbBuildVersion=buildVersion;
  dialog.replaceChildren();
  const heading=document.createElement('h2');heading.textContent='Conferir lote antes de imprimir';heading.style.margin='0 0 8px';
- const help=document.createElement('p');help.className='sub';help.textContent='Confira cada modelo, cor, tamanho e quantidade. Você pode ajustar as quantidades aqui, sem alterar o estoque.';
+ const help=document.createElement('p');help.className='sub';help.textContent='Confira cada modelo, cor, tamanho e quantidade. Você pode ajustar aqui sem alterar o estoque.';
  const tableWrap=document.createElement('div');tableWrap.style.cssText='overflow-x:auto;max-height:50vh;overflow-y:auto;margin:16px 0;border:1px solid #e4e6ea;border-radius:12px';
  const table=document.createElement('table');table.style.cssText='width:100%;border-collapse:collapse;min-width:520px';
  const header=document.createElement('thead');header.innerHTML='<tr><th style="text-align:left;padding:12px">Peça / REF</th><th style="text-align:left;padding:12px">Cor e tamanho</th><th style="text-align:right;padding:12px">Etiquetas</th></tr>';
  const body=document.createElement('tbody');
+ table.append(header,body);tableWrap.append(table);
  const draft=new Map(entries.map(entry=>[entry.product.id,entry.quantity]));
- const inputs=[];
  const summary=document.createElement('strong');summary.style.cssText='display:block;margin:12px 0;font-size:16px';
- const error=document.createElement('p');error.style.color='#b43e27';error.setAttribute('role','alert');
- const actions=document.createElement('div');actions.style.cssText='display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:20px';
+ const error=document.createElement('p');error.style.cssText='color:#b43e27;min-height:20px';error.setAttribute('role','status');error.setAttribute('aria-live','polite');
+ const progressPanel=document.createElement('div');progressPanel.hidden=true;progressPanel.style.cssText='padding:12px 14px;background:#f5f6f9;border:1px solid #e0e5ed;border-radius:12px;margin:12px 0;';
+ const progressHeading=document.createElement('div');progressHeading.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:9px;font-weight:650;';
+ const spinner=document.createElement('span');spinner.style.cssText='display:inline-block;flex:0 0 18px;width:18px;height:18px;border:2px solid #f4c7a8;border-top-color:#fa6f18;border-radius:50%;animation:mbPrinterSpin .9s linear infinite;';
+ const spinnerStyle=document.createElement('style');spinnerStyle.textContent='@keyframes mbPrinterSpin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){#mbBatchPrintReview span{animation:none!important}}';
+ const progressText=document.createElement('span');progressText.textContent='Preparando impressão...';
+ progressHeading.append(spinner,progressText);
+ const progressBar=document.createElement('progress');progressBar.max=1;progressBar.value=0;progressBar.style.cssText='display:block;width:100%;height:9px;accent-color:#fa6f18;';
+ progressPanel.append(progressHeading,progressBar);
+ const actions=document.createElement('div');actions.style.cssText='display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px';
  const cancel=document.createElement('button');cancel.className='secondary';cancel.type='button';cancel.textContent='Voltar e ajustar';cancel.onclick=()=>dialog.close();
- const confirm=document.createElement('button');confirm.className='primary';confirm.type='button';
+ const confirm=document.createElement('button');confirm.className='primary';confirm.type='button';confirm.disabled=true;
+ const loadingRows=document.createElement('p');loadingRows.className='sub';loadingRows.textContent='Preparando lista de peças...';loadingRows.setAttribute('role','status');
+ let ready=false;
  const recalc=()=>{
-   const total=[...draft.values()].reduce((sum,quantity)=>sum+quantity,0);
-   summary.textContent=entries.length+' variação(ões) selecionada(s) · '+total+' etiqueta(s) ao todo';
-   error.textContent=total>500?'O limite é 500 etiquetas por lote. Reduza as quantidades.':total<1?'Informe pelo menos uma etiqueta.':'';
-   confirm.disabled=total<1||total>500;
-   confirm.textContent='Imprimir '+total+' etiqueta(s)';
+  const total=[...draft.values()].reduce((sum,quantity)=>sum+quantity,0);
+  const count=[...draft.values()].filter(n=>n>0&&n<=500).length;
+  summary.textContent=count+' variação(ões) · '+total+' etiqueta(s) ao todo';
+  error.textContent=total>500?'O limite é 500 etiquetas por lote. Reduza as quantidades.':total<1?'Informe pelo menos uma etiqueta.':'';
+  confirm.disabled=!ready||total<1||total>500;
+  confirm.textContent='Imprimir '+total+' etiqueta(s)';
  };
- for(const {product,quantity} of entries){
+ dialog.oncancel=event=>{if(printerBusy||dialog.getAttribute('aria-busy')==='true')event.preventDefault()};
+ actions.append(cancel,confirm);
+ dialog.append(spinnerStyle,heading,help,tableWrap,loadingRows,summary,error,progressPanel,actions);
+ recalc();
+ dialog.showModal();
+ let rowIndex=0;
+ const renderRows=()=>{
+  if(dialog.dataset.mbBuildVersion!==buildVersion||!dialog.hasAttribute('open'))return;
+  const fragment=document.createDocumentFragment();
+  const stop=Math.min(rowIndex+24,entries.length);
+  for(;rowIndex<stop;rowIndex++){
+   const {product,quantity}=entries[rowIndex];
    const tr=document.createElement('tr');tr.style.borderTop='1px solid #e4e6ea';
    const piece=document.createElement('td');piece.style.padding='12px';
    const name=document.createElement('strong');name.textContent=product.name;
@@ -188,41 +222,54 @@ function reviewLabelBatch(){
    const amount=document.createElement('td');amount.style.cssText='padding:12px;text-align:right';
    const input=document.createElement('input');input.type='number';input.min='0';input.max='500';input.step='1';input.value=String(quantity);input.style.cssText='width:86px;padding:9px;border:1px solid #d5dbe2;border-radius:8px;text-align:center';input.setAttribute('aria-label','Quantidade de etiquetas para '+product.name+' '+product.color+' '+product.size);
    input.oninput=()=>{const n=Number(input.value);draft.set(product.id,Number.isInteger(n)&&n>=0&&n<=500?n:501);recalc()};
-   inputs.push(input);amount.append(input);tr.append(piece,variant,amount);body.append(tr);
- }
- table.append(header,body);tableWrap.append(table);
- confirm.onclick=async()=>{
-   if(confirm.disabled||printerBusy)return;
-   const next=new Map(selected),items=[];
-   for(const {product} of entries){
-     const n=draft.get(product.id)||0;
-     if(n)next.set(product.id,n);else next.delete(product.id);
-     for(let i=0;i<n;i++)items.push({name:product.name,color:product.color,size:product.size,extra_code:product.extra_code,barcode:product.barcode});
-   }
-   const job={items,config:{...labelConfig}};
-   try{checkPrintJob(job)}catch(e){error.textContent=e.message;error.style.color='#b43e27';return}
-   // Não atualize toda a grade de modelos nem gere a prévia antes da impressão:
-   // isso podia interromper o clique mesmo com a impressora funcionando.
-   selected=next;
-   confirm.disabled=true;cancel.disabled=true;error.style.color='#426b46';
-   const result=await printDirect(false,job,(message,progress)=>{
-     error.style.color=progress.error?'#b43e27':'#426b46';
-     error.textContent=message;
-   });
-   if(result.ok){
-     dialog.close();
-     // Atualização visual independente do envio; nunca pode cancelar o lote.
-     setTimeout(()=>{try{if(document.getElementById('labelModels'))drawLabelModels();if(document.getElementById('labelPreview'))previewLabels()}catch(e){console.error('Atualização da grade após impressão:',e)}},0);
-   }else if(result.queued){
-     confirm.textContent='Conferir etiquetas já enviadas';
-     confirm.onclick=()=>dialog.close();
-     confirm.disabled=false;cancel.disabled=false;
-   }else{confirm.disabled=false;cancel.disabled=false;recalc();error.style.color='#b43e27';error.textContent=result.error||'Não foi possível enviar o lote.'}
+   amount.append(input);tr.append(piece,variant,amount);fragment.append(tr);
+  }
+  body.append(fragment);
+  if(rowIndex<entries.length){
+   loadingRows.textContent='Preparando lista: '+rowIndex+' de '+entries.length+' variações...';
+   if(typeof requestAnimationFrame==='function')requestAnimationFrame(renderRows);else renderRows();
+  }else{
+   loadingRows.remove();ready=true;recalc();
+  }
  };
- actions.append(cancel,confirm);
- dialog.append(heading,help,tableWrap,summary,error,actions);recalc();dialog.showModal();
+ if(typeof requestAnimationFrame==='function')requestAnimationFrame(renderRows);else renderRows();
+ confirm.onclick=async()=>{
+  if(confirm.disabled||printerBusy||!ready)return;
+  const next=new Map(selected),items=[];
+  for(const {product} of entries){
+   const n=draft.get(product.id)||0;
+   if(n)next.set(product.id,n);else next.delete(product.id);
+   for(let i=0;i<n;i++)items.push({name:product.name,color:product.color,size:product.size,extra_code:product.extra_code,barcode:product.barcode});
+  }
+  const job={items,config:{...labelConfig}};
+  try{checkPrintJob(job)}catch(e){error.textContent=e.message;error.style.color='#b43e27';return}
+  selected=next;
+  confirm.disabled=true;cancel.disabled=true;dialog.setAttribute('aria-busy','true');
+  confirm.textContent='Enviando etiquetas...';error.textContent='';
+  progressPanel.hidden=false;progressBar.max=items.length;progressBar.value=0;
+  const onProgress=(message,state)=>{
+   progressText.textContent=message;
+   progressBar.value=state.queued||0;
+   error.style.color=state.error?'#b43e27':'#426b46';
+   error.textContent=state.error?message:'';
+  };
+  await mbPrinterAllowPaint();
+  const result=await printDirect(false,job,onProgress);
+  dialog.removeAttribute('aria-busy');
+  if(result.ok){
+   dialog.close();
+   setTimeout(()=>{try{if(document.getElementById('labelModels'))drawLabelModels();if(document.getElementById('labelPreview'))previewLabels()}catch(e){console.error('Atualização da grade após impressão:',e)}},0);
+  }else if(result.queued){
+   progressPanel.hidden=true;spinner.style.animation='none';
+   error.style.color='#b43e27';error.textContent=result.error;
+   confirm.textContent='Conferir etiquetas já enviadas';confirm.onclick=()=>dialog.close();
+   confirm.disabled=false;cancel.disabled=false;
+  }else{
+   progressPanel.hidden=true;cancel.disabled=false;ready=true;recalc();
+   error.style.color='#b43e27';error.textContent=result.error||'Não foi possível enviar o lote.';
+  }
+ };
 }
-
 function mountDirectPrinter(){
  const host=document.createElement('section');host.className='panel';host.id='mbPrinterSetupPanel';
  host.innerHTML='<div class="heading"><div><span class="eyebrow">IMPRESSÃO DIRETA / USB</span><h2 style="margin-top:8px">Elgin L42 Pro Full · Bobina 40 × 25</h2><div class="sub">Escolha sua impressora uma vez. Depois, confira os modelos e mande imprimir sem novas janelas de confirmação do QZ Tray.</div></div><button class="primary" id="connectElgin" type="button">Conectar impressora</button></div>'+
