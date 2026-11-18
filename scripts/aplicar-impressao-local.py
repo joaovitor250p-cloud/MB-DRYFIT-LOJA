@@ -15,6 +15,5 @@ for store in ('mb-dryfit', 'mb-for-her'):
     assert "await mbBridgeRequest('/print','POST',{printer,zpl})" in code, store
     assert "primary.onclick=e=>{e.preventDefault();reviewLabelBatch()}" in code, store
     assert 'qz.websocket.connect(' not in code, store
-    assert "https://mbdryfit.com.br" not in code or True
     destination.write_text(code, encoding='utf-8')
     print('MB Impressão local incorporado ao Worker:', store)
