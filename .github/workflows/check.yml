@@ -153,5 +153,20 @@ jobs:
             node --check "stores/$store/worker/api.js"
           done
           npm run check
+      - name: Testar bundle real dos dois Workers com módulos de comércio
+        run: |
+          cp scripts/empacotar-commerce-cloudflare-2026.py release-smoke/scripts/
+          cd release-smoke
+          python3 scripts/empacotar-commerce-cloudflare-2026.py
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/scripts/build.mjs"
+          done
+          npm run build
+          for store in mb-dryfit mb-for-her; do
+            grep -q 'const {publicPromotionMap,activePromotion,handleVariantPromotions}' "stores/$store/dist/server/index.js"
+            grep -q 'const {handleOrderAdjustments}' "stores/$store/dist/server/index.js"
+            if grep -q 'from "./mb-variant-promotions.js"' "stores/$store/dist/server/index.js"; then exit 1; fi
+            if grep -q 'from "./mb-order-adjustments.js"' "stores/$store/dist/server/index.js"; then exit 1; fi
+          done
       - run: npm ci
       - run: npm run check
