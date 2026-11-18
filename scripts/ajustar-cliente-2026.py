@@ -55,6 +55,11 @@ for store in ('mb-dryfit','mb-for-her'):
  # Current seller remains visible to customer, original seller is retained in audit.
  s=s.replace("'<p>'+esc(o.customer_name)+' · '+esc(o.agent_name)+'</p>'",
              "'<p>'+esc(o.customer_name)+' · Separado por '+esc(o.agent_name)+'</p>'")
+ # Show the address only to the buyer authorized to view their own order.
+ needle="'<p>Pagamento: '+esc(customerPaymentLabels[o.payment_method]||'A combinar com o vendedor')"
+ s=swap(s,needle,
+  "'<p>'+((o.delivery_mode!=='pickup'&&o.delivery_address)?'Entrega: '+esc([o.delivery_address.street+', '+o.delivery_address.number,o.delivery_address.complement,o.delivery_address.district,o.delivery_address.city+' - '+o.delivery_address.state,o.delivery_address.postcode].filter(Boolean).join(' · ')):'')+'</p><p>Pagamento: '+esc(customerPaymentLabels[o.payment_method]||'A combinar com o vendedor')",
+  store+' client shipping receipt')
  orders.write_text(s,encoding='utf-8')
 
  html=root/'storefront.html'
