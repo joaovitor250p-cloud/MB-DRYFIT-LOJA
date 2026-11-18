@@ -33,6 +33,7 @@ on:
       - scripts/ativar-commerce-2026.py
       - scripts/ajustar-cliente-2026.py
       - scripts/instalar-interfaces-commerce-2026.py
+      - scripts/empacotar-commerce-cloudflare-2026.py
       - scripts/ajustar-fixtures-comercio-2026.py
       - scripts/mb-commerce-2026.test.mjs
   workflow_dispatch:
@@ -2130,6 +2131,12 @@ jobs:
           done
       - name: Revalidar a suíte completa após otimização da versão final
         run: npm run check
+      - name: Empacotar módulos das promoções e pedidos em Workers únicos
+        run: |
+          python3 catalogos-atuais/scripts/empacotar-commerce-cloudflare-2026.py
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/scripts/build.mjs"
+          done
       - run: npm run build
       - name: Preparar Workers sem migrações novas
         run: node scripts/cloudflare-prepare.mjs cloudflare.domains.config.json
