@@ -94,8 +94,19 @@ for shop in ("mb-dryfit","mb-for-her"):
 
  staff=root/"staff-workspace.js"
  text=staff.read_text(encoding="utf-8")
- text=one(text,"if(owner()&&typeof mbMountOrderSoundPanel==='function')mbMountOrderSoundPanel(view);",
-             "if(staff()&&typeof mbMountOrderSoundPanel==='function')mbMountOrderSoundPanel(view);",shop+" seller sound panel")
+ original="if(owner()&&typeof mbMountOrderSoundPanel==='function')mbMountOrderSoundPanel(view);"
+ if original in text:
+  text=one(text,original,"if(staff()&&typeof mbMountOrderSoundPanel==='function')mbMountOrderSoundPanel(view);",shop+" seller sound panel")
+ else:
+  # Some smoke builds have the frozen orders UI without the earlier alert
+  # patch. Install an equivalent hook instead of overwriting unrelated UI.
+  start=text.index("async function renderOnlineOrders(")
+  end=text.index("\nfunction staffOrderDialog(",start)
+  region=text[start:end]
+  anchor="if(focusSearch){"
+  if region.count(anchor)!=1:raise SystemExit(shop+": cannot mount seller orders badge")
+  region=region.replace(anchor,"if(staff()&&typeof mbMountOrderSoundPanel==='function')mbMountOrderSoundPanel(view);"+anchor,1)
+  text=text[:start]+region+text[end:]
  replacements=[
   ("Recebeu. Conferiu. Feito.","Pedidos em andamento e finalizados"),
   ("Pedidos recebidos</button>","Em andamento</button>"),
