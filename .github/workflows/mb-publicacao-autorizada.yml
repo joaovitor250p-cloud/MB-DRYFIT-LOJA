@@ -18,6 +18,7 @@ on:
       - scripts/corrigir-opcoes-filtros.py
       - scripts/aplicar-impressao-local.py
       - scripts/instalador-mb-impressao-configuracoes.py
+      - scripts/garantir-codigos-unicos.py
       - scripts/atualizar-fixtures-ref.py
   workflow_dispatch:
 permissions:
@@ -967,6 +968,14 @@ jobs:
             node --check "stores/$store/worker/staff-sales.js"
             grep -q 'mbOriginalRenderVendorAccess' "stores/$store/worker/staff-sales.js"
             grep -q "/downloads/mb-impressao-elgin-windows.zip" "stores/$store/worker/api.js"
+          done
+      - name: Impedir códigos automáticos duplicados nos dois catálogos
+        run: |
+          python3 catalogos-atuais/scripts/garantir-codigos-unicos.py
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/worker/api.js"
+            grep -q 'reserveUnusedStoreBarcode(env.DB)' "stores/$store/worker/api.js"
+            grep -q 'product_barcodes WHERE barcode=? LIMIT 1' "stores/$store/worker/api.js"
           done
       - uses: actions/setup-node@v4
         with:
@@ -1965,6 +1974,14 @@ jobs:
             grep -q 'mbOriginalRenderVendorAccess' "stores/$store/worker/staff-sales.js"
             grep -q "/downloads/mb-impressao-elgin-windows.zip" "stores/$store/worker/api.js"
           done
+      - name: Impedir códigos automáticos duplicados nos dois catálogos
+        run: |
+          python3 catalogos-atuais/scripts/garantir-codigos-unicos.py
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/worker/api.js"
+            grep -q 'reserveUnusedStoreBarcode(env.DB)' "stores/$store/worker/api.js"
+            grep -q 'product_barcodes WHERE barcode=? LIMIT 1' "stores/$store/worker/api.js"
+          done
       - name: Verificar sintaxe real do painel antes de publicar
         shell: bash
         run: |
@@ -2078,6 +2095,14 @@ jobs:
         run: npx --no-install wrangler d1 execute DB --remote --config cloudflare-dist/dryfit/wrangler.json --command "SELECT archived_at FROM products LIMIT 0; SELECT guard_count FROM model_change_events LIMIT 0; SELECT token_hash FROM staff_access_sessions LIMIT 0; SELECT viewer_id FROM shop_order_access LIMIT 0;"
       - name: Conferir tabelas já existentes na MB For Her (somente leitura)
         run: npx --no-install wrangler d1 execute DB --remote --config cloudflare-dist/her/wrangler.json --command "SELECT archived_at FROM products LIMIT 0; SELECT guard_count FROM model_change_events LIMIT 0; SELECT token_hash FROM staff_access_sessions LIMIT 0; SELECT viewer_id FROM shop_order_access LIMIT 0;"
+      - name: Auditar conflitos de códigos existentes (somente leitura)
+        shell: bash
+        run: |
+          set -euo pipefail
+          for loja in dryfit her; do
+            echo "Verificando códigos principais x alternativos em $loja (nenhuma alteração será feita)"
+            npx --no-install wrangler d1 execute DB --remote --config "cloudflare-dist/$loja/wrangler.json" --command "SELECT COUNT(*) AS conflitos_entre_pecas FROM products p JOIN product_barcodes b ON b.barcode=p.barcode AND b.product_id!=p.id;"
+          done
       - name: Publicar Worker MB Dryfit sem migrar dados
         run: npx --no-install wrangler deploy --config cloudflare-dist/dryfit/wrangler.json --keep-vars
       - name: Publicar Worker MB For Her sem migrar dados
