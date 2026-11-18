@@ -951,6 +951,9 @@ jobs:
           for store in mb-dryfit mb-for-her; do
             node --check "stores/$store/worker/native-print.js"
             grep -q "await mbBridgeRequest('/print','POST',{printer,zpl})" "stores/$store/worker/native-print.js"
+            grep -q 'function mbPrinterAllowPaint()' "stores/$store/worker/native-print.js"
+            grep -q 'Preparando lista:' "stores/$store/worker/native-print.js"
+            grep -q 'dialog.setAttribute.*aria-busy' "stores/$store/worker/native-print.js"
             if grep -q 'qz.websocket.connect(' "stores/$store/worker/native-print.js"; then
               echo "::error::Integração antiga QZ ainda está ativa em $store"
               exit 1
@@ -985,7 +988,7 @@ jobs:
           import {readFileSync} from 'node:fs';
           for (const store of ['dryfit','her']) {
             const built=readFileSync('cloudflare-dist/'+store+'/worker.js','utf8');
-            for (const term of ['mbPrinterToken','function mountDirectPrinter','function reviewLabelBatch','mbBridgeRequest','Salvar e conectar uma vez','mbPrinterConnectedPanel','/downloads/mb-impressao-elgin-windows.zip','Tutorial de instalação em computador novo']) {
+            for (const term of ['mbPrinterToken','function mountDirectPrinter','function reviewLabelBatch','mbBridgeRequest','Salvar e conectar uma vez','mbPrinterConnectedPanel','/downloads/mb-impressao-elgin-windows.zip','Tutorial de instalação em computador novo','function mbPrinterAllowPaint()','Preparando lista:']) {
               if(!built.includes(term))throw Error(store+': campo ou integração de impressão ausente no Worker final: '+term);
             }
             const mountBeforeGrid='mountDirectPrinter();drawLabelModels();previewLabels()}';
@@ -1945,6 +1948,9 @@ jobs:
           for store in mb-dryfit mb-for-her; do
             node --check "stores/$store/worker/native-print.js"
             grep -q "await mbBridgeRequest('/print','POST',{printer,zpl})" "stores/$store/worker/native-print.js"
+            grep -q 'function mbPrinterAllowPaint()' "stores/$store/worker/native-print.js"
+            grep -q 'Preparando lista:' "stores/$store/worker/native-print.js"
+            grep -q 'dialog.setAttribute.*aria-busy' "stores/$store/worker/native-print.js"
             if grep -q 'qz.websocket.connect(' "stores/$store/worker/native-print.js"; then
               echo "::error::Integração antiga QZ ainda está ativa em $store"
               exit 1
@@ -2030,7 +2036,7 @@ jobs:
           import {readFileSync} from 'node:fs';
           for (const store of ['dryfit','her']) {
             const built=readFileSync('cloudflare-dist/'+store+'/worker.js','utf8');
-            for (const term of ['mbPrinterToken','function mountDirectPrinter','function reviewLabelBatch','mbBridgeRequest','Salvar e conectar uma vez','mbPrinterConnectedPanel','/downloads/mb-impressao-elgin-windows.zip','Tutorial de instalação em computador novo']) {
+            for (const term of ['mbPrinterToken','function mountDirectPrinter','function reviewLabelBatch','mbBridgeRequest','Salvar e conectar uma vez','mbPrinterConnectedPanel','/downloads/mb-impressao-elgin-windows.zip','Tutorial de instalação em computador novo','function mbPrinterAllowPaint()','Preparando lista:']) {
               if(!built.includes(term))throw Error(store+': campo ou integração de impressão ausente no Worker final: '+term);
             }
             const mountBeforeGrid='mountDirectPrinter();drawLabelModels();previewLabels()}';
