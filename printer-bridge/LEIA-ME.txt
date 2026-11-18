@@ -1,0 +1,26 @@
+MB IMPRESSÃO — ELGIN L42PRO FULL / MB DRYFIT E MB FOR HER
+
+1. Extraia o arquivo MB-Impressao-Elgin-Windows.zip no seu computador Windows.
+2. Abra o aplicativo MB-Impressao-Elgin.exe. Na primeira abertura, o Windows pode
+   mostrar o aviso de aplicativo ainda não assinado digitalmente.
+   Confira a origem do arquivo antes de prosseguir.
+3. Mantenha o programa MB Impressão aberto. A Elgin deve estar instalada no Windows.
+4. No site MB Dryfit ou MB For Her, abra Gestão > Etiquetas.
+5. No programa Windows, clique em "Copiar código".
+6. Cole o código na página de etiquetas e clique em "Salvar e conectar uma vez".
+7. Escolha ELGIN L42PRO FULL. A escolha fica salva neste navegador.
+8. Preencha as quantidades por modelo, cor e tamanho, clique em "Imprimir lote",
+   confira o resumo e envie com um clique.
+
+Não é necessário abrir QZ Tray. As etiquetas são enviadas ao driver Windows
+na linguagem ZPL, que deve estar habilitada/configurada na Elgin.
+
+ATENÇÃO: O programa só aceita requisições originadas de mbdryfit.com.br ou
+forher.mbdryfit.com.br e exige código de pareamento exclusivo do computador.
+Ele usa 127.0.0.1:17425 e não escuta conexões externas.
+Não compartilhe o código em chats ou com terceiros.
+A saída na fila do Windows não é garantia de papel impresso.
+Se o navegador solicitar autorização de acesso à rede local na primeira
+conexão, libere apenas para o site oficial MB.
+
+O arquivo deve ser obtido exclusivamente pelo workflow do GitHub da loja.

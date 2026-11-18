@@ -1,6 +1,38 @@
 let printerBusy=false;
 function printerStatus(message,error=false){const el=$('#printerStatus');if(el){el.textContent=message;el.style.color=error?'#b43e27':'#578044'}}
-async function connectLabelPrinter(){if(typeof qz==='undefined')throw Error('O conector não carregou. Atualize a página.');if(!qz.websocket.isActive()){qz.security.setCertificatePromise(resolve=>resolve(null));await qz.websocket.connect({retries:0})}const printers=await qz.printers.find();const select=$('#labelPrinter');if(!select)throw Error('Abra a tela de etiquetas.');const saved=localStorage.getItem('mb-label-printer');select.innerHTML=printers.map(p=>'<option value="'+esc(p)+'">'+esc(p)+'</option>').join('');if(saved&&printers.includes(saved))select.value=saved;else{const elgin=printers.find(p=>/elgin|l42/i.test(p));if(elgin)select.value=elgin}if(!printers.length)throw Error('Nenhuma impressora instalada no Windows foi encontrada.');localStorage.setItem('mb-label-printer',select.value);select.onchange=()=>localStorage.setItem('mb-label-printer',select.value);printerStatus('Conectado ao QZ Tray · '+select.value);return select.value}
+async function mbBridgeRequest(path,method='GET',data){
+ const token=localStorage.getItem('mb-local-printer-token')||'';
+ const headers={'X-MB-Token':token};
+ if(method==='POST')headers['Content-Type']='application/json';
+ const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),12000);
+ try{
+  const response=await fetch('http://127.0.0.1:17425'+path,{method,headers,body:data?JSON.stringify(data):undefined,signal:controller.signal,cache:'no-store'});
+  const result=await response.json();
+  if(!response.ok)throw Error(result.error||'O conector local recusou a operação.');
+  return result;
+ }catch(e){
+  if(e?.name==='AbortError')throw Error('O programa MB Impressão não respondeu. Confirme que ele está aberto no Windows.');
+  if(e instanceof TypeError)throw Error('Não foi possível conectar ao MB Impressão. Abra o programa no computador da Elgin e confira a permissão de rede local no Chrome.');
+  throw e;
+ }finally{clearTimeout(timeout)}
+}
+async function connectLabelPrinter(){
+ const token=(localStorage.getItem('mb-local-printer-token')||'').trim();
+ if(!/^[a-f0-9]{64}$/.test(token))throw Error('Informe o código de pareamento exibido no programa MB Impressão.');
+ const result=await mbBridgeRequest('/printers');
+ const printers=Array.isArray(result.printers)?result.printers:[];
+ const select=$('#labelPrinter');
+ if(!select)throw Error('Abra a tela de etiquetas.');
+ if(!printers.length)throw Error('Nenhuma impressora instalada no Windows foi encontrada.');
+ select.replaceChildren(...printers.map(p=>new Option(p,p)));
+ const saved=localStorage.getItem('mb-label-printer');
+ if(saved&&printers.includes(saved))select.value=saved;
+ else select.value=printers.find(p=>/elgin|l42/i.test(p))||printers[0];
+ localStorage.setItem('mb-label-printer',select.value);
+ select.onchange=()=>localStorage.setItem('mb-label-printer',select.value);
+ printerStatus('Impressora pronta · '+select.value);
+ return select.value;
+}
 function monochromeZpl(image,width,height){const stride=Math.ceil(width/8),total=stride*height;let hex='';for(let y=0;y<height;y++)for(let b=0;b<stride;b++){let value=0;for(let bit=0;bit<8;bit++){const x=b*8+bit;if(x>=width)continue;const i=(y*width+x)*4;if(image[i+3]>128&&(image[i]+image[i+1]+image[i+2])/3<160)value|=128>>bit}hex+=value.toString(16).padStart(2,'0').toUpperCase()}return '^XA\n^PW'+width+'\n^LL'+height+'\n^MNY\n^LH0,0\n^FO0,0^GFA,'+total+','+total+','+stride+','+hex+'^FS\n^PQ1\n^XZ\n'}
 function nativeWrap(ctx,value,width){const words=value.toUpperCase().split(/\s+/),lines=[];let line='';for(let word of words){while(ctx.measureText(word).width>width&&word.length>1){let n=word.length-1;while(n>1&&ctx.measureText(word.slice(0,n)).width>width)n--;if(line){lines.push(line);line=''}lines.push(word.slice(0,n));word=word.slice(n)}if(ctx.measureText((line+' '+word).trim()).width>width){lines.push(line);line=word}else line=(line+' '+word).trim()}if(line)lines.push(line);return lines}
 function nativeLabelLayout(config){
@@ -57,8 +89,21 @@ async function previewNativeLabels(items){
  host.innerHTML='';for(const canvas of canvases){canvas.className='native-label-preview';canvas.setAttribute('aria-label','Prévia das etiquetas com referência lateral e código de barras');host.append(canvas)}
 }
 function selectedPrintJob(test=false){const items=test?[{name:'MB DRYFIT TESTE',color:'PRETO',size:'M',extra_code:'REF.10162',barcode:'12345678'},{name:'MB DRYFIT TESTE',color:'BRANCO',size:'G',extra_code:'REF.10163',barcode:'87654321'}].slice(0,labelConfig.columns):labelItems().map(p=>({name:p.name,color:p.color,size:p.size,extra_code:p.extra_code,barcode:p.barcode}));return checkPrintJob({items,config:{...labelConfig,start:test?1:labelConfig.start}})}
-async function printDirect(test=false){if(printerBusy)return;printerBusy=true;document.querySelectorAll('[data-direct-print]').forEach(b=>b.disabled=true);try{const job=selectedPrintJob(test);if(typeof qz==='undefined'||!qz.websocket.isActive())await connectLabelPrinter();const printer=$('#labelPrinter')?.value;if(!printer)throw Error('Selecione a Elgin instalada no Windows.');printerStatus('Preparando '+job.items.length+' etiquetas para a bobina…');const data=await buildNativeLabelJob(job);const config=qz.configs.create(printer,{forceRaw:true,encoding:'UTF-8',jobName:'MB Dryfit · '+job.items.length+' etiquetas'});await qz.print(config,[{type:'raw',format:'command',flavor:'plain',data}]);printerStatus('Lote enviado à fila de '+printer+'. Confira a saída na impressora.');toast('Lote enviado à fila da Elgin.')}catch(e){console.error(e);printerStatus((e.message||'Falha no conector.')+' Abra o QZ Tray no Windows e permita a conexão. A Elgin deve aceitar comandos ZPL.',true)}finally{printerBusy=false;document.querySelectorAll('[data-direct-print]').forEach(b=>b.disabled=false)}}
-
+async function printDirect(test=false){
+ if(printerBusy)return;
+ printerBusy=true;document.querySelectorAll('[data-direct-print]').forEach(b=>b.disabled=true);
+ try{
+  const job=selectedPrintJob(test);
+  const printer=$('#labelPrinter')?.value||localStorage.getItem('mb-label-printer');
+  if(!printer)throw Error('Conecte o programa MB Impressão e escolha a Elgin.');
+  printerStatus('Enviando '+job.items.length+' etiquetas à Elgin…');
+  const zpl=await buildNativeLabelJob(job);
+  await mbBridgeRequest('/print','POST',{printer,zpl});
+  printerStatus('Lote enviado à fila da Elgin. Confira as etiquetas.');
+  toast('Lote enviado à impressora.');
+ }catch(e){printerStatus(e.message||'Não foi possível imprimir.',true);toast(e.message||'Falha na impressão.')}
+ finally{printerBusy=false;document.querySelectorAll('[data-direct-print]').forEach(b=>b.disabled=false)}
+}
 function reviewLabelBatch(){
  const entries=[...selected].map(([id,quantity])=>({product:products.find(p=>p.id===id),quantity:Number(quantity)})).filter(entry=>entry.product&&Number.isInteger(entry.quantity)&&entry.quantity>0);
  if(!entries.length){printerStatus('Escolha as peças e as quantidades antes de imprimir.',true);toast('Selecione pelo menos uma etiqueta.');return}
@@ -108,4 +153,34 @@ function reviewLabelBatch(){
  dialog.append(heading,help,tableWrap,summary,error,actions);recalc();dialog.showModal();
 }
 
-function mountDirectPrinter(){const host=document.createElement('section');host.className='panel';host.innerHTML='<div class="heading"><div><span class="eyebrow">IMPRESSÃO DIRETA / USB</span><h2 style="margin-top:8px">Elgin L42 Pro Full · Bobina 40 × 25</h2><div class="sub">Comandos ZPL para a impressora, em duas colunas.</div></div><button class="primary" id="connectElgin">Conectar impressora</button></div><div class="form-grid"><label>Impressora do Windows<select id="labelPrinter"><option value="">Conecte para localizar a Elgin</option></select></label><div><span class="sub" id="printerStatus" role="status">Conector ainda não conectado.</span><div style="margin-top:12px"><button class="secondary" data-direct-print id="directTest">Imprimir duas etiquetas de teste</button></div></div></div><details style="margin-top:18px"><summary style="cursor:pointer">Primeira configuração no computador da loja</summary><ol class="sub" style="line-height:1.9"><li><a href="https://qz.io/download/" target="_blank" rel="noopener">Instale o QZ Tray pelo site oficial</a> e deixe-o aberto no Windows.</li><li><a href="/?painel=etiquetas" target="_blank" rel="noopener">Abra o painel de etiquetas no Chrome ou Edge</a> fora da prévia do ChatGPT. Clique em Conectar impressora e permita as solicitações do QZ Tray.</li><li>Selecione a ELGIN L42PRO FULL instalada por USB. Use o modo de linguagem ZPL compatível da Elgin; se outro sistema usa outra linguagem, confira a configuração no utilitário da impressora.</li><li>Faça o teste. Se nada sair, verifique a fila do Windows e a linguagem da impressora. Se sair deslocado, ajuste as medidas e o alinhamento abaixo.</li></ol><p class="help">A autorização do QZ pode aparecer ao conectar, listar impressoras e imprimir. “Enviado à fila” não confirma que o papel saiu.</p></details>';$('#view').insertBefore(host,$('#view').firstChild);$('#connectElgin').onclick=async()=>{const b=$('#connectElgin');b.disabled=true;printerStatus('Conectando ao QZ Tray…');try{await connectLabelPrinter()}catch(e){printerStatus((e.message||'Não foi possível conectar.')+' Instale e abra o QZ Tray no Windows, fora da prévia.',true)}finally{b.disabled=false}};$('#directTest').onclick=()=>printDirect(true);const primary=$('#printBtn'),test=$('#testPrintBtn');for(const el of [primary,test]){el.removeAttribute('target');el.removeAttribute('href');el.removeAttribute('rel');el.setAttribute('role','button');el.tabIndex=0;el.dataset.directPrint='';el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click()}}}primary.onclick=e=>{e.preventDefault();reviewLabelBatch()};test.onclick=e=>{e.preventDefault();printDirect(true)};$('#printFallback').innerHTML='';if(typeof qz!=='undefined'&&qz.websocket.isActive())connectLabelPrinter().catch(e=>printerStatus(e.message,true));}
+function mountDirectPrinter(){
+ const host=document.createElement('section');host.className='panel';
+ host.innerHTML='<div class="heading"><div><span class="eyebrow">IMPRESSÃO DIRETA / USB</span><h2 style="margin-top:8px">Elgin L42 Pro Full · Bobina 40 × 25</h2><div class="sub">Escolha sua impressora uma vez. Depois, confira os modelos e mande imprimir sem novas janelas de confirmação do QZ Tray.</div></div><button class="primary" id="connectElgin" type="button">Conectar impressora</button></div>'+
+ '<div class="form-grid"><label>Código de pareamento do MB Impressão<input id="mbPrinterToken" type="password" spellcheck="false" autocomplete="off" placeholder="Cole o código do programa local" aria-label="Código de pareamento"></label><label>Impressora do Windows<select id="labelPrinter"><option value="">Conecte para escolher a Elgin</option></select></label></div>'+
+ '<div class="toolbar"><button type="button" class="secondary" id="mbSavePrinter">Salvar e conectar uma vez</button><button type="button" class="secondary" data-direct-print id="directTest">Imprimir duas etiquetas de teste</button></div>'+
+ '<p class="sub" id="printerStatus" role="status">Abra o programa MB Impressão no computador conectado à Elgin.</p>'+
+ '<details style="margin-top:14px"><summary style="cursor:pointer">Primeira configuração — uma única vez</summary><ol class="sub" style="line-height:1.9"><li>Instale e abra o MB Impressão neste computador Windows. O driver da Elgin já instalado será reutilizado.</li><li>Clique em Copiar código no programa e cole o código de pareamento acima.</li><li>Clique em Salvar e conectar e escolha ELGIN L42PRO FULL. Essa escolha fica salva neste navegador.</li><li>Depois, use Imprimir lote para ver os nomes e quantidades antes do envio direto.</li></ol><p class="help">O programa precisa permanecer aberto durante as impressões. O navegador pode pedir uma autorização inicial para conectar à rede local. Não depende do QZ Tray.</p></details>';
+ $('#view').insertBefore(host,$('#view').firstChild);
+ const tokenInput=$('#mbPrinterToken');tokenInput.value=localStorage.getItem('mb-local-printer-token')||'';
+ const connect=async()=>{
+  const b=$('#mbSavePrinter');b.disabled=true;
+  const token=tokenInput.value.trim();
+  if(!/^[a-f0-9]{64}$/.test(token)){printerStatus('Cole o código de 64 caracteres do programa MB Impressão.',true);b.disabled=false;return}
+  localStorage.setItem('mb-local-printer-token',token);
+  printerStatus('Conectando ao programa no Windows…');
+  try{await connectLabelPrinter()}catch(e){printerStatus(e.message,true)}finally{b.disabled=false}
+ };
+ $('#mbSavePrinter').onclick=connect;
+ $('#connectElgin').onclick=connect;
+ $('#directTest').onclick=()=>printDirect(true);
+ const primary=$('#printBtn'),test=$('#testPrintBtn');
+ for(const el of [primary,test]){
+  el.removeAttribute('target');el.removeAttribute('href');el.removeAttribute('rel');
+  el.setAttribute('role','button');el.tabIndex=0;el.dataset.directPrint='';
+  el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click()}};
+ }
+ primary.onclick=e=>{e.preventDefault();reviewLabelBatch()};
+ test.onclick=e=>{e.preventDefault();printDirect(true)};
+ $('#printFallback').innerHTML='';
+ if(/^[a-f0-9]{64}$/.test(tokenInput.value))connectLabelPrinter().catch(e=>printerStatus(e.message,true));
+}
