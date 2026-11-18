@@ -166,6 +166,21 @@ html[data-hero-paused=true] .hero-backdrop{animation-play-state:paused}
 }
 @media(prefers-reduced-motion:reduce){.mb-hero .hero-motion-video{display:none}}
 
+
+/* Keep the full product photograph visible: quick purchase controls belong below it,
+   and open only after the customer explicitly activates the size selector. */
+.catalog-product-media .catalog-quick-picker,
+.catalog-product-card:hover .catalog-quick-picker,
+.catalog-product-card:focus-within .catalog-quick-picker{
+ position:static;inset:auto;display:none;opacity:1;visibility:visible;transform:none;
+ max-height:none;overflow:visible;padding:12px 14px 14px;z-index:auto;
+ backdrop-filter:none;transition:none;box-shadow:none;
+}
+.catalog-product-card.picker-open .catalog-quick-picker{display:block;max-height:none;padding:12px 14px 14px}
+.catalog-product-card .catalog-size-trigger{cursor:pointer}
+.catalog-product-card.picker-open .catalog-size-trigger span{transform:rotate(45deg)}
+.catalog-product-media .luxury-image{display:grid;position:relative}
+.catalog-product-media .luxury-image>img{background:transparent}
 </style></head><body><div class="announcement"><span>MB DRYFIT / VISTA O MOVIMENTO</span><a href="#colecao">CONHEÇA A COLEÇÃO <span>↗</span></a></div>
 <header class="campaign-header" id="siteHeader"><a class="logo" href="/catalogo" aria-label="MB Dryfit início">MB <b>DRYFIT</b><small>SPORT & LIFESTYLE</small></a><nav class="main-nav" aria-label="Navegação principal"><a href="#colecao">Coleção</a><a href="#marcas">Marcas</a><a href="#sobre">Sobre a MB</a></nav><div class="shop-header-tools"><button class="shop-tool theme-tool" data-shop-theme aria-label="Alternar tema">☾</button><button class="shop-tool" data-open-favorites aria-label="Ver favoritos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg></button><button class="shop-tool notification-tool" data-open-notifications aria-label="Ver notificações"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM9 21h6"/></svg><b data-notification-count hidden>0</b></button><button type="button" class="shop-cart-open" data-open-cart><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14l1 14H4L5 7Zm3 0V5a4 4 0 0 1 8 0v2"/></svg><span>Carrinho</span><b data-cart-count>0</b></button></div></header>
 <section class="mb-hero" aria-label="Coleção MB Dryfit">
@@ -202,16 +217,32 @@ function toggleCatalogFavorite(g,card){
 function colorOptions(g,current){return [...new Set(g.variants.map(p=>p.color))].map((color,i)=>{const v=g.variants.find(p=>p.color===color),image=v.photo||v.main_photo;return '<button type="button" class="color-thumbnail '+(color===current.color?'selected':'')+'" data-luxury-color="'+i+'" aria-pressed="'+(color===current.color)+'" aria-label="Cor '+esc(color)+'" title="'+esc(color)+'">'+(image?'<img src="'+esc(image)+'" alt="" loading="lazy">':'<span>'+esc(color.slice(0,2))+'</span>')+'</button>'}).join('')}
 function pickColorVariant(g,current,index){const color=[...new Set(g.variants.map(p=>p.color))][index];return g.variants.find(p=>p.color===color&&p.size===current.size)||g.variants.find(p=>p.color===color&&p.available)||g.variants.find(p=>p.color===color)}
 function swapCatalogPhoto(container,p,preferMain=false){
- const image=container.querySelector('img'),src=preferMain?p.main_photo||p.photo:p.photo||p.main_photo;if(!image||!src)return;
- image.alt=p.name+' · '+p.color;if(image.getAttribute('src')===src)return;
- const old=image.dataset.visibleSrc||image.currentSrc||image.getAttribute('src');if(old)image.dataset.visibleSrc=old;container.style.backgroundImage=old?'url('+JSON.stringify(old)+')':'';container.style.backgroundSize='contain';container.style.backgroundPosition='center';container.style.backgroundRepeat='no-repeat';image.style.opacity='0';
- image.onload=()=>{if(image.getAttribute('src')===src){image.dataset.visibleSrc=src;image.style.opacity='1'}};
- image.onerror=()=>{container.style.backgroundImage='';image.style.opacity='0';container.setAttribute('aria-label','Foto indisponível de '+p.color)};
- image.src=src;if(image.complete&&image.naturalWidth)image.onload();
+ if(!container)return;
+ const image=container.querySelector('img'),src=preferMain?p.main_photo||p.photo:p.photo||p.main_photo;
+ if(!image)return;
+ // Never retain the previous color as a CSS background beneath the current photo.
+ container.style.backgroundImage='';
+ image.style.opacity='1';
+ if(!src){image.removeAttribute('src');image.alt='Foto indisponível de '+p.color;return}
+ image.alt=p.name+' · '+p.color;
+ if(image.dataset.requestedSrc===src)return;
+ image.dataset.requestedSrc=src;
+ if(image.getAttribute('src')===src)return;
+ const preload=new Image();
+ preload.onload=()=>{
+  // Rapid color changes must not allow an older request to replace the latest selection.
+  if(!image.isConnected||image.dataset.requestedSrc!==src)return;
+  image.src=src;image.style.opacity='1';container.removeAttribute('aria-label');
+ };
+ preload.onerror=()=>{
+  if(image.dataset.requestedSrc!==src)return;
+  container.setAttribute('aria-label','Foto indisponível de '+p.color);
+ };
+ preload.src=src;
 }
 function chooseCatalogColor(g,index){const current=selectedCatalogVariant(g),next=pickColorVariant(g,current,index),draft=selectionDraft(g);if(!next)return;if(draft.variantId)draft.variantId=next.available&&next.size===current.size?next.id:null;chosen.set(g.key,next.id);const card=productCardRegistry.get(g.key);if(card?.isConnected!==false&&card)updateCatalogCard(g,card);if($('#productDetails')?.open&&$('#productDetails').dataset.model===g.key)updateProductDetails(g)}
 function selectLuxuryVariant(g,id,explicit=false){const p=g.variants.find(p=>p.id===id);if(!p)return;chosen.set(g.key,id);if(explicit)selectionDraft(g).variantId=p.available?id:null;else if(selectionDraft(g).variantId!==id)selectionDraft(g).variantId=null;const card=productCardRegistry.get(g.key);if(card?.isConnected!==false&&card)updateCatalogCard(g,card);if($('#productDetails')?.open&&$('#productDetails').dataset.model===g.key)updateProductDetails(g)}
-function bindColorPreviews(root,g){root.querySelectorAll('[data-luxury-color]').forEach(b=>{const choose=()=>chooseCatalogColor(g,Number(b.dataset.luxuryColor));b.onclick=choose;b.onmouseenter=choose;b.onfocus=choose})}
+function bindColorPreviews(root,g){root.querySelectorAll('[data-luxury-color]').forEach(b=>{const choose=()=>chooseCatalogColor(g,Number(b.dataset.luxuryColor));b.onclick=choose})}
 function catalogSizesHTML(g,attribute){const p=selectedCatalogVariant(g),draft=selectionDraft(g);return g.variants.filter(v=>v.color===p.color).sort((a,b)=>sizesOrder.indexOf(a.size)-sizesOrder.indexOf(b.size)).map((v,i)=>'<button type="button" '+attribute+'="'+i+'" data-variant-id="'+v.id+'" class="'+(draft.variantId===v.id?'selected ':'')+(v.available?'':'out')+'" aria-pressed="'+(draft.variantId===v.id)+'" '+(!v.available?'disabled':'')+' aria-label="Tamanho '+esc(v.size)+(v.available?' disponível':' esgotado')+'">'+esc(v.size)+'</button>').join('')}
 function quantityPickerHTML(g,scope){const max=selectionQuantityLimit(g),draft=selectionDraft(g);draft.quantity=Math.max(1,Math.min(max||1,draft.quantity));return '<div class="quantity-stepper"><button type="button" data-draft-minus="'+scope+'" aria-label="Diminuir quantidade">−</button><input type="number" min="1" max="'+Math.max(1,max)+'" step="1" data-draft-quantity="'+scope+'" value="'+draft.quantity+'" aria-label="Quantidade de '+esc(g.variants[0].name)+'"><button type="button" data-draft-plus="'+scope+'" aria-label="Aumentar quantidade">+</button></div>'}
 function bindSelectionQuantity(root,g){const draft=selectionDraft(g),max=selectionQuantityLimit(g),busy=selectionAddsBusy.has(g.key);draft.quantity=Math.max(1,Math.min(draft.quantity,max||1));root.querySelectorAll('[data-draft-minus]').forEach(button=>{button.disabled=busy||draft.quantity<=1;button.onclick=()=>{draft.quantity=Math.max(1,draft.quantity-1);syncSelectionQuantities(g)}});root.querySelectorAll('[data-draft-plus]').forEach(button=>{button.disabled=busy||!max||draft.quantity>=max;button.onclick=()=>{draft.quantity=Math.min(max,draft.quantity+1);syncSelectionQuantities(g)}});root.querySelectorAll('[data-draft-quantity]').forEach(input=>{input.max=Math.max(1,max);input.value=draft.quantity;input.disabled=busy||!max;input.onchange=()=>{const n=Number(input.value);if(Number.isInteger(n)&&n>=1){draft.quantity=Math.max(1,Math.min(n,max||1));if(n>max)cartNotice('Você pode adicionar até '+max+' unidades desta cor e tamanho.')}else draft.quantity=1;syncSelectionQuantities(g)}});root.querySelectorAll('[data-add-selection]').forEach(button=>{button.disabled=busy||!draft.variantId||!max;button.textContent=busy?'Adicionando…':!max?'Limite de estoque atingido':draft.variantId?'Adicionar ao carrinho':'Escolha o tamanho';button.onclick=async()=>{if(selectionAddsBusy.has(g.key))return;selectionAddsBusy.add(g.key);syncSelectionQuantities(g);try{await addSelectionToCart(g)}finally{selectionAddsBusy.delete(g.key);syncSelectionQuantities(g)}}})}
