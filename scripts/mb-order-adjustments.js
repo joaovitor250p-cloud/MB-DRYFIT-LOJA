@@ -32,7 +32,7 @@ export async function handleOrderAdjustments(req,env,member){
  }
  if(action==='items'){
   if(req.method==='GET'){
-   const items=(await env.DB.prepare('SELECT product_id AS id,name,color,size,quantity,price,photo,barcode FROM shop_order_items WHERE order_id=? ORDER BY name,color,size').bind(id).all()).results;
+   const items=(await env.DB.prepare('SELECT oi.product_id AS id,oi.name,oi.color,oi.size,oi.quantity,oi.price,COALESCE(p.photo,p.main_photo) AS photo,p.barcode FROM shop_order_items oi LEFT JOIN products p ON p.id=oi.product_id WHERE oi.order_id=? ORDER BY oi.name,oi.color,oi.size').bind(id).all()).results;
    return reply({items,total:old.total,discount:old.discount,coupon_code:old.coupon_code,status:old.status});
   }
   let data;try{data=await req.json()}catch{return reply({error:'Dados inválidos.'},400)}
@@ -52,8 +52,7 @@ export async function handleOrderAdjustments(req,env,member){
    env.DB.prepare("DELETE FROM shop_order_items WHERE order_id=? AND EXISTS(SELECT 1 FROM order_status_events WHERE id=?)").bind(id,eventId)
   ];
   for(const line of quote.items){
-   const barcode=(await env.DB.prepare('SELECT barcode FROM products WHERE id=?').bind(line.id).first())?.barcode||'';
-   entries.push(env.DB.prepare("INSERT INTO shop_order_items(id,order_id,product_id,name,color,size,quantity,price,photo,barcode) SELECT ?,?,?,?,?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM order_status_events WHERE id=?)").bind(crypto.randomUUID(),id,line.id,line.name,line.color,line.size,line.quantity,line.price,line.photo,barcode,eventId));
+   entries.push(env.DB.prepare("INSERT INTO shop_order_items(id,order_id,product_id,name,color,size,quantity,price) SELECT ?,?,?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM order_status_events WHERE id=?)").bind(crypto.randomUUID(),id,line.id,line.name,line.color,line.size,line.quantity,line.price,eventId));
   }
   try{
    const results=await env.DB.batch(entries);
