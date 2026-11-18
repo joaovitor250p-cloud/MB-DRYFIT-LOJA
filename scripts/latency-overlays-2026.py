@@ -106,13 +106,19 @@ def catalog_fix(s):
  s=re.sub(r'(?<![\w-])(?:-webkit-)?backdrop-filter\s*:\s*blur\([^)]+\)', 'backdrop-filter:none',s)
  s=s.replace('0 25px 100px','0 10px 28px')
  if 'mbDialogMediaHookInstalled' not in s:s=once(s,'</body>', '<script>'+MEDIA_HOOK+'</script></body>','media pause hook')
- if 'Consolidated lightweight overlays' not in s:s=once(s,'</style>',FAST_CSS+'</style>','fast catalog overlay css')
+ if 'Consolidated lightweight overlays' not in s:
+  i=s.rfind('</style>')
+  if i<0:raise RuntimeError('catalog style tag missing')
+  s=s[:i]+FAST_CSS+s[i:]
  return s
 
 def admin_fix(s):
  s=re.sub(r'(?<![\w-])(?:-webkit-)?backdrop-filter\s*:\s*blur\([^)]+\)', 'backdrop-filter:none',s)
  s=s.replace('0 25px 100px','0 10px 28px')
- if 'Consolidated lightweight overlays' not in s:s=once(s,'</style>',FAST_CSS+'</style>','fast admin overlay css')
+ if 'Consolidated lightweight overlays' not in s:
+  i=s.rfind('</style>')
+  if i<0:raise RuntimeError('admin style tag missing')
+  s=s[:i]+FAST_CSS+s[i:]
  # Remove eager vendor scripts only after the lazy loaders are installed below.
  s=once(s,'<script src="/vendor/qz-tray.js"></script><script src="/vendor/zxing-browser.min.js"></script>',
   '', 'eager vendor scripts')
