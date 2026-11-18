@@ -19,6 +19,7 @@ on:
       - scripts/aplicar-impressao-local.py
       - scripts/instalador-mb-impressao-configuracoes.py
       - scripts/garantir-codigos-unicos.py
+      - scripts/checkout-pdv-sempre-visivel.py
       - scripts/atualizar-fixtures-ref.py
   workflow_dispatch:
 permissions:
@@ -976,6 +977,14 @@ jobs:
             node --check "stores/$store/worker/api.js"
             grep -q 'reserveUnusedStoreBarcode(env.DB)' "stores/$store/worker/api.js"
             grep -q 'product_barcodes WHERE barcode=? LIMIT 1' "stores/$store/worker/api.js"
+          done
+      - name: Mostrar pagamento, canal e desconto sem abas ocultas no PDV
+        run: |
+          python3 catalogos-atuais/scripts/checkout-pdv-sempre-visivel.py
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/worker/retail-ui.js"
+            grep -q 'mb-pos-essential' "stores/$store/worker/retail-ui.js"
+            grep -q 'Checkout do PDV: formas principais sem painel recolhido' "stores/$store/worker/layout-admin.css"
           done
       - uses: actions/setup-node@v4
         with:
@@ -1981,6 +1990,14 @@ jobs:
             node --check "stores/$store/worker/api.js"
             grep -q 'reserveUnusedStoreBarcode(env.DB)' "stores/$store/worker/api.js"
             grep -q 'product_barcodes WHERE barcode=? LIMIT 1' "stores/$store/worker/api.js"
+          done
+      - name: Mostrar pagamento, canal e desconto sem abas ocultas no PDV
+        run: |
+          python3 catalogos-atuais/scripts/checkout-pdv-sempre-visivel.py
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/worker/retail-ui.js"
+            grep -q 'mb-pos-essential' "stores/$store/worker/retail-ui.js"
+            grep -q 'Checkout do PDV: formas principais sem painel recolhido' "stores/$store/worker/layout-admin.css"
           done
       - name: Verificar sintaxe real do painel antes de publicar
         shell: bash

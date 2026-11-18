@@ -1,4 +1,5 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {ui} from './retail-ui-fixture.mjs';
+import {test} from 'node:test';
+import {readFileSync} from 'node:fs';import assert from 'node:assert/strict';import {ui} from './retail-ui-fixture.mjs';
 function select(document,id,value){const el=document.querySelector(id);Object.defineProperty(el,'value',{value,writable:true,configurable:true});el.onchange?.({target:el});return el}
 test('POS shows cart photos, applies a percentage and submits the selected payment/channel with the seller',async()=>{
  const d=await ui(),{ctx,document,products,sql}=d;try{ctx.renderSellerPOS();await new Promise(setImmediate);ctx.saleCart.set(products[0].barcode,{product:products[0],quantity:2});ctx.drawSaleCart();select(document,'#saleAgent','agent-raquel');select(document,'#salePayment','pix');select(document,'#saleChannel','online');document.querySelector('#saleDiscountPercent').value='10';document.querySelector('#saleDiscountPercent').oninput();assert.equal(document.querySelector('#saleTotal').textContent,'R$ 90.00');assert.match(document.querySelector('#saleItems').textContent,/Disponível: 20/);assert.equal(document.querySelector('#checkoutSale').disabled,false);await ctx.checkoutSale();const batch=sql.prepare('SELECT * FROM sale_batches').get();assert.equal(batch.sale_channel,'online');assert.equal(batch.payment_method,'pix');assert.equal(batch.discount_bps,1000);assert.equal(batch.net_total,9000);assert.equal(sql.prepare('SELECT SUM(amount) n FROM cash_movements').get().n,9000)}finally{sql.close()}
@@ -17,4 +18,34 @@ test('expense form records a Pix cost and shows it in cash totals and movement h
 });
 test('entering all sales defaults to today, preserves selected filters during the visit and resets on reentry',async()=>{
  const d=await ui(),{ctx,document,sql}=d;try{ctx.page='sales';ctx.enterSalesWorkspacePage('sales');await ctx.renderSalesWorkspace();assert.equal(document.querySelector('[name=start]').value,ctx.salesToday());document.querySelector('[data-sales-preset=month]').onclick();await new Promise(setImmediate);assert.equal(document.querySelector('[name=start]').value,ctx.salesToday().slice(0,7)+'-01');ctx.enterSalesWorkspacePage('sales');await ctx.renderSalesWorkspace();assert.equal(document.querySelector('[name=start]').value,ctx.salesToday().slice(0,7)+'-01');ctx.enterSalesWorkspacePage('cash');ctx.enterSalesWorkspacePage('sales');await ctx.renderSalesWorkspace();assert.equal(document.querySelector('[name=start]').value,ctx.salesToday())}finally{sql.close()}
+});
+
+test('checkout always shows channel and discount, with four payment buttons and no extra payment selector',async()=>{
+ const {ctx,document,products,sql}=await ui();
+ try{
+  ctx.renderSellerPOS();await new Promise(setImmediate);
+  assert.equal(document.querySelectorAll('[data-express-payment]').length,4);
+  assert.equal(document.querySelector('.mb-pos-extras'),null);
+  assert.equal(document.querySelectorAll('#salePayment').length,1);
+  assert.equal(document.querySelector('#salePayment').type,'hidden');
+  const channel=document.querySelector('#saleChannel'),discount=document.querySelector('#saleDiscountPercent');
+  assert.ok(channel&&discount,'canal e desconto sempre na tela');
+  assert.equal(channel.closest('details'),null);
+  assert.equal(discount.closest('details'),null);
+  ctx.saleCart.set(products[0].barcode,{product:products[0],quantity:2});
+  document.querySelector('[data-express-payment="debit_card"]').onclick();
+  assert.equal(document.querySelector('[data-express-payment="debit_card"]').getAttribute('aria-pressed'),'true');
+  assert.equal(document.querySelector('#salePayment').value,'debit_card');
+  Object.defineProperty(channel,'value',{value:'online',writable:true,configurable:true});channel.onchange();
+  discount.value='10';discount.oninput();
+  assert.equal(document.querySelector('#saleTotal').textContent,'R$ 90.00');
+  assert.equal(document.querySelector('#saleChannel').value,'online');
+  assert.equal(document.querySelector('#saleDiscountPercent').value,'10');
+ }finally{sql.close()}
+});
+test('POS stylesheet makes the cart scroll naturally and keeps the essentials responsive',()=>{
+ const css=readFileSync('worker/layout-admin.css','utf8');
+ assert.match(css,/\.staff-workspace \.pos-layout \.pos-cart[\s\S]*?position:static/);
+ assert.match(css,/\.staff-workspace \.mb-pos-essential\{display:grid/);
+ assert.match(css,/@media\(max-width:640px\)/);
 });
