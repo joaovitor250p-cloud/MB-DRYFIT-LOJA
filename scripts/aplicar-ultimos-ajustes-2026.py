@@ -109,19 +109,23 @@ for shop in ("mb-dryfit","mb-for-her"):
   text=text[:start]+region+text[end:]
  replacements=[
   ("Recebeu. Conferiu. Feito.","Pedidos em andamento e finalizados"),
+  ("Acompanhe cada pedido.","Pedidos em andamento e finalizados"),
   ("Pedidos recebidos</button>","Em andamento</button>"),
   ("Pedidos feitos</button>","Finalizados</button>"),
-  ("data-order-tab=\"done\"","data-order-tab=\"done\""),
+  ("Processados</button>","Finalizados</button>"),
   ("'FEITO':'RECEBIDO'","'FINALIZADO':'EM ANDAMENTO'"),
+  ("'PROCESSADO':'EM ANDAMENTO'","'FINALIZADO':'EM ANDAMENTO'"),
   ("FEITO ✓","FINALIZAR ✓"),
+  ("Processar pedido ✓","FINALIZAR ✓"),
   ("Concluir pedido · FEITO","Finalizar pedido · pagamento confirmado"),
   ("FEITO · confirmar venda","FINALIZAR · confirmar pagamento"),
   ("Os pedidos feitos ficam salvos no histórico.","Os pedidos finalizados ficam salvos no histórico."),
  ]
  for old,new in replacements:
-  if old!=new:
-   if old not in text:raise SystemExit(shop+" missing staff label "+old)
-   text=text.replace(old,new)
+  text=text.replace(old,new)
+ # Only the visible labels change, not the server's paid/unpaid states.
+ if "Finalizados</button>" not in text or "Em andamento</button>" not in text:
+  raise SystemExit(shop+": buyer-facing order statuses could not be normalized")
  staff.write_text(text,encoding="utf-8")
 
  order=root/"storefront-orders.js"
