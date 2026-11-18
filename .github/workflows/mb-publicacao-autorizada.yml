@@ -2132,7 +2132,7 @@ jobs:
       - name: Conferir colunas e tabelas necessárias ao cadastro de modelos (somente leitura)
         run: |
           for loja in dryfit her; do
-            npx --no-install wrangler d1 execute DB --remote --config "cloudflare-dist/$loja/wrangler.json" --command "SELECT barcode_mode, archived_at FROM products LIMIT 0; SELECT model_name_key,color_key,size FROM normalized_variant_claims LIMIT 0; SELECT id FROM product_barcodes LIMIT 0;"
+            npx --no-install wrangler d1 execute DB --remote --config "cloudflare-dist/$loja/wrangler.json" --command "SELECT barcode_mode, archived_at FROM products LIMIT 0; SELECT model_name_key,color_key,size FROM normalized_variant_claims LIMIT 0; SELECT product_id FROM product_barcodes LIMIT 0;"
           done
       - name: Auditar conflitos de códigos existentes (somente leitura)
         shell: bash
