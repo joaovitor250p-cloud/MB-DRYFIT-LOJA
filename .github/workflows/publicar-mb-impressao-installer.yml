@@ -23,6 +23,8 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - name: Instalar ferramenta Cloudflare R2
+        run: npm install --global wrangler@4.161.0
       - name: Baixar executável original gerado pelo GitHub Actions
         uses: actions/download-artifact@v4
         with:
@@ -49,7 +51,7 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$CLOUDFLARE_API_TOKEN" || { echo "::error::Falta acesso ao R2"; exit 1; }
-          npx --no-install wrangler r2 object put "mb-dryfit-fotos/software/MB-Impressao-Elgin-Windows.zip" --file "install-download/MB-Impressao-Elgin-Windows.zip" --remote
-          npx --no-install wrangler r2 object get "mb-dryfit-fotos/software/MB-Impressao-Elgin-Windows.zip" --file "$RUNNER_TEMP/mb-installer-confirmado.zip" --remote
+          wrangler r2 object put "mb-dryfit-fotos/software/MB-Impressao-Elgin-Windows.zip" --file "install-download/MB-Impressao-Elgin-Windows.zip" --remote
+          wrangler r2 object get "mb-dryfit-fotos/software/MB-Impressao-Elgin-Windows.zip" --file "$RUNNER_TEMP/mb-installer-confirmado.zip" --remote
           cmp "install-download/MB-Impressao-Elgin-Windows.zip" "$RUNNER_TEMP/mb-installer-confirmado.zip"
           echo "Instalador verificado e publicado no R2."
