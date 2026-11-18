@@ -102,7 +102,7 @@ def appearance_fix(s):
  return s.replace(observer,replacement,1)
 
 def catalog_fix(s):
- s=once(s,'updateBrandFilterUI()}',"updateBrandFilterUI();window.mbAfterCatalogRender?.()}",'single post-render curated callback')
+ s=once(s,'updateBrandFilterUI()}',"updateBrandFilterUI();if(typeof window!=='undefined')window.mbAfterCatalogRender?.()}",'single post-render curated callback')
  s=re.sub(r'(?<![\w-])(?:-webkit-)?backdrop-filter\s*:\s*blur\([^)]+\)', 'backdrop-filter:none',s)
  s=s.replace('0 25px 100px','0 10px 28px')
  if 'mbDialogMediaHookInstalled' not in s:s=once(s,'</body>', '<script>'+MEDIA_HOOK+'</script></body>','media pause hook')
@@ -128,7 +128,7 @@ def camera_fix(s):
  marker='async function startCameraDevice(deviceId,forceFallback=false,preserveHeld=false){'
  assert marker in s
  # Dialog opens synchronously in openCameraScanner before this async call.
- s=once(s,marker,marker+"\n await mbLoadVendorOnce('/vendor/zxing-browser.min.js');",'lazy camera')
+ s=once(s,marker,marker+"\n if(typeof ZXingBrowser==='undefined'&&typeof mbLoadVendorOnce==='function')await mbLoadVendorOnce('/vendor/zxing-browser.min.js');",'lazy camera')
  return s
 
 def print_fix(s):
