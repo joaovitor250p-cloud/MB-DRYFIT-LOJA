@@ -31,33 +31,27 @@ style_end = old.rfind("</style>")
 assert style_end > 0, "Missing final stylesheet closing tag"
 old = old[:style_end] + fix_css + "\n" + old[style_end:]
 
-# Mirror the compact size selector and exact color-size stock display into
-# the frozen Worker snapshot; publishing source HTML alone is insufficient.
+# Copy reviewed card and details behavior into the frozen production build.
 for begin, finish in [
-    ("function updateCatalogCard(g,card){", "\\nfunction drawCard(g,card){"),
-    ("function drawCard(g,card){", "\\nfunction openProductDetails(key){"),
-    ("function updateProductDetails(g){", "\\nasync function load(){"),
+    ("function updateCatalogCard(g,card){", "\nfunction drawCard(g,card){"),
+    ("function drawCard(g,card){", "\nfunction openProductDetails(key){"),
+    ("function updateProductDetails(g){", "\nasync function load(){"),
 ]:
-    begin, finish = begin, finish.replace("\\\\n", "\\n")
-    original = block(old, begin, finish)
-    reviewed = block(new, begin, finish)
-    old = old.replace(original, reviewed, 1)
+    old = old.replace(block(old, begin, finish), block(new, begin, finish), 1)
 
 helper_start = "function catalogSelectedStockHTML(g){"
-helper_end = "\\nfunction catalogSizesHTML(g,attribute)"
-helper_end = helper_end.replace("\\\\n", "\\n")
-assert helper_start not in old
-assert new.count(helper_start) == 1
+helper_end = "\nfunction catalogSizesHTML(g,attribute)"
+assert helper_start not in old and new.count(helper_start) == 1
 helper = block(new, helper_start, helper_end)
 assert old.count("function catalogSizesHTML(g,attribute)") == 1
-old = old.replace("function catalogSizesHTML(g,attribute)", helper + "\\nfunction catalogSizesHTML(g,attribute)", 1)
+old = old.replace("function catalogSizesHTML(g,attribute)", helper + "\nfunction catalogSizesHTML(g,attribute)", 1)
 stock_css_marker = "/* MB size and stock picker: always reachable without obscuring product photography. */"
 assert new.count(stock_css_marker) == 1
 stock_css = stock_css_marker + new.split(stock_css_marker, 1)[1].split("</style>", 1)[0]
 assert stock_css_marker not in old
 style_end = old.rfind("</style>")
 assert style_end > 0
-old = old[:style_end] + stock_css + "\\n" + old[style_end:]
+old = old[:style_end] + stock_css + "\n" + old[style_end:]
 
 assert "function drawProductDetails" in old and "id=\"catalog\"" in old
 target.write_text(old, encoding="utf-8")
