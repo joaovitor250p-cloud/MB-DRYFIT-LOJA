@@ -72,14 +72,16 @@ async function mbGuestSellers({refresh=false}={}){
  })().finally(()=>{mbGuestSellerRequest=null});
  return mbGuestSellerRequest;
 }
-async function mbCachedContactSellers(){return mbGuestSellers()}
 """
  s=s[:start]+source+s[end:]
  return s
 
 def contacts_fix(s):
- s=once(s,"const response=await fetch('/api/shop/sellers'),data=await response.json();if(!response.ok||!Array.isArray(data.items))throw Error();",
-  "const data=await mbGuestSellers();", "shared seller cache")
+ s=once(s,"const data=await mbCachedContactSellers();","const data=await mbGuestSellers();","shared seller cache")
+ start=s.index('async function mbCachedContactSellers(){')
+ end=s.index('async function openContactChooser(',start)
+ s=s[:start]+"""async function mbCachedContactSellers(){return mbGuestSellers()}
+"""+s[end:]
  needle="function initStoreContacts(){"
  prefetch="""function mbPrefetchContacts(){
  const job=()=>{if(typeof mbGuestSellers==='function')mbGuestSellers().catch(()=>{})};
