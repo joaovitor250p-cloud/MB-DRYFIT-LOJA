@@ -217,6 +217,43 @@ html[data-hero-paused=true] .hero-backdrop{animation-play-state:paused}
  .collection-section .catalog-product-card .quick-heading{font-size:11px}
  .collection-section .catalog-product-card .quick-cart-row .shop-add-button{flex-basis:100%}
 }
+
+/* Color thumbnails sit immediately beneath the main product photo and before sizes. */
+.collection-section .catalog-product-card .catalog-product-media .catalog-color-strip{
+ display:flex;align-items:center;flex-wrap:wrap;gap:8px;
+ margin:0;min-height:0;padding:11px 14px 7px;
+ background:var(--shop-panel,#fff);
+}
+.collection-section .catalog-product-card .catalog-product-media .catalog-color-strip .color-thumbnail{
+ box-sizing:border-box;width:38px;height:38px;min-width:38px;min-height:38px;
+ flex:0 0 38px;border-radius:50%;border:2px solid transparent;
+ padding:2px;background:#f3f3f1;overflow:hidden;
+ display:grid;place-items:center;box-shadow:none;cursor:pointer;
+}
+.collection-section .catalog-product-card .catalog-product-media .catalog-color-strip .color-thumbnail img{
+ display:block;width:100%;height:100%;border-radius:50%;object-fit:cover;
+}
+.collection-section .catalog-product-card .catalog-product-media .catalog-color-strip .color-thumbnail.selected{
+ border-color:#ff7429;box-shadow:0 0 0 1px var(--shop-panel,#fff) inset;
+}
+.collection-section .catalog-product-card .catalog-product-media .catalog-color-strip .color-thumbnail:hover{
+ transform:none;border-color:#ff7429;
+}
+.collection-section .catalog-product-card .catalog-product-media .catalog-current-color{
+ display:block;margin-left:4px;font-size:11px;text-align:left;max-width:none;
+ color:var(--shop-muted,#777);
+}
+@media(max-width:650px){
+ .collection-section .catalog-product-card .catalog-product-media .catalog-color-strip{
+  gap:6px;padding:9px 8px 5px;
+ }
+ .collection-section .catalog-product-card .catalog-product-media .catalog-color-strip .color-thumbnail{
+  width:32px;height:32px;min-width:32px;min-height:32px;flex-basis:32px;
+ }
+ .collection-section .catalog-product-card .catalog-product-media .catalog-current-color{
+  font-size:10px;
+ }
+}
 </style></head><body><div class="announcement"><span>MB DRYFIT / VISTA O MOVIMENTO</span><a href="#colecao">CONHEÇA A COLEÇÃO <span>↗</span></a></div>
 <header class="campaign-header" id="siteHeader"><a class="logo" href="/catalogo" aria-label="MB Dryfit início">MB <b>DRYFIT</b><small>SPORT & LIFESTYLE</small></a><nav class="main-nav" aria-label="Navegação principal"><a href="#colecao">Coleção</a><a href="#marcas">Marcas</a><a href="#sobre">Sobre a MB</a></nav><div class="shop-header-tools"><button class="shop-tool theme-tool" data-shop-theme aria-label="Alternar tema">☾</button><button class="shop-tool" data-open-favorites aria-label="Ver favoritos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg></button><button class="shop-tool notification-tool" data-open-notifications aria-label="Ver notificações"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM9 21h6"/></svg><b data-notification-count hidden>0</b></button><button type="button" class="shop-cart-open" data-open-cart><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14l1 14H4L5 7Zm3 0V5a4 4 0 0 1 8 0v2"/></svg><span>Carrinho</span><b data-cart-count>0</b></button></div></header>
 <section class="mb-hero" aria-label="Coleção MB Dryfit">
@@ -290,7 +327,7 @@ function updateCatalogCard(g,card){const p=selectedCatalogVariant(g),draft=selec
 function drawCard(g,card){
  productCardRegistry.set(g.key,card);const p=selectedCatalogVariant(g),colors=[...new Set(g.variants.map(v=>v.color))],image=chosen.has(g.key)?p.photo||p.main_photo:p.main_photo||p.photo,favorite=catalogFavorites.has(g.key);
  card.classList.add('luxury-card','catalog-product-card');
- card.innerHTML='<div class="catalog-product-media"><button type="button" class="luxury-image" aria-haspopup="dialog" aria-label="Ver detalhes de '+esc(p.name)+'">'+(image?'<img src="'+esc(image)+'" alt="'+esc(p.name+' · '+p.color)+'" loading="lazy" decoding="async">':'<span class="luxury-placeholder">MB<br><small>DRYFIT</small></span>')+'</button><button type="button" class="catalog-favorite '+(favorite?'is-favorite':'')+'" data-favorite aria-pressed="'+favorite+'" aria-label="'+(favorite?'Remover dos favoritos: ':'Adicionar aos favoritos: ')+esc(p.name)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg></button><section class="catalog-quick-picker" aria-label="Escolher tamanho e quantidade de '+esc(p.name)+'"><div class="quick-heading"><b>Escolha o tamanho</b><span class="quick-selected-color">'+esc(p.color)+'</span></div><div class="quick-sizes luxury-size-options">'+catalogSizesHTML(g,'data-luxury-size')+'</div><p class="catalog-choice-stock" role="status" aria-live="polite">'+catalogSelectedStockHTML(g)+'</p><div class="quick-cart-row">'+quantityPickerHTML(g,'card')+'<button type="button" class="shop-add-button" data-add-selection>Escolha o tamanho</button></div></section></div><div class="catalog-product-copy"><div class="catalog-color-strip" aria-label="Cores disponíveis">'+colorOptions(g,p)+'<span class="catalog-current-color">'+esc(p.color)+'</span></div><h3><button type="button" class="catalog-product-name" aria-haspopup="dialog">'+esc(p.name)+'</button></h3><p class="catalog-product-meta">'+esc(p.category)+(colors.length>1?' · '+colors.length+' cores':' · '+esc(p.color))+'</p><p class="catalog-product-price">'+money(p.price)+'</p><button type="button" class="catalog-size-trigger" aria-expanded="false">Escolher tamanho e quantidade <span>+</span></button></div>';
+ card.innerHTML='<div class="catalog-product-media"><button type="button" class="luxury-image" aria-haspopup="dialog" aria-label="Ver detalhes de '+esc(p.name)+'">'+(image?'<img src="'+esc(image)+'" alt="'+esc(p.name+' · '+p.color)+'" loading="lazy" decoding="async">':'<span class="luxury-placeholder">MB<br><small>DRYFIT</small></span>')+'</button><button type="button" class="catalog-favorite '+(favorite?'is-favorite':'')+'" data-favorite aria-pressed="'+favorite+'" aria-label="'+(favorite?'Remover dos favoritos: ':'Adicionar aos favoritos: ')+esc(p.name)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg></button><div class="catalog-color-strip" aria-label="Cores disponíveis">'+colorOptions(g,p)+'<span class="catalog-current-color">'+esc(p.color)+'</span></div><section class="catalog-quick-picker" aria-label="Escolher tamanho e quantidade de '+esc(p.name)+'"><div class="quick-heading"><b>Escolha o tamanho</b><span class="quick-selected-color">'+esc(p.color)+'</span></div><div class="quick-sizes luxury-size-options">'+catalogSizesHTML(g,'data-luxury-size')+'</div><p class="catalog-choice-stock" role="status" aria-live="polite">'+catalogSelectedStockHTML(g)+'</p><div class="quick-cart-row">'+quantityPickerHTML(g,'card')+'<button type="button" class="shop-add-button" data-add-selection>Escolha o tamanho</button></div></section></div><div class="catalog-product-copy"><h3><button type="button" class="catalog-product-name" aria-haspopup="dialog">'+esc(p.name)+'</button></h3><p class="catalog-product-meta">'+esc(p.category)+(colors.length>1?' · '+colors.length+' cores':' · '+esc(p.color))+'</p><p class="catalog-product-price">'+money(p.price)+'</p><button type="button" class="catalog-size-trigger" aria-expanded="false">Escolher tamanho e quantidade <span>+</span></button></div>';
  for(const button of card.querySelectorAll('.luxury-image,.catalog-product-name'))button.onclick=()=>openProductDetails(g.key);
  card.querySelector('[data-favorite]').onclick=()=>toggleCatalogFavorite(g,card);card.querySelector('.catalog-size-trigger').onclick=()=>{const open=card.classList.toggle('picker-open');card.querySelector('.catalog-size-trigger').setAttribute('aria-expanded',String(open))};
  bindColorPreviews(card,g);updateCatalogCard(g,card);
