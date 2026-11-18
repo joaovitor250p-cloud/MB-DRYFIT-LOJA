@@ -30,6 +30,8 @@ on:
       - scripts/mb-customer-checkout-ui.js
       - scripts/mb-staff-commerce-ui.js
       - scripts/mb-promotion-catalog-ui.js
+      - scripts/mb-promo-checkout-trigger.sql
+      - scripts/mb-promo-checkout-guard.mjs
       - scripts/ativar-commerce-2026.py
       - scripts/ajustar-cliente-2026.py
       - scripts/instalar-interfaces-commerce-2026.py
@@ -2212,7 +2214,9 @@ jobs:
             echo "Verificando códigos principais x alternativos em $loja (nenhuma alteração será feita)"
             npx --no-install wrangler d1 execute DB --remote --config "cloudflare-dist/$loja/wrangler.json" --command "SELECT COUNT(*) AS conflitos_entre_pecas FROM products p JOIN product_barcodes b ON b.barcode=p.barcode AND b.product_id!=p.id;"
           done
-      - name: Publicar Worker MB Dryfit sem migrar dados
+      - name: Validar e atualizar segurança do checkout promocional nas duas lojas
+        run: node catalogos-atuais/scripts/mb-promo-checkout-guard.mjs
+      - name: Publicar Worker MB Dryfit preservando dados
         run: npx --no-install wrangler deploy --config cloudflare-dist/dryfit/wrangler.json --keep-vars
       - name: Publicar Worker MB For Her sem migrar dados
         run: npx --no-install wrangler deploy --config cloudflare-dist/her/wrangler.json --keep-vars
