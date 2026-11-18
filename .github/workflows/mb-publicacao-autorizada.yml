@@ -928,6 +928,13 @@ jobs:
         run: python3 catalogos-atuais/scripts/ajustes-pedido-whatsapp-impressao.py
       - name: Corrigir filtros do catálogo e painel do dono
         run: python3 catalogos-atuais/scripts/corrigir-opcoes-filtros.py
+      - name: Preparar lista de conferência do lote de etiquetas
+        run: |
+          python3 catalogos-atuais/scripts/aplicar-revisao-lote-etiquetas.py
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/worker/native-print.js"
+            grep -q 'function reviewLabelBatch()' "stores/$store/worker/native-print.js"
+          done
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -1871,6 +1878,13 @@ jobs:
         run: python3 catalogos-atuais/scripts/ajustes-pedido-whatsapp-impressao.py
       - name: Corrigir filtros do catálogo e painel do dono
         run: python3 catalogos-atuais/scripts/corrigir-opcoes-filtros.py
+      - name: Preparar lista de conferência do lote de etiquetas
+        run: |
+          python3 catalogos-atuais/scripts/aplicar-revisao-lote-etiquetas.py
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/worker/native-print.js"
+            grep -q 'function reviewLabelBatch()' "stores/$store/worker/native-print.js"
+          done
       - name: Verificar sintaxe real do painel antes de publicar
         shell: bash
         run: |
