@@ -2,7 +2,7 @@
 from pathlib import Path
 import re
 ROOT=Path("stores")
-SRC=Path("catalogos-atuais/scripts")
+SRC=Path("catalogos-atuais/scripts") if Path("catalogos-atuais/scripts").exists() else Path("scripts")
 
 def replace_one(text,before,after,label):
  assert text.count(before)==1,(label,text.count(before),before[:105])
