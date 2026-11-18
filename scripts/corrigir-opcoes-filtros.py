@@ -70,7 +70,7 @@ async function renderOwnerFilters(){
       const remove=document.createElement('button');remove.type='button';remove.className='secondary';remove.textContent='Remover nome extra';
       remove.onclick=()=>{
        working[group.added]=extras.filter(v=>v.toLocaleLowerCase('pt-BR')!==name.toLocaleLowerCase('pt-BR')).join('\n');
-       if(group.items.some(v=>v.toLocaleLowerCase('pt-BR')===name.toLocaleLowerCase('pt-BR'))working[group.hidden]=mbOwnerFilterLines([working[group.hidden],name].join('\n')).join('\n');
+       if(group.items.some(v=>v.toLocaleLowerCase('pt-BR')===name.toLocaleLowerCase('pt-BR')))working[group.hidden]=mbOwnerFilterLines([working[group.hidden],name].join('\n')).join('\n');
        setChanged();renderRows()
       };row.append(remove)
      }
