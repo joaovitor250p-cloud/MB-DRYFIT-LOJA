@@ -54,14 +54,16 @@ for store in ("mb-dryfit","mb-for-her"):
  source=(SRC/"mb-promotion-catalog-ui.js").read_text(encoding="utf-8")
  s=replace_one(s,"const productCardRegistry=new Map();",
      "const productCardRegistry=new Map();\n"+source+"""
-// Wrap, rather than rewriting, the existing catalog renderer. Release patches
-// can rearrange its internals without losing the promotions showcase.
-const mbRenderOriginalCollection=render;
-render=function(...args){
- const result=mbRenderOriginalCollection.apply(this,args);
- if(typeof mbRenderPromotionCollection==='function')mbRenderPromotionCollection();
- return result;
-};
+// Wrap only when the full renderer exists (isolated product-card tests do
+// not load render and must still be able to exercise selection and cart).
+if(typeof render==='function'){
+ const mbRenderOriginalCollection=render;
+ render=function(...args){
+  const result=mbRenderOriginalCollection.apply(this,args);
+  if(typeof mbRenderPromotionCollection==='function')mbRenderPromotionCollection();
+  return result;
+ };
+}
 """,store+" inject promotions")
  # Prices change when the buyer chooses another color or size.
  old="card.querySelector('.catalog-product-price').textContent=money(p.price);"
