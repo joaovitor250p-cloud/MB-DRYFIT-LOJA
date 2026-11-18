@@ -14,11 +14,18 @@ for store in ('mb-dryfit','mb-for-her'):
  chunk=s[a:]
  chunk=swap(chunk,'<p class="account-privacy">O pedido será salvo',
      '<div id="mbDeliveryExtras"></div><p class="account-privacy">O pedido será salvo',store+' address anchor')
- chunk=swap(chunk,"dialog.showModal();fetch('/api/shop/sellers')",
-     "dialog.showModal();setupMBCheckoutExtra(form);fetch('/api/shop/sellers')",store+' checkout init')
- before="dialog.close();await confirmShopOrder({customer_name:name,customer_whatsapp:phone,agent_id:agent.value,delivery_mode:delivery.value})"
- after="let shipping_address=null;try{shipping_address=mbShippingAddressFrom(form)}catch(error){$('#guestContactError').textContent=error.message;return}dialog.close();await confirmShopOrder({customer_name:name,customer_whatsapp:phone,agent_id:agent.value,delivery_mode:delivery.value,shipping_address})"
+ chunk=swap(chunk,"const phoneInput=form.querySelector('[name=customer_whatsapp]');",
+     "setupMBCheckoutExtra(form);const phoneInput=form.querySelector('[name=customer_whatsapp]');",store+' checkout init')
+ before="dialog.close();await confirmShopOrder({customer_name:name,customer_whatsapp:mbPhoneDigits(phone),agent_id:agent.value,delivery_mode:delivery.value})"
+ after="let shipping_address=null;try{shipping_address=mbShippingAddressFrom(form)}catch(error){$('#guestContactError').textContent=error.message;return}dialog.close();await confirmShopOrder({customer_name:name,customer_whatsapp:mbPhoneDigits(phone),agent_id:agent.value,delivery_mode:delivery.value,shipping_address})"
  chunk=swap(chunk,before,after,store+' submit shipping')
+ # Pickup must permit an explicit seller choice, not hide the seller cards.
+ chunk=swap(chunk,"if(deliveryPanel)deliveryPanel.hidden=selected?.value==='pickup';",
+     "if(deliveryPanel)deliveryPanel.hidden=false;",store+' show seller on pickup')
+ chunk=swap(chunk,"if(selected?.value==='pickup'&&!form.querySelector('[name=agent_id]:checked'))\n   form.querySelector('[name=agent_id]')?.click();",
+     "/* Seller selection remains manual for pickup too. */",store+' do not auto-select')
+ chunk=swap(chunk,"if(pickup?.value==='pickup'){\n  const first=form.querySelector('[name=agent_id]');\n  if(first&&!form.querySelector('[name=agent_id]:checked'))first.checked=true;\n  if(deliveryPanel)deliveryPanel.hidden=true;\n }",
+     "if(deliveryPanel)deliveryPanel.hidden=false;",store+' pickup sellers always visible')
  checkout.write_text(s[:a]+chunk,encoding='utf-8')
 
  orders=root/'storefront-orders.js'
