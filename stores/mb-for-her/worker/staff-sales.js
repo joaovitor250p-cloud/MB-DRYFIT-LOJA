@@ -55,7 +55,7 @@ async function renderVendorAccess(){if(!owner())return;$('#view').innerHTML='<di
 const mbOriginalRenderVendorAccess=renderVendorAccess;
 renderVendorAccess=async function(...args){
  await mbOriginalRenderVendorAccess(...args);
- if(!owner()||page!=='settings')return;
+ if(typeof page==='undefined'||!owner()||page!=='settings')return;
  const view=$('#view');
  if(!view||view.querySelector('#mbPrinterSettings'))return;
  const section=document.createElement('section');
