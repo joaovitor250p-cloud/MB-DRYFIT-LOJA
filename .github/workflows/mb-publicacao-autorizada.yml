@@ -16,6 +16,7 @@ on:
       - scripts/ajustes-ref-estoque-tamanhos.py
       - scripts/ajustes-pedido-whatsapp-impressao.py
       - scripts/corrigir-opcoes-filtros.py
+      - scripts/aplicar-impressao-local.py
       - scripts/atualizar-fixtures-ref.py
   workflow_dispatch:
 permissions:
