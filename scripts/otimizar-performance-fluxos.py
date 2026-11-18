@@ -115,6 +115,10 @@ body.shopping-page .hero-motion-video,body.shopping-page .mb-visual-video{animat
     return s
 
 update(root/"storefront-cart.js", cart_changes)
+# Match lightweight cart behavior in the separate MB For Her storefront too.
+her_root = Path("stores/mb-for-her/worker")
+update(her_root/"storefront-cart.js", cart_changes)
+update(her_root/"storefront.html", storefront_changes)
 update(root/"page.html", admin_page_changes)
 update(root/"staff-workspace.js", order_changes)
 update(root/"storefront.html", storefront_changes)
@@ -126,4 +130,5 @@ assert "markShopCartQuotePending();try{" in cart
 assert "backdrop-filter:none!important" in page
 assert "variantCellIndex.get(JSON.stringify([color,size]))" in page
 assert "loading='lazy';img.decoding='async'" in staff
-print("MB Dryfit release optimized: cart updates, order photos, label lookup and overlay painting.")
+assert "markShopCartQuotePending();try{" in (her_root/"storefront-cart.js").read_text(encoding="utf-8")
+print("MB Dryfit and MB For Her carts optimized; Dryfit order photos, label lookup and overlays preserved.")
