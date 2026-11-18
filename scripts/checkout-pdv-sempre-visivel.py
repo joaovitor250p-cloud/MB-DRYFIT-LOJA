@@ -34,6 +34,9 @@ for store in ('mb-dryfit','mb-for-her'):
     tests=latest_test[latest_test.index(case_marker):]
     if "import {readFileSync} from 'node:fs';" not in existing_test:
         existing_test="import {readFileSync} from 'node:fs';\n"+existing_test
+    # O teste do snapshot antigo esperava a aba que o usuário pediu para remover.
+    existing_test=existing_test.replace("assert.ok(document.querySelector('.mb-pos-extras'));", "assert.equal(document.querySelector('.mb-pos-extras'),null);\n  assert.ok(document.querySelector('.mb-pos-essential'));")
+    existing_test=existing_test.replace("assert.equal(document.querySelector('.mb-pos-extras').hasAttribute('open'),false);","assert.equal(document.querySelector('.mb-pos-extras'),null);")
     test_path.write_text(existing_test+'\n'+tests,encoding='utf-8')
     assert 'function bindSaleCheckoutFields(){' in old,store
     assert 'function syncExpressPayments(){' in old,store
