@@ -44,15 +44,17 @@ export async function handleOrderAdjustments(req,env,member){
   // Do not allow item-price changes silently after a finalized sale.
   // Payment is computed again at checkout from these persisted unit snapshots.
   const now=new Date().toISOString(),eventId=crypto.randomUUID();
+  // The event is a transaction guard: if the optimistic UPDATE changes no row,
+  // neither a DELETE nor an INSERT may modify the order lines.
   const entries=[
    env.DB.prepare("UPDATE shop_orders SET subtotal=?,discount=?,total=?,coupon_percent=? WHERE id=? AND total=? AND status NOT IN ('cancelled','completed','paid') AND NOT EXISTS(SELECT 1 FROM shop_order_sales WHERE order_id=?)").bind(quote.subtotal,quote.discount,quote.total,quote.coupon?.percent||0,id,data.expected_total,id),
-   env.DB.prepare("DELETE FROM shop_order_items WHERE order_id=? AND EXISTS(SELECT 1 FROM shop_orders WHERE id=? AND total=?)").bind(id,id,quote.total)
+   env.DB.prepare("INSERT INTO order_status_events(id,order_id,from_status,to_status,operator_id,created_at) SELECT ?,?,?,?,?,? WHERE changes()=1").bind(eventId,id,'itens: '+old.total,'itens ajustados: '+quote.total+' | '+String(data.reason||'Ajuste solicitado pelo cliente').slice(0,180),member.id,now),
+   env.DB.prepare("DELETE FROM shop_order_items WHERE order_id=? AND EXISTS(SELECT 1 FROM order_status_events WHERE id=?)").bind(id,eventId)
   ];
   for(const line of quote.items){
    const barcode=(await env.DB.prepare('SELECT barcode FROM products WHERE id=?').bind(line.id).first())?.barcode||'';
-   entries.push(env.DB.prepare("INSERT INTO shop_order_items(id,order_id,product_id,name,color,size,quantity,price,photo,barcode) SELECT ?,?,?,?,?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM shop_orders WHERE id=? AND total=?)").bind(crypto.randomUUID(),id,line.id,line.name,line.color,line.size,line.quantity,line.price,line.photo,barcode,id,quote.total));
+   entries.push(env.DB.prepare("INSERT INTO shop_order_items(id,order_id,product_id,name,color,size,quantity,price,photo,barcode) SELECT ?,?,?,?,?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM order_status_events WHERE id=?)").bind(crypto.randomUUID(),id,line.id,line.name,line.color,line.size,line.quantity,line.price,line.photo,barcode,eventId));
   }
-  entries.push(env.DB.prepare("INSERT INTO order_status_events(id,order_id,from_status,to_status,operator_id,created_at) SELECT ?,?,?,?,?,? WHERE changes()=1").bind(eventId,id,'itens: '+old.total,'itens ajustados: '+quote.total+' | '+String(data.reason||'Ajuste solicitado pelo cliente').slice(0,180),member.id,now));
   try{
    const results=await env.DB.batch(entries);
    if(!results[0].meta.changes)return reply({error:'Pedido atualizado em outro aparelho. Atualize antes de editar.'},409);
