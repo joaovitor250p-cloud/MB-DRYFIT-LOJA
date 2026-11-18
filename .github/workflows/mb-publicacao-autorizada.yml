@@ -23,6 +23,7 @@ on:
       - scripts/corrigir-salvar-modelos.py
       - scripts/atualizar-fixtures-ref.py
       - scripts/aplicar-correcao-fotos-catalogo.py
+      - scripts/otimizar-performance-fluxos.py
   workflow_dispatch:
 permissions:
   contents: read
@@ -2075,11 +2076,23 @@ jobs:
           PY
       - name: Aplicar correção aprovada do catálogo MB Dryfit à versão de publicação
         run: python3 catalogos-atuais/scripts/aplicar-correcao-fotos-catalogo.py
+      - name: Otimizar carrinho, pedidos, etiquetas e sobreposições MB Dryfit
+        run: |
+          python3 -m py_compile catalogos-atuais/scripts/otimizar-performance-fluxos.py
+          python3 catalogos-atuais/scripts/otimizar-performance-fluxos.py
+          node --check stores/mb-dryfit/worker/storefront-cart.js
+          node --check stores/mb-dryfit/worker/staff-workspace.js
+          node --check stores/mb-dryfit/worker/native-print.js
+          grep -q 'markShopCartQuotePending();try{' stores/mb-dryfit/worker/storefront-cart.js
+          grep -q 'variantCellIndex.get(JSON.stringify' stores/mb-dryfit/worker/page.html
+
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - name: Revalidar a suíte completa após otimização da versão final
+        run: npm run check
       - run: npm run build
       - name: Preparar Workers sem migrações novas
         run: node scripts/cloudflare-prepare.mjs cloudflare.domains.config.json
