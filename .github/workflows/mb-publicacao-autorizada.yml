@@ -33,6 +33,7 @@ on:
       - scripts/latency-overlays-2026.py
       - scripts/mb-externalize-worker.mjs
       - scripts/mb-prepare-assets-patch.mjs
+      - scripts/mb-verify-release-assets.mjs
       - scripts/mb-promo-checkout-trigger.sql
       - scripts/mb-promo-checkout-guard.mjs
       - scripts/test-promo-checkout-trigger.py
@@ -53,6 +54,7 @@ on:
       - scripts/latency-overlays-2026.py
       - scripts/mb-externalize-worker.mjs
       - scripts/mb-prepare-assets-patch.mjs
+      - scripts/mb-verify-release-assets.mjs
   workflow_dispatch:
 permissions:
   contents: read
@@ -1045,6 +1047,8 @@ jobs:
         env:
           MB_RELEASE_CODE_ONLY: '1'
         run: node scripts/cloudflare-prepare.mjs cloudflare.domains.config.json
+      - name: Verificar tamanho, cache, Nex privado e renderizadores das duas lojas
+        run: node catalogos-atuais/scripts/mb-verify-release-assets.mjs
       - name: Garantir campo de pareamento no Worker final antes do deploy
         shell: bash
         run: |
@@ -2180,6 +2184,8 @@ jobs:
           node catalogos-atuais/scripts/mb-prepare-assets-patch.mjs
       - name: Preparar Workers sem migrações novas
         run: node scripts/cloudflare-prepare.mjs cloudflare.domains.config.json
+      - name: Verificar tamanho, cache, Nex privado e renderizadores das duas lojas
+        run: node catalogos-atuais/scripts/mb-verify-release-assets.mjs
       - name: Garantir campo de pareamento no Worker final antes do deploy
         shell: bash
         run: |
