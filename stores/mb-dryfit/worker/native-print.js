@@ -182,7 +182,7 @@ function reviewLabelBatch(){
  const error=document.createElement('p');error.style.cssText='color:#b43e27;min-height:20px';error.setAttribute('role','status');error.setAttribute('aria-live','polite');
  const progressPanel=document.createElement('div');progressPanel.hidden=true;progressPanel.style.cssText='padding:12px 14px;background:#f5f6f9;border:1px solid #e0e5ed;border-radius:12px;margin:12px 0;';
  const progressHeading=document.createElement('div');progressHeading.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:9px;font-weight:650;';
- const spinner=document.createElement('span');spinner.textContent='◌';spinner.style.cssText='display:inline-block;font-size:24px;line-height:1;animation:mbPrinterSpin .9s linear infinite;color:#fa6f18;';
+ const spinner=document.createElement('span');spinner.style.cssText='display:inline-block;flex:0 0 18px;width:18px;height:18px;border:2px solid #f4c7a8;border-top-color:#fa6f18;border-radius:50%;animation:mbPrinterSpin .9s linear infinite;';
  const spinnerStyle=document.createElement('style');spinnerStyle.textContent='@keyframes mbPrinterSpin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){#mbBatchPrintReview span{animation:none!important}}';
  const progressText=document.createElement('span');progressText.textContent='Preparando impressão...';
  progressHeading.append(spinner,progressText);
@@ -201,7 +201,7 @@ function reviewLabelBatch(){
   confirm.disabled=!ready||total<1||total>500;
   confirm.textContent='Imprimir '+total+' etiqueta(s)';
  };
- dialog.oncancel=event=>{if(printerBusy)event.preventDefault()};
+ dialog.oncancel=event=>{if(printerBusy||dialog.getAttribute('aria-busy')==='true')event.preventDefault()};
  actions.append(cancel,confirm);
  dialog.append(spinnerStyle,heading,help,tableWrap,loadingRows,summary,error,progressPanel,actions);
  recalc();
