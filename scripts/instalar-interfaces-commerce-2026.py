@@ -55,7 +55,7 @@ for store in ("mb-dryfit","mb-for-her"):
  s=replace_one(s,"const productCardRegistry=new Map();","const productCardRegistry=new Map();\n"+source,store+" inject promotions")
  s=replace_one(s,
  "const more=$('#loadMoreCatalog');if(more)more.onclick=()=>{render.limit=(render.limit||60)+60;render()};updateBrandFilterUI()}",
- "const more=$('#loadMoreCatalog');if(more)more.onclick=()=>{render.limit=(render.limit||60)+60;render()};updateBrandFilterUI();mbRenderPromotionCollection()}",
+ "const more=$('#loadMoreCatalog');if(more)more.onclick=()=>{render.limit=(render.limit||60)+60;render()};updateBrandFilterUI();if(typeof mbRenderPromotionCollection==='function')mbRenderPromotionCollection()}",
  store+" promotions rerender")
  # Prices change when the buyer chooses another color or size.
  old="card.querySelector('.catalog-product-price').textContent=money(p.price);"
@@ -84,7 +84,7 @@ for store in ("mb-dryfit","mb-for-her"):
  recover_end=section.index("};",recover_start)+2
  section=section[:recover_start]+section[recover_end:]
  section=replace_one(section,"d.showModal()",
-   "setupMBStaffOrderActions(d,o,agents);d.showModal()",
+   "if(typeof setupMBStaffOrderActions==='function')setupMBStaffOrderActions(d,o,agents);d.showModal()",
    store+" staff adjustment controls")
  s=s[:start]+section+s[end:]
  staff.write_text(s,encoding="utf-8")
