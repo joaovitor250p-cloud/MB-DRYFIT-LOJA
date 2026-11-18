@@ -1,4 +1,4 @@
-let printerBusy=false;
+let printerBusy=false,mbPrinterManualSetup=false;
 function printerStatus(message,error=false){for(const id of ['#printerStatus','#mbPrinterConnectedStatus']){const el=$(id);if(el){el.textContent=message;el.style.color=error?'#b43e27':'#578044'}}}
 async function mbBridgeRequest(path,method='GET',data){
  const token=localStorage.getItem('mb-local-printer-token')||'';
@@ -17,6 +17,7 @@ async function mbBridgeRequest(path,method='GET',data){
  }finally{clearTimeout(timeout)}
 }
 function mbShowPrinterConnected(name){
+ if(mbPrinterManualSetup)return;
  const panel=document.getElementById('mbPrinterSetupPanel'),compact=document.getElementById('mbPrinterConnectedPanel');
  if(!panel||!compact)return;
  panel.hidden=true;panel.style.display='none';
@@ -24,6 +25,7 @@ function mbShowPrinterConnected(name){
  const nameEl=compact.querySelector('[data-mb-printer-name]');if(nameEl)nameEl.textContent=name;
 }
 function mbShowPrinterSetup(){
+ mbPrinterManualSetup=true;
  const panel=document.getElementById('mbPrinterSetupPanel'),compact=document.getElementById('mbPrinterConnectedPanel');
  if(panel){panel.hidden=false;panel.style.display=''}
  if(compact){compact.hidden=true;compact.style.display='none'}
@@ -186,6 +188,7 @@ function mountDirectPrinter(){
   if(!/^[a-f0-9]{64}$/.test(token)){printerStatus('Cole o código de 64 caracteres do programa MB Impressão.',true);b.disabled=false;return}
   localStorage.setItem('mb-local-printer-token',token);
   printerStatus('Conectando ao programa no Windows…');
+  mbPrinterManualSetup=false;
   try{await connectLabelPrinter()}catch(e){printerStatus(e.message,true)}finally{b.disabled=false}
  };
  $('#mbSavePrinter').onclick=connect;
