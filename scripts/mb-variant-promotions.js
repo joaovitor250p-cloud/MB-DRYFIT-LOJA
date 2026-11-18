@@ -14,7 +14,7 @@ export function activePromotion(variants,product,now=Date.now()){
  if(!promotion||promotion.enabled!==true||!Number.isSafeInteger(promotion.price)||promotion.price<1||promotion.price>=product.price)return null;
  const start=promotion.starts_at?Date.parse(promotion.starts_at):0;
  const end=promotion.ends_at?Date.parse(promotion.ends_at):Number.POSITIVE_INFINITY;
- if(!Number.isFinite(start)||!Number.isFinite(end)||now<start||now>=end)return null;
+ if(!Number.isFinite(start)||(promotion.ends_at&&!Number.isFinite(end))||now<start||now>=end)return null;
  return {price:promotion.price,original_price:product.price};
 }
 export async function publicPromotionMap(env){return (await promotionState(env)).variants}
