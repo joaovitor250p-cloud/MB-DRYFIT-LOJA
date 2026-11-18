@@ -89,3 +89,47 @@ test('batch failure reports partial submission and never silently retries all la
  assert.match($('#printerStatus').textContent,/16 de 21/);
  assert.match($('#printerStatus').textContent,/não duplicar/);
 });
+
+
+test('the review modal opens immediately and renders long lists over animation frames',()=>{
+ const {document}=parseHTML('<html><body></body></html>');
+ const create=document.createElement.bind(document);
+ document.createElement=tag=>{const node=create(tag);if(tag==='dialog'){node.showModal=()=>node.setAttribute('open','');node.close=()=>node.removeAttribute('open')}return node};
+ const frames=[];
+ const products=Array.from({length:51},(_,i)=>({id:'p'+i,name:'CAMISA '+i,color:'PRETO',size:'M',extra_code:'1331',barcode:'12345678'}));
+ const ctx={document,console,requestAnimationFrame:fn=>frames.push(fn),selected:new Map(products.map(p=>[p.id,1])),products,printerStatus(){},toast(){},$:(s)=>document.querySelector(s),labelConfig:{columns:2}};
+ vm.createContext(ctx);vm.runInContext(source,ctx);
+ ctx.reviewLabelBatch();
+ const dialog=document.getElementById('mbBatchPrintReview');
+ assert.equal(dialog.hasAttribute('open'),true);
+ assert.equal(dialog.querySelectorAll('tbody tr').length,0,'must open a lightweight shell before any rows');
+ assert.equal(dialog.querySelectorAll('button').item(1).disabled,true);
+ frames.shift()();assert.equal(dialog.querySelectorAll('tbody tr').length,24);
+ frames.shift()();assert.equal(dialog.querySelectorAll('tbody tr').length,48);
+ frames.shift()();assert.equal(dialog.querySelectorAll('tbody tr').length,51);
+ assert.equal(dialog.querySelectorAll('button').item(1).disabled,false);
+});
+
+test('confirming a batch displays sending progress before waiting for the printer',async()=>{
+ const {document}=parseHTML('<html><body></body></html>');
+ const create=document.createElement.bind(document);
+ document.createElement=tag=>{const node=create(tag);if(tag==='dialog'){node.showModal=()=>node.setAttribute('open','');node.close=()=>node.removeAttribute('open')}return node};
+ const tasks=[],ctx={document,console,selected:new Map([['p',2]]),products:[{id:'p',name:'Bermuda',color:'PRETO',size:'M',extra_code:'10246',barcode:'12345678'}],labelConfig:{columns:2},checkPrintJob:x=>x,$:s=>document.querySelector(s),toast(){},printerStatus(){},setTimeout:fn=>tasks.push(fn)};
+ vm.createContext(ctx);vm.runInContext(source,ctx);
+ let finish;
+ ctx.printDirect=async(_test,job,onProgress)=>{onProgress('Preparando...', {queued:0,expected:job.items.length});return await new Promise(resolve=>{finish=resolve})};
+ ctx.reviewLabelBatch();
+ const dialog=document.getElementById('mbBatchPrintReview');
+ const confirm=dialog.querySelectorAll('button').item(1);
+ const operation=confirm.onclick();
+ await Promise.resolve();await Promise.resolve();
+ const status=dialog.querySelector('progress');
+ assert.equal(status.max,2);
+ assert.equal(status.value,0);
+ assert.equal(dialog.getAttribute('aria-busy'),'true');
+ assert.match(confirm.textContent,/Enviando/);
+ assert.equal(dialog.hasAttribute('open'),true);
+ finish({ok:true,queued:2,expected:2});
+ await operation;
+ assert.equal(dialog.hasAttribute('open'),false);
+});
