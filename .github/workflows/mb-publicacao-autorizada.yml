@@ -24,6 +24,7 @@ on:
       - scripts/atualizar-fixtures-ref.py
       - scripts/aplicar-correcao-fotos-catalogo.py
       - scripts/otimizar-performance-fluxos.py
+      - scripts/atualizar-teste-estoque-catalogo.py
   workflow_dispatch:
 permissions:
   contents: read
@@ -2093,6 +2094,8 @@ jobs:
       - run: npm ci
       - name: Atualizar apenas fixtures legadas de teste da versão final
         run: python3 catalogos-atuais/scripts/atualizar-fixtures-ref.py
+      - name: Conferir indicador atual de estoque por cor e tamanho nos testes
+        run: python3 catalogos-atuais/scripts/atualizar-teste-estoque-catalogo.py
       - name: Revalidar a suíte completa após otimização da versão final
         run: npm run check
       - run: npm run build
