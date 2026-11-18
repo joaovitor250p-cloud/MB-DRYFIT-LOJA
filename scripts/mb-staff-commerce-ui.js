@@ -7,7 +7,18 @@ function mbOrderAdjustmentDialog(title){
  document.body.append(d);d.querySelector('[aria-label="Fechar"]').onclick=()=>d.close();d.showModal();return d
 }
 function setupMBStaffOrderActions(d,o,agents){
- if(!o||o.sale_batch_id||['cancelled','completed','paid'].includes(o.status))return;
+ if(!o)return;
+ // Addresses are private order details for staff; never shown in the public catalog.
+ if(o.delivery_mode!=='pickup'){
+  let address=null;try{address=JSON.parse(o.delivery_notes||'{}').shipping_address}catch{}
+  if(address){
+   const pane=document.createElement('section');pane.className='mb-order-shipping-address';
+   const fields=[address.street+', '+address.number,address.complement,address.district,address.city+' - '+address.state,address.postcode].filter(Boolean);
+   pane.innerHTML='<h3>Endereço de entrega</h3><p>'+fields.map(esc).join(' · ')+'</p>';
+   d.append(pane);
+  }
+ }
+ if(o.sale_batch_id||['cancelled','completed','paid'].includes(o.status))return;
  const controls=document.createElement('section');controls.className='mb-order-adjustment-controls';
  controls.innerHTML='<h3>Atendimento deste pedido</h3><p class="sub">É possível trocar o responsável e editar peças enquanto o pedido não foi pago.</p><div class="actions"><button type="button" class="secondary" id="mbTransferOrder">Alterar vendedor</button><button type="button" class="secondary" id="mbEditOrderItems">Adicionar / remover peças</button></div>';
  d.append(controls);
