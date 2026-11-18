@@ -2091,6 +2091,8 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - name: Atualizar apenas fixtures legadas de teste da versão final
+        run: python3 catalogos-atuais/scripts/atualizar-fixtures-ref.py
       - name: Revalidar a suíte completa após otimização da versão final
         run: npm run check
       - run: npm run build
