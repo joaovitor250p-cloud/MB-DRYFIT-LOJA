@@ -935,6 +935,17 @@ jobs:
             node --check "stores/$store/worker/native-print.js"
             grep -q 'function reviewLabelBatch()' "stores/$store/worker/native-print.js"
           done
+      - name: Usar programa MB Impressão do Windows sem QZ Tray
+        run: |
+          python3 catalogos-atuais/scripts/aplicar-impressao-local.py
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/worker/native-print.js"
+            grep -q "await mbBridgeRequest('/print','POST',{printer,zpl})" "stores/$store/worker/native-print.js"
+            if grep -q 'qz.websocket.connect(' "stores/$store/worker/native-print.js"; then
+              echo "::error::Integração antiga QZ ainda está ativa em $store"
+              exit 1
+            fi
+          done
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -1884,6 +1895,17 @@ jobs:
           for store in mb-dryfit mb-for-her; do
             node --check "stores/$store/worker/native-print.js"
             grep -q 'function reviewLabelBatch()' "stores/$store/worker/native-print.js"
+          done
+      - name: Usar programa MB Impressão do Windows sem QZ Tray
+        run: |
+          python3 catalogos-atuais/scripts/aplicar-impressao-local.py
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/worker/native-print.js"
+            grep -q "await mbBridgeRequest('/print','POST',{printer,zpl})" "stores/$store/worker/native-print.js"
+            if grep -q 'qz.websocket.connect(' "stores/$store/worker/native-print.js"; then
+              echo "::error::Integração antiga QZ ainda está ativa em $store"
+              exit 1
+            fi
           done
       - name: Verificar sintaxe real do painel antes de publicar
         shell: bash
