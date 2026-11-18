@@ -184,7 +184,7 @@ for shop in ('mb-dryfit','mb-for-her'):
  contacts=(root/'storefront-contacts.js').read_text()
  appearance=(root/'appearance-client.js').read_text()
  assert cart.count("mbGuestSellerRequest=(async()=>") == 1
- assert "await mbGuestSellers()" in contacts
+ assert "return mbGuestSellers()" in contacts
  assert "new MutationObserver(()=>renderCurated" not in appearance
  assert "mbAfterCatalogRender" in (root/'storefront.html').read_text()
  print(shop+': shared seller cache 300s, lazy vendor scripts, no curated observer, light modals, bootstrap once per isolate')
