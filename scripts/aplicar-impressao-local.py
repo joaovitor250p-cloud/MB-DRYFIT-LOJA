@@ -16,6 +16,14 @@ for store in ('mb-dryfit', 'mb-for-her'):
     assert "primary.onclick=e=>{e.preventDefault();reviewLabelBatch()}" in code, store
     assert 'qz.websocket.connect(' not in code, store
     destination.write_text(code, encoding='utf-8')
+    page = Path('stores') / store / 'worker/page.html'
+    page_code = page.read_text(encoding='utf-8')
+    late_mount = 'drawLabelModels();previewLabels();mountDirectPrinter()}'
+    early_mount = 'mountDirectPrinter();drawLabelModels();previewLabels()}'
+    assert page_code.count(late_mount) == 1, f'{store}: montagem de etiquetas inesperada'
+    page_code = page_code.replace(late_mount, early_mount, 1)
+    page.write_text(page_code, encoding='utf-8')
+    print('Conexão da Elgin passa a aparecer antes da grade e da prévia:', store)
     test_source = Path('catalogos-atuais/stores') / store / 'tests/native-printer.test.mjs'
     test_destination = Path('stores') / store / 'tests/native-printer.test.mjs'
     test_code = test_source.read_text(encoding='utf-8')

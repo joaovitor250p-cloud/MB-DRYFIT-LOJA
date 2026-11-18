@@ -970,6 +970,9 @@ jobs:
             for (const term of ['mbPrinterToken','function mountDirectPrinter','function reviewLabelBatch','mbBridgeRequest','Salvar e conectar uma vez']) {
               if(!built.includes(term))throw Error(store+': campo ou integração de impressão ausente no Worker final: '+term);
             }
+            const mountBeforeGrid='mountDirectPrinter();drawLabelModels();previewLabels()}';
+            const lateMount='drawLabelModels();previewLabels();mountDirectPrinter()}';
+            if(!built.includes(mountBeforeGrid)||built.includes(lateMount))throw Error(store+': montagem da conexão da Elgin não ocorre primeiro');
             console.log('CONFIRMADO no Worker final da loja '+store+': campo de código, conector local e conferência do lote.');
           }
           NODE
@@ -1995,6 +1998,9 @@ jobs:
             for (const term of ['mbPrinterToken','function mountDirectPrinter','function reviewLabelBatch','mbBridgeRequest','Salvar e conectar uma vez']) {
               if(!built.includes(term))throw Error(store+': campo ou integração de impressão ausente no Worker final: '+term);
             }
+            const mountBeforeGrid='mountDirectPrinter();drawLabelModels();previewLabels()}';
+            const lateMount='drawLabelModels();previewLabels();mountDirectPrinter()}';
+            if(!built.includes(mountBeforeGrid)||built.includes(lateMount))throw Error(store+': montagem da conexão da Elgin não ocorre primeiro');
             console.log('CONFIRMADO no Worker final da loja '+store+': campo de código, conector local e conferência do lote.');
           }
           NODE
