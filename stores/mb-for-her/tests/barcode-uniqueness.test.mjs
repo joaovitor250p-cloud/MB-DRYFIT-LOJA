@@ -5,7 +5,7 @@ import vm from 'node:vm';
 
 const source=readFileSync('worker/api.js','utf8');
 const start=source.indexOf('function makeStoreAutoBarcode()');
-const end=source.indexOf('function validate(',start);
+const end=source.indexOf('export function validate(',start);
 assert.ok(start>=0 && end>start,'O Worker precisa fornecer o gerador protegido de códigos.');
 const helper=source.slice(start,end);
 const prefix=process.cwd().includes('for-her')?'9':'8';
