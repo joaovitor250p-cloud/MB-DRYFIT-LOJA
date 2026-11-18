@@ -32,6 +32,7 @@ on:
       - scripts/mb-promotion-catalog-ui.js
       - scripts/mb-promo-checkout-trigger.sql
       - scripts/mb-promo-checkout-guard.mjs
+      - scripts/test-promo-checkout-trigger.py
       - scripts/ativar-commerce-2026.py
       - scripts/ajustar-cliente-2026.py
       - scripts/instalar-interfaces-commerce-2026.py
@@ -2214,6 +2215,8 @@ jobs:
             echo "Verificando códigos principais x alternativos em $loja (nenhuma alteração será feita)"
             npx --no-install wrangler d1 execute DB --remote --config "cloudflare-dist/$loja/wrangler.json" --command "SELECT COUNT(*) AS conflitos_entre_pecas FROM products p JOIN product_barcodes b ON b.barcode=p.barcode AND b.product_id!=p.id;"
           done
+      - name: Testar validação SQL de promoções sem tocar dados reais
+        run: python3 catalogos-atuais/scripts/test-promo-checkout-trigger.py
       - name: Validar e atualizar segurança do checkout promocional nas duas lojas
         run: node catalogos-atuais/scripts/mb-promo-checkout-guard.mjs
       - name: Publicar Worker MB Dryfit preservando dados
