@@ -25,6 +25,16 @@ on:
       - scripts/aplicar-correcao-fotos-catalogo.py
       - scripts/otimizar-performance-fluxos.py
       - scripts/atualizar-teste-estoque-catalogo.py
+      - scripts/mb-variant-promotions.js
+      - scripts/mb-order-adjustments.js
+      - scripts/mb-customer-checkout-ui.js
+      - scripts/mb-staff-commerce-ui.js
+      - scripts/mb-promotion-catalog-ui.js
+      - scripts/ativar-commerce-2026.py
+      - scripts/ajustar-cliente-2026.py
+      - scripts/instalar-interfaces-commerce-2026.py
+      - scripts/ajustar-fixtures-comercio-2026.py
+      - scripts/mb-commerce-2026.test.mjs
   workflow_dispatch:
 permissions:
   contents: read
@@ -2087,6 +2097,21 @@ jobs:
           grep -q 'markShopCartQuotePending();try{' stores/mb-dryfit/worker/storefront-cart.js
           grep -q 'variantCellIndex.get(JSON.stringify' stores/mb-dryfit/worker/page.html
 
+      - name: Integrar promoções, pedidos, transferência e endereços das duas lojas
+        run: |
+          python3 -m py_compile catalogos-atuais/scripts/ativar-commerce-2026.py catalogos-atuais/scripts/ajustar-cliente-2026.py catalogos-atuais/scripts/instalar-interfaces-commerce-2026.py
+          python3 catalogos-atuais/scripts/ativar-commerce-2026.py
+          python3 catalogos-atuais/scripts/ajustar-cliente-2026.py
+          python3 catalogos-atuais/scripts/instalar-interfaces-commerce-2026.py
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/worker/mb-order-adjustments.js"
+            node --check "stores/$store/worker/mb-variant-promotions.js"
+            node --check "stores/$store/worker/shop-commerce.js"
+            node --check "stores/$store/worker/catalog-cart.js"
+            node --check "stores/$store/worker/storefront-cart.js"
+            node --check "stores/$store/worker/storefront-orders.js"
+            node --check "stores/$store/worker/staff-workspace.js"
+          done
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -2096,6 +2121,13 @@ jobs:
         run: python3 catalogos-atuais/scripts/atualizar-fixtures-ref.py
       - name: Conferir indicador atual de estoque por cor e tamanho nos testes
         run: python3 catalogos-atuais/scripts/atualizar-teste-estoque-catalogo.py
+      - name: Testar entrega com endereço e recuperação desativada
+        run: python3 catalogos-atuais/scripts/ajustar-fixtures-comercio-2026.py
+      - name: Verificar promoções e pedidos usando bancos de teste das duas lojas
+        run: |
+          for store in mb-dryfit mb-for-her; do
+            cp catalogos-atuais/scripts/mb-commerce-2026.test.mjs "stores/$store/tests/mb-commerce-2026.test.mjs"
+          done
       - name: Revalidar a suíte completa após otimização da versão final
         run: npm run check
       - run: npm run build
