@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {readFileSync,existsSync} from 'node:fs';
 import vm from 'node:vm';
 
 for(const shop of ['mb-dryfit','mb-for-her']){
@@ -11,7 +11,8 @@ for(const shop of ['mb-dryfit','mb-for-her']){
  const catalog=readFileSync(dir+'storefront.html','utf8');
  const customer=readFileSync(dir+'storefront-orders.js','utf8');
  const history=readFileSync(dir+'order-history.js','utf8');
- const editor=readFileSync('scripts/mb-next-staff-editor.js','utf8');
+ const helper=existsSync('scripts/mb-next-staff-editor.js')?'scripts/mb-next-staff-editor.js':'catalogos-atuais/scripts/mb-next-staff-editor.js';
+ const editor=readFileSync(helper,'utf8');
 
  test(shop+': editor scans barcode and extra codes with leading zeros, shows available stock',()=>{
   const sandbox={};vm.createContext(sandbox);vm.runInContext(editor,sandbox);
