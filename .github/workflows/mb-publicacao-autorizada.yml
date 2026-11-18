@@ -1871,6 +1871,31 @@ jobs:
         run: python3 catalogos-atuais/scripts/ajustes-pedido-whatsapp-impressao.py
       - name: Corrigir filtros do catálogo e painel do dono
         run: python3 catalogos-atuais/scripts/corrigir-opcoes-filtros.py
+      - name: Verificar sintaxe real do painel antes de publicar
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import re,subprocess,tempfile,pathlib
+          for store in ('mb-dryfit','mb-for-her'):
+              page=(pathlib.Path('stores')/store/'worker/page.html').read_text()
+              for i,script in enumerate(re.findall(r'<script(?:\\s[^>]*)?>(.*?)</script>',page,re.S)):
+                  if not script.strip():continue
+                  with tempfile.TemporaryDirectory() as tmp:
+                      file=pathlib.Path(tmp)/('painel-'+store+'-'+str(i)+'.js')
+                      file.write_text(script)
+                      p=subprocess.run(['node','--check',str(file)],text=True,capture_output=True)
+                      if p.returncode:
+                          print('ERRO DE SINTAXE NO PAINEL',store,'script',i)
+                          print(p.stderr)
+                          lines=script.splitlines()
+                          m=re.search(r':(\\d+)\\n',p.stderr)
+                          if m:
+                              at=int(m.group(1))
+                              for n in range(max(1,at-6),min(len(lines),at+6)+1):
+                                  print(str(n)+': '+lines[n-1][:300])
+                          raise SystemExit(1)
+              print('JS da gestão verificado:',store)
+          PY
       - name: Aplicar correção de acesso móvel da main nos dois Workers
         shell: bash
         run: |
