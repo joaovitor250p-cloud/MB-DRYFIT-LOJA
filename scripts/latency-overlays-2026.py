@@ -109,6 +109,37 @@ def appearance_fix(s):
  return s.replace(observer,replacement,1)
 
 def catalog_fix(s):
+ # The marketing timer must not rebuild all catalog cards. Only visible
+ # badges are reconciled; updates defer while any modal/cart drawer is open.
+ if "if(changed&&typeof render==='function')render();" in s:
+  s=once(s,'function drawCard(g,card){','function drawCard(g,card){card.dataset.mbGroupKey=g.key;','remember drawn model for marketing')
+  code="""if(changed||mbMarketingBadgePending){
+    if(document.querySelector('dialog[open],.shop-cart-workspace[open],.mb-orders-overlay[open]')){
+      mbMarketingBadgePending=true;
+    }else{
+      mbMarketingBadgePending=false;
+      const visible=typeof productCardRegistry!=='undefined'?productCardRegistry:null;
+      if(visible&&typeof groups==='function'){
+        const lookup=new Map(groups().map(g=>[g.key,g]));
+        for(const [key,card] of visible){
+          if(!card.isConnected)continue;
+          const g=lookup.get(key);if(!g)continue;
+          const selected=g.variants.some(p=>mbMarketingNewIds.has(p.id));
+          let badge=card.querySelector('.mb-new-product-label');
+          if(!selected){badge?.remove();continue}
+          if(!badge){
+            const host=card.querySelector('.photo')||card.querySelector('.catalog-product-media')||card;
+            badge=document.createElement('span');badge.className='mb-new-product-label';badge.textContent='NOVIDADE';host.append(badge);
+          }
+        }
+      }
+    }
+   }"""
+  s=once(s,"let initialized=false;\n const escNotice=",
+    "let initialized=false,mbMarketingBadgePending=false,mbLastNoticeJSON=null;\n const escNotice=",'marketing state')
+  s=once(s,"if(changed&&typeof render==='function')render();",code,'incremental marketing patch')
+  s=once(s,"drawNotice(data.notice);",
+    "const noticeJSON=JSON.stringify(data.notice||null);if(noticeJSON!==mbLastNoticeJSON){mbLastNoticeJSON=noticeJSON;drawNotice(data.notice)}",'update notice only when changed')
  s=once(s,'updateBrandFilterUI()}',"updateBrandFilterUI();if(typeof window!=='undefined')window.mbAfterCatalogRender?.()}",'single post-render curated callback')
  s=re.sub(r'(?<![\w-])(?:-webkit-)?backdrop-filter\s*:\s*blur\([^)]+\)', 'backdrop-filter:none',s)
  s=s.replace('0 25px 100px','0 10px 28px')
