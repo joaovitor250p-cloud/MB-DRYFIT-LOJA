@@ -13,6 +13,12 @@ function mbSetPriceDisplay(container,p){
 }
 function mbRenderPromotionCollection(){
  const place=document.querySelector('#colecao');if(!place)return;
+ // Larger, readable promotional variants without changing regular catalog cards.
+ if(!document.getElementById('mbPromoCardSize2026')){
+  const style=document.createElement('style');style.id='mbPromoCardSize2026';
+  style.textContent='.mb-promotions-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:20px}.mb-promotion-card{min-width:0}.mb-promotion-photo{min-height:240px;aspect-ratio:4/5}.mb-promotion-photo img{width:100%;height:100%;object-fit:cover}@media(max-width:600px){.mb-promotions-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.mb-promotion-photo{min-height:170px}}';
+  document.head.append(style);
+ }
  let panel=document.querySelector('#promocoes');
  const eligible=products.filter(p=>p.promotion_price&&p.original_price>p.price);
  const nav=document.querySelector('.main-nav');
