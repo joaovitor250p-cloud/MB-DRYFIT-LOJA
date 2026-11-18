@@ -22,13 +22,17 @@ for shop in ("mb-dryfit","mb-for-her"):
  code=api.read_text(encoding="utf-8")
  code=single(code,"import {quoteCatalogCart} from \"./catalog-cart.js\";",
     'import {quoteCatalogCart} from "./catalog-cart.js";\nimport {publicPromotionMap,activePromotion,handleVariantPromotions} from "./mb-variant-promotions.js";\nimport {handleOrderAdjustments} from "./mb-order-adjustments.js";',shop+" api imports")
- code=single(code,
+ catalog_start=code.index("if(u.pathname==='/api/catalog/products'){")
+ catalog_end=code.index("if(u.pathname.startsWith('/catalogo/fotos/'))",catalog_start)
+ catalog=code[catalog_start:catalog_end]
+ catalog=single(catalog,
    "return json(results.map(p=>({id:p.id,model_id:p.model_id,name:p.name",
    "const promoMap=await publicPromotionMap(env);\nreturn json(results.map(p=>({id:p.id,model_id:p.model_id,name:p.name",
    shop+" public promo map")
- code=single(code,"fit_chart:JSON.parse(p.fit_chart||'[]'),price:p.price,size:p.size",
+ catalog=single(catalog,"fit_chart:JSON.parse(p.fit_chart||'[]'),price:p.price,size:p.size",
    "fit_chart:JSON.parse(p.fit_chart||'[]'),price:activePromotion(promoMap,p)?.price??p.price,original_price:activePromotion(promoMap,p)?.original_price??null,promotion_price:activePromotion(promoMap,p)?.price??null,size:p.size",
    shop+" promo product prices")
+ code=code[:catalog_start]+catalog+code[catalog_end:]
  code=single(code,
    "if(u.pathname.startsWith('/api/retail/'))return handleRetail(req,env,member);",
    "if(u.pathname==='/api/mb-promotions')return handleVariantPromotions(req,env,member);\nif(u.pathname.startsWith('/api/mb-order/'))return handleOrderAdjustments(req,env,member);\nif(u.pathname.startsWith('/api/retail/'))return handleRetail(req,env,member);",
