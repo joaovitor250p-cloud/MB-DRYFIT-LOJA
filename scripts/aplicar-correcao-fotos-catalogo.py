@@ -27,8 +27,9 @@ assert new.count(marker) == 1
 fix_css = marker + new.split(marker, 1)[1].split("</style>", 1)[0]
 assert ".catalog-product-card.picker-open .catalog-quick-picker{display:block" in fix_css
 assert marker not in old
-assert old.count("</style>") == 1
-old = old.replace("</style>", fix_css + "\n</style>", 1)
+style_end = old.rfind("</style>")
+assert style_end > 0, "Missing final stylesheet closing tag"
+old = old[:style_end] + fix_css + "\n" + old[style_end:]
 assert "function drawProductDetails" in old and "id=\"catalog\"" in old
 target.write_text(old, encoding="utf-8")
 print("MB Dryfit: catalog photo swap and below-photo picker applied to release build.")
