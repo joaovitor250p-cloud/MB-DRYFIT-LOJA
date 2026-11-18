@@ -20,6 +20,7 @@ on:
       - scripts/instalador-mb-impressao-configuracoes.py
       - scripts/garantir-codigos-unicos.py
       - scripts/checkout-pdv-sempre-visivel.py
+      - scripts/corrigir-salvar-modelos.py
       - scripts/atualizar-fixtures-ref.py
   workflow_dispatch:
 permissions:
@@ -985,6 +986,14 @@ jobs:
             node --check "stores/$store/worker/retail-ui.js"
             grep -q 'mb-pos-essential' "stores/$store/worker/retail-ui.js"
             grep -q 'Checkout do PDV: formas principais sem painel recolhido' "stores/$store/worker/layout-admin.css"
+          done
+      - name: Garantir salvamento de modelos sem erros de formulário ocultos
+        run: |
+          python3 catalogos-atuais/scripts/corrigir-salvar-modelos.py
+          for store in mb-dryfit mb-for-her; do
+            grep -Fq "noValidate=true;" "stores/$store/worker/page.html"
+            grep -Fq "let modelSaved=false;" "stores/$store/worker/page.html"
+            grep -Fq "modelSaved=true;" "stores/$store/worker/page.html"
           done
       - uses: actions/setup-node@v4
         with:
@@ -1999,6 +2008,14 @@ jobs:
             grep -q 'mb-pos-essential' "stores/$store/worker/retail-ui.js"
             grep -q 'Checkout do PDV: formas principais sem painel recolhido' "stores/$store/worker/layout-admin.css"
           done
+      - name: Garantir salvamento de modelos sem erros de formulário ocultos
+        run: |
+          python3 catalogos-atuais/scripts/corrigir-salvar-modelos.py
+          for store in mb-dryfit mb-for-her; do
+            grep -Fq "noValidate=true;" "stores/$store/worker/page.html"
+            grep -Fq "let modelSaved=false;" "stores/$store/worker/page.html"
+            grep -Fq "modelSaved=true;" "stores/$store/worker/page.html"
+          done
       - name: Verificar sintaxe real do painel antes de publicar
         shell: bash
         run: |
@@ -2112,6 +2129,11 @@ jobs:
         run: npx --no-install wrangler d1 execute DB --remote --config cloudflare-dist/dryfit/wrangler.json --command "SELECT archived_at FROM products LIMIT 0; SELECT guard_count FROM model_change_events LIMIT 0; SELECT token_hash FROM staff_access_sessions LIMIT 0; SELECT viewer_id FROM shop_order_access LIMIT 0;"
       - name: Conferir tabelas já existentes na MB For Her (somente leitura)
         run: npx --no-install wrangler d1 execute DB --remote --config cloudflare-dist/her/wrangler.json --command "SELECT archived_at FROM products LIMIT 0; SELECT guard_count FROM model_change_events LIMIT 0; SELECT token_hash FROM staff_access_sessions LIMIT 0; SELECT viewer_id FROM shop_order_access LIMIT 0;"
+      - name: Conferir colunas e tabelas necessárias ao cadastro de modelos (somente leitura)
+        run: |
+          for loja in dryfit her; do
+            npx --no-install wrangler d1 execute DB --remote --config "cloudflare-dist/$loja/wrangler.json" --command "SELECT barcode_mode, archived_at FROM products LIMIT 0; SELECT model_name_key,color_key,size FROM normalized_variant_claims LIMIT 0; SELECT id FROM product_barcodes LIMIT 0;"
+          done
       - name: Auditar conflitos de códigos existentes (somente leitura)
         shell: bash
         run: |
