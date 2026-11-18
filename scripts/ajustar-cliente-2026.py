@@ -76,7 +76,7 @@ for store in ('mb-dryfit','mb-for-her'):
  html=root/'storefront.html'
  s=html.read_text(encoding='utf-8')
  inline=((Path("catalogos-atuais/scripts") if Path("catalogos-atuais/scripts").exists() else Path("scripts"))/"mb-customer-checkout-ui.js").read_text(encoding='utf-8')
- s=swap(s,"/*__STOREFRONT_CART__*/",inline+"\n/*__STOREFRONT_CART__*/",store+' checkout injection')
+ s=swap(s,"const productCardRegistry=new Map();","const productCardRegistry=new Map();\n"+inline,store+' checkout injection')
  overlay_css="""
 /* The order center stays above the catalog, without full-page relayout. */
 #myOrdersPage.mb-orders-overlay{position:fixed;inset:0;margin:auto;width:min(860px,calc(100vw - 22px));max-width:860px;max-height:min(85dvh,840px);height:auto;min-height:0;overflow:auto;overscroll-behavior:contain;border:1px solid var(--shop-line,#e3e3e3);border-radius:18px;background:var(--shop-panel,#fff);color:var(--shop-ink,#151515);box-shadow:0 18px 55px #0003;padding:26px clamp(15px,4vw,38px);z-index:2000}
