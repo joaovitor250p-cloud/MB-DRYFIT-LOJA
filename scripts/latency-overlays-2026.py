@@ -187,4 +187,13 @@ for shop in ('mb-dryfit','mb-for-her'):
  assert "return mbGuestSellers()" in contacts
  assert "new MutationObserver(()=>renderCurated" not in appearance
  assert "mbAfterCatalogRender" in (root/'storefront.html').read_text()
+ # A legacy test demanded a network fetch after every opening. Replace it
+ # with the requested five-minute cache contract and expiry verification.
+ test_file=Path('stores')/shop/'tests/storefront-contacts.test.mjs'
+ if test_file.exists():
+  test_code=test_file.read_text(encoding='utf-8')
+  before="await request('sales-agents/agent-raquel','DELETE');await ctx.openContactChooser(text);links=[...document.querySelectorAll('[data-seller-contact]')];assert.equal(links.length,7);assert.ok(!links.some(a=>a.textContent.includes('Raquel')));"
+  after="await request('sales-agents/agent-raquel','DELETE');await ctx.openContactChooser(text);links=[...document.querySelectorAll('[data-seller-contact]')];assert.equal(links.length,8);assert.ok(links.some(a=>a.textContent.includes('Raquel')));ctx.Date=class extends Date{static now(){return Date.now()+300001}};await ctx.openContactChooser(text);links=[...document.querySelectorAll('[data-seller-contact]')];assert.equal(links.length,7);assert.ok(!links.some(a=>a.textContent.includes('Raquel')));"
+  if before not in test_code:raise RuntimeError(shop+': stale contact cache regression test changed')
+  test_file.write_text(test_code.replace(before,after,1),encoding='utf-8')
  print(shop+': shared seller cache 300s, lazy vendor scripts, no curated observer, light modals, bootstrap once per isolate')
