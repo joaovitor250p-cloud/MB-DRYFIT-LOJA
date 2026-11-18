@@ -15,7 +15,11 @@ function mbRenderPromotionCollection(){
  const place=document.querySelector('#colecao');if(!place)return;
  let panel=document.querySelector('#promocoes');
  const eligible=products.filter(p=>p.promotion_price&&p.original_price>p.price);
- if(!eligible.length){panel?.remove();return}
+ const nav=document.querySelector('.main-nav');
+ if(!eligible.length){panel?.remove();nav?.querySelector('[data-mb-promo-link]')?.remove();return}
+ if(nav&&!nav.querySelector('[data-mb-promo-link]')){
+  const link=document.createElement('a');link.href='#promocoes';link.dataset.mbPromoLink='1';link.textContent='Promoções';nav.append(link)
+ }
  if(!panel){panel=document.createElement('section');panel.id='promocoes';panel.className='mb-promotion-collection';place.parentElement.insertBefore(panel,place)}
  const buckets=new Map();
  for(const p of eligible){
