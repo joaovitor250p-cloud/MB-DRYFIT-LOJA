@@ -115,3 +115,29 @@
 
 @media screen {html[data-theme=dark] .retail-error,html[data-theme=dark] #cashError,html[data-theme=dark] #returnError,html[data-theme=dark] #returnSearchError,html[data-theme=dark] #goalError{color:#f3ac94}html[data-theme=dark] .cash-state.open{color:#8edcb1}html[data-theme=dark] .cash-state.closed{color:#f3ac94}html[data-theme=dark] .stock-count{color:#8edcb1}}
 @media screen and (min-width:1201px){.staff-workspace .sales-period-form:has(#salesAgentFilter){grid-template-columns:repeat(5,minmax(100px,1fr)) auto}}
+
+/* Checkout do PDV: formas principais sem painel recolhido; canal e desconto sempre visíveis. */
+@media screen {
+ .staff-workspace .pos-layout{align-items:start}
+ .staff-workspace .pos-layout .pos-cart,
+ .staff-workspace .express-mode .pos-cart{position:static;top:auto;min-width:0;overflow:visible}
+ .staff-workspace .express-mode #saleItems{max-height:none;overflow:visible}
+ .staff-workspace .express-mode .pos-total{position:static;bottom:auto;z-index:auto}
+ .staff-workspace .mb-pos-checkout{min-width:0}
+ .staff-workspace .mb-pos-checkout .mb-pos-payment-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-weight:700;margin-top:18px}
+ .staff-workspace .mb-pos-checkout .mb-pos-payment-heading span{font-size:12px;font-weight:400;color:var(--muted)}
+ .staff-workspace .mb-pos-checkout .express-payment-buttons{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:16px 0}
+ .staff-workspace .mb-pos-checkout .express-payment-buttons button{min-width:0;min-height:52px;white-space:normal;font-weight:700}
+ .staff-workspace .mb-pos-checkout .express-payment-buttons button.on{background:var(--orange);border-color:var(--orange);color:#161616}
+ .staff-workspace .mb-pos-essential{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;border-top:1px solid var(--line);margin-top:18px;padding-top:18px}
+ .staff-workspace .mb-pos-essential label,
+ .staff-workspace .mb-pos-essential label:last-child{grid-column:auto;min-width:0;font-weight:650}
+ .staff-workspace .mb-pos-essential select,
+ .staff-workspace .mb-pos-essential input{width:100%;min-height:52px;margin-top:8px;font-size:16px}
+ .staff-workspace .mb-pos-coupon-note{margin:10px 0 0;color:var(--muted)}
+}
+@media(max-width:640px){
+ .staff-workspace .mb-pos-essential{grid-template-columns:1fr}
+ .staff-workspace .mb-pos-checkout .express-payment-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .staff-workspace .mb-pos-checkout .mb-pos-payment-heading{align-items:flex-start}
+}
