@@ -23,7 +23,8 @@ function popConstant(s,name){
 async function splitHTML(html,dir,name){
  let bytes=0,count=0;
  async function output(ext,source){
-  const body=canonical(source),filename=name+'-'+digest(body)+'.'+ext;
+  const normalized=ext==='css'?source.replace(/(-webkit-)?backdrop-filter\s*:\s*blur\([^)]*\)/gi,(_,prefix)=>(prefix||'')+'backdrop-filter:none').replace(/0 25px 100px/g,'0 10px 28px'):source;
+  const body=canonical(normalized),filename=name+'-'+digest(body)+'.'+ext;
   await writeFile(join(dir,filename),body);
   bytes+=Buffer.byteLength(body);count++;return '/_mb/static/'+filename;
  }
@@ -102,7 +103,7 @@ async function packageShop(shop){
   console.log(shop+' '+key+' '+Buffer.byteLength(r.data)+' -> '+Buffer.byteLength(output.html)+' bytes; '+output.count+' cached assets / '+output.bytes+' bytes');
  }
  const route='const mbWorker={async fetch(req,env){const u=new URL(req.url);try{';
- s=once(s,route,route+"\nlet mbDecodedAssetPath;try{mbDecodedAssetPath=decodeURIComponent(u.pathname)}catch{return new Response('Invalid path',{status:400})}\nif(mbDecodedAssetPath.startsWith('/_mb/')&&!/^\\/_mb\\/static\\/(?:admin|catalog)-[a-f0-9]{18}\\.(?:js|css)$/.test(mbDecodedAssetPath))return new Response('Not found',{status:404});\nif(mbDecodedAssetPath.startsWith('/_mb/static/'))return env.ASSETS.fetch(req);");
+ s=once(s,route,route+"\nlet mbDecodedAssetPath;try{mbDecodedAssetPath=decodeURIComponent(u.pathname)}catch{return new Response('Invalid path',{status:400})}\nif(mbDecodedAssetPath.startsWith('/_mb/')&&!/^\\/_mb\\/static\\/(?:admin|catalog)-[a-f0-9]{18}\\.(?:js|css)$/.test(mbDecodedAssetPath))return new Response('Not found',{status:404});\nif(mbDecodedAssetPath.startsWith('/_mb/static/')){const asset=await env.ASSETS.fetch(req);if(!asset.ok)return asset;const h=new Headers(asset.headers);h.set('Cache-Control','public, max-age=31536000, immutable');return new Response(asset.body,{status:asset.status,statusText:asset.statusText,headers:h})}");
  s=canonical(s);
  if(oldDomains.some(domain=>s.includes(domain)))throw Error('Legacy origin in packaged Worker');
  const after=Buffer.byteLength(s);
