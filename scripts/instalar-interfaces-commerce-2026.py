@@ -81,10 +81,10 @@ for store in ("mb-dryfit","mb-for-her"):
  recover_end=section.index('</details>',recover_start)+len('</details>')
  section=section[:recover_start]+section[recover_end:]
  recover_start=section.index("$('#issueOrderRecovery').onclick=async()=>")
- recover_end=section.index(";bindSalesPhotoFallback(d);d.showModal()",recover_start)
- section=section[:recover_start]+section[recover_end+1:]
- section=replace_one(section,"bindSalesPhotoFallback(d);d.showModal()",
-   "bindSalesPhotoFallback(d);setupMBStaffOrderActions(d,o,agents);d.showModal()",
+ recover_end=section.index("};",recover_start)+2
+ section=section[:recover_start]+section[recover_end:]
+ section=replace_one(section,"d.showModal()",
+   "setupMBStaffOrderActions(d,o,agents);d.showModal()",
    store+" staff adjustment controls")
  s=s[:start]+section+s[end:]
  staff.write_text(s,encoding="utf-8")
