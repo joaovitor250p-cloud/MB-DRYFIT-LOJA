@@ -49,6 +49,32 @@ OWNER_CSS = r"""
 }
 """
 RESTOCK_HELPERS = r"""
+// Escolha o modelo a partir do mesmo painel de Reposição, sem navegar.
+function chooseReceiptModel(){
+ if(!owner())return;
+ const models=[...new Map(products.filter(p=>p.model_id).map(p=>[p.model_id,p])).values()]
+   .sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+ if(!models.length){toast('Cadastre um modelo antes de adicionar tamanhos.');return}
+ let dialog=document.getElementById('mbReceiptSelectModel');
+ if(!dialog){dialog=document.createElement('dialog');dialog.id='mbReceiptSelectModel';dialog.style.width='min(480px,calc(100vw - 20px))';document.body.append(dialog)}
+ dialog.innerHTML='<div class="modal-head"><div><h2>Selecionar modelo</h2><p class="help">Escolha a peça para criar o novo tamanho.</p></div><button type="button" class="secondary" data-model-close>✕</button></div>'+
+ '<form id="mbReceiptModelForm"><label>Buscar modelo<input id="mbReceiptModelSearch" placeholder="Nome ou referência" autocomplete="off"></label>'+
+ '<label>Modelo<select id="mbReceiptModelSelect" required></select></label><p class="help" id="mbReceiptModelHint"></p>'+
+ '<div class="actions"><button type="button" class="secondary" data-model-close>Cancelar</button><button type="submit" class="primary">Escolher modelo</button></div></form>';
+ const select=dialog.querySelector('#mbReceiptModelSelect'),search=dialog.querySelector('#mbReceiptModelSearch');
+ const draw=()=>{
+  const q=search.value.toLocaleLowerCase('pt-BR').trim();
+  const results=models.filter(p=>[p.name,p.extra_code,p.brand].join(' ').toLocaleLowerCase('pt-BR').includes(q)).slice(0,120);
+  select.replaceChildren(...results.map(p=>new Option(p.name+' · '+(p.extra_code||'Sem REF'),p.model_id)));
+  select.disabled=!results.length;
+  dialog.querySelector('#mbReceiptModelHint').textContent=results.length?results.length+' modelo(s) disponíveis':'Nenhum modelo encontrado.';
+ };
+ search.oninput=draw;draw();
+ dialog.querySelectorAll('[data-model-close]').forEach(btn=>btn.onclick=()=>dialog.close());
+ dialog.querySelector('form').onsubmit=e=>{e.preventDefault();if(!select.value)return;const modelId=select.value;dialog.close();openReceiptVariant(modelId)};
+ dialog.showModal();search.focus();
+}
+
 // Adicionar um tamanho no mesmo fluxo de Reposição: não altera outros tamanhos.
 async function openReceiptVariant(modelId){
  if(!owner())return;
@@ -148,13 +174,13 @@ for store in ('mb-dryfit','mb-for-her'):
  "const data=Object.fromEntries(new FormData(e.target));if(!String(data.extra_code||'').trim()){error.textContent='Informe a referência (REF) obrigatória.';return}data.price=Math.round(Number(data.price)*100);",
  'ref before uploads in model save',store)
  s=rep(s,'let restockDraft=new Map(),restockQuery=',RESTOCK_HELPERS+'\nlet restockDraft=new Map(),restockQuery=', 'restock new sizes',store)
- # Exponha o botão dentro de cada modelo na própria grade de reposição.
- s=rep(s,"""return '<section style="margin:18px 0 28px"><h3>'+esc(g.name)+'</h3><div class="table-wrap"><table>""",
- """return '<section class="restock-model-section" style="margin:18px 0 28px"><div class="mb-restock-title"><h3>'+esc(g.name)+'</h3>'+(g.variants[0].model_id?'<button type="button" class="secondary" data-restock-add-size="'+esc(g.variants[0].model_id)+'">＋ Adicionar tamanho</button>':'')+'</div><div class="table-wrap"><table>""",
- 'add size button in restock group',store)
- s=rep(s,"document.querySelectorAll('[data-restock]').forEach(input=>input.oninput=()=>{",
- "document.querySelectorAll('[data-restock-add-size]').forEach(button=>button.onclick=()=>openReceiptVariant(button.dataset.restockAddSize));document.querySelectorAll('[data-restock]').forEach(input=>input.oninput=()=>{",
- 'wire add size handler',store)
+ # Botão sempre disponível na barra de reposição, independente do HTML da grade.
+ s=rep(s,'<button class="secondary" id="restockClear">Limpar quantidades</button>',
+ '<button class="secondary" type="button" id="mbRestockAddSize">＋ Adicionar tamanho</button><button class="secondary" id="restockClear">Limpar quantidades</button>',
+ 'add size toolbar button',store)
+ s=rep(s,"$('#restockClear').onclick=()=>{",
+ "$('#mbRestockAddSize').onclick=chooseReceiptModel;$('#restockClear').onclick=()=>{",
+ 'wire add size toolbar',store)
  s=rep(s,'</head>','<style>'+OWNER_CSS+'</style></head>','owner form style',store)
  page.write_text(s,encoding='utf-8')
  
