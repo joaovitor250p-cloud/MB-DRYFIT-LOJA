@@ -16,4 +16,11 @@ for store in ('mb-dryfit', 'mb-for-her'):
     assert "primary.onclick=e=>{e.preventDefault();reviewLabelBatch()}" in code, store
     assert 'qz.websocket.connect(' not in code, store
     destination.write_text(code, encoding='utf-8')
-    print('MB Impressão local incorporado ao Worker:', store)
+    test_source = Path('catalogos-atuais/stores') / store / 'tests/native-printer.test.mjs'
+    test_destination = Path('stores') / store / 'tests/native-printer.test.mjs'
+    test_code = test_source.read_text(encoding='utf-8')
+    assert "direct print sends ZPL to the selected local Windows printer" in test_code, store
+    assert "ctx.mbBridgeRequest" in test_code, store
+    assert "forceRaw" not in test_code, store
+    test_destination.write_text(test_code, encoding='utf-8')
+    print('MB Impressão local e respectivos testes incorporados ao Worker:', store)
