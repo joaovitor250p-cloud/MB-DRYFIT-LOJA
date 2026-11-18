@@ -8,8 +8,8 @@ from pathlib import Path
 for store, expected_prefix in (('mb-dryfit', '8'), ('mb-for-her', '9')):
     old_path=Path('stores')/store/'worker/api.js'
     main_api=(Path('catalogos-atuais/stores')/store/'worker/api.js').read_text(encoding='utf-8')
-    start='function makeStoreAutoBarcode()'
-    end='function validate('
+    start='export function makeStoreAutoBarcode()'
+    end='export function validate('
     assert main_api.count(start)==1 and main_api.count(end)==1, store
     helper=main_api[main_api.index(start):main_api.index(end)]
     assert "return '"+expected_prefix+"'" in helper, store
