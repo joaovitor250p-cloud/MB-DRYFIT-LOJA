@@ -15,6 +15,8 @@ function setupMBStaffOrderActions(d,o,agents){
    const pane=document.createElement('section');pane.className='mb-order-shipping-address';
    const fields=[address.street+', '+address.number,address.complement,address.district,address.city+' - '+address.state,address.postcode].filter(Boolean);
    pane.innerHTML='<h3>Endereço de entrega</h3><p>'+fields.map(esc).join(' · ')+'</p>';
+   pane.insertAdjacentHTML('beforeend','<button type="button" class="secondary" data-copy-delivery>Copiar endereço completo</button>');
+   pane.querySelector('[data-copy-delivery]').onclick=async()=>{try{await navigator.clipboard.writeText(fields.join(' · '));toast('Endereço copiado.')}catch{toast('Não foi possível copiar automaticamente.')}};
    d.append(pane);
   }
  }
