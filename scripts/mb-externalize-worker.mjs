@@ -100,7 +100,7 @@ async function packageShop(shop){
   console.log(shop+' '+key+' '+Buffer.byteLength(r.data)+' -> '+Buffer.byteLength(output.html)+' bytes; '+output.count+' cached assets / '+output.bytes+' bytes');
  }
  const route='const mbWorker={async fetch(req,env){const u=new URL(req.url);try{';
- s=once(s,route,route+"\nif(u.pathname.startsWith('/_mb/private/'))return new Response('Not found',{status:404});\nif(u.pathname.startsWith('/_mb/static/'))return env.ASSETS.fetch(req);");
+ s=once(s,route,route+"\nlet mbDecodedAssetPath;try{mbDecodedAssetPath=decodeURIComponent(u.pathname)}catch{return new Response('Invalid path',{status:400})}\nif(mbDecodedAssetPath.startsWith('/_mb/')&&!/^\\/_mb\\/static\\/(?:admin|catalog)-[a-f0-9]{18}\\.(?:js|css)$/.test(mbDecodedAssetPath))return new Response('Not found',{status:404});\nif(mbDecodedAssetPath.startsWith('/_mb/static/'))return env.ASSETS.fetch(req);");
  s=canonical(s);
  if(oldDomains.some(domain=>s.includes(domain)))throw Error('Legacy origin in packaged Worker');
  const after=Buffer.byteLength(s);
