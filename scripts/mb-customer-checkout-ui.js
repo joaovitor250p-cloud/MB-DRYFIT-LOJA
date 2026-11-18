@@ -75,7 +75,7 @@ async function mbLookupCEP(form){
 }
 function setupMBCheckoutExtra(form){
  const holder=form.querySelector('#mbDeliveryExtras');if(!holder)return;
- const isHer=location.hostname.startsWith('forher.');
+ const isHer=typeof location!=='undefined'&&location.hostname.startsWith('forher.');
  holder.innerHTML='<div id="mbCheckoutPickup" hidden class="mb-checkout-address">'+
  (isHer?'<p>Retirada: confirme o local com seu vendedor.</p>':'<button type="button" id="mbPickupAddressButton">📍 '+MB_PICKUP_ADDRESS+' · Abrir rota</button>')+
  '</div><fieldset id="mbCheckoutShippingFields" hidden class="order-choice-fieldset"><legend>Endereço para envio</legend><div class="mb-address-grid">'+
