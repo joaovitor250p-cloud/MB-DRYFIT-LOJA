@@ -32,6 +32,7 @@ MEDIA_HOOK = """
      }
    });
  };
+ window.mbRefreshDialogMedia=update;
  proto.showModal=function(...args){const result=show.apply(this,args);queueMicrotask(update);return result};
  proto.close=function(...args){const result=close.apply(this,args);queueMicrotask(update);return result};
  document.addEventListener('close',update,true);
@@ -52,6 +53,14 @@ def save(path,fn):
  path.write_text(after,encoding='utf-8')
 
 def cart_fix(s):
+ # A cart is a section, not an HTMLDialogElement. Update hero media explicitly.
+ s=once(s,"document.body.classList.add('shopping-page');document.body.classList.remove('favorites-page');",
+   "document.body.classList.add('shopping-page');document.body.classList.remove('favorites-page');if(typeof window!=='undefined')window.mbRefreshDialogMedia?.();",
+   'pause hero when cart opens')
+ s=once(s,"document.body.classList.remove('shopping-page');if(updateHash",
+   "document.body.classList.remove('shopping-page');if(typeof window!=='undefined')window.mbRefreshDialogMedia?.();if(updateHash",
+   'resume hero when cart closes')
+
  start=s.index('async function mbGuestSellers(){')
  end=s.index('\nfunction mbContactStorageKey()',start)
  source="""let mbGuestSellerRequest=null;
