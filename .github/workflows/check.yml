@@ -131,7 +131,7 @@ jobs:
           python3 scripts/otimizar-performance-fluxos.py
           node --check stores/mb-dryfit/worker/storefront-cart.js
           node --check stores/mb-dryfit/worker/staff-workspace.js
-          node --test stores/mb-dryfit/tests/storefront-cart.test.mjs
+          (cd stores/mb-dryfit && node --test tests/storefront-cart.test.mjs)
           npm run check
       - run: npm ci
       - run: npm run check
