@@ -228,8 +228,9 @@ function swapCatalogPhoto(container,p,preferMain=false){
  if(image.getAttribute('src')===src)return;
  // Set the image directly: avoids asynchronous stale-color updates and works in DOM tests.
  image.dataset.requestedSrc=src;
+ image.style.opacity='0';
  image.onerror=()=>{if(image.dataset.requestedSrc===src)container.setAttribute('aria-label','Foto indisponível de '+p.color)};
- image.onload=()=>{if(image.dataset.requestedSrc===src)container.removeAttribute('aria-label')};
+ image.onload=()=>{if(image.dataset.requestedSrc===src){image.style.opacity='1';container.removeAttribute('aria-label')}};
  image.src=src;
 }
 function chooseCatalogColor(g,index){const current=selectedCatalogVariant(g),next=pickColorVariant(g,current,index),draft=selectionDraft(g);if(!next)return;if(draft.variantId)draft.variantId=next.available&&next.size===current.size?next.id:null;chosen.set(g.key,next.id);const card=productCardRegistry.get(g.key);if(card?.isConnected!==false&&card)updateCatalogCard(g,card);if($('#productDetails')?.open&&$('#productDetails').dataset.model===g.key)updateProductDetails(g)}
