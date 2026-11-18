@@ -17,6 +17,7 @@ on:
       - scripts/ajustes-pedido-whatsapp-impressao.py
       - scripts/corrigir-opcoes-filtros.py
       - scripts/aplicar-impressao-local.py
+      - scripts/instalador-mb-impressao-configuracoes.py
       - scripts/atualizar-fixtures-ref.py
   workflow_dispatch:
 permissions:
@@ -955,6 +956,15 @@ jobs:
               exit 1
             fi
           done
+      - name: Adicionar instalador, tutorial e painel compacto na gestão
+        run: |
+          python3 catalogos-atuais/scripts/instalador-mb-impressao-configuracoes.py
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/worker/native-print.js"
+            node --check "stores/$store/worker/staff-sales.js"
+            grep -q 'mbOriginalRenderVendorAccess' "stores/$store/worker/staff-sales.js"
+            grep -q "/downloads/mb-impressao-elgin-windows.zip" "stores/$store/worker/api.js"
+          done
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -975,7 +985,7 @@ jobs:
           import {readFileSync} from 'node:fs';
           for (const store of ['dryfit','her']) {
             const built=readFileSync('cloudflare-dist/'+store+'/worker.js','utf8');
-            for (const term of ['mbPrinterToken','function mountDirectPrinter','function reviewLabelBatch','mbBridgeRequest','Salvar e conectar uma vez']) {
+            for (const term of ['mbPrinterToken','function mountDirectPrinter','function reviewLabelBatch','mbBridgeRequest','Salvar e conectar uma vez','mbPrinterConnectedPanel','/downloads/mb-impressao-elgin-windows.zip','Tutorial de instalação em computador novo']) {
               if(!built.includes(term))throw Error(store+': campo ou integração de impressão ausente no Worker final: '+term);
             }
             const mountBeforeGrid='mountDirectPrinter();drawLabelModels();previewLabels()}';
@@ -1940,6 +1950,15 @@ jobs:
               exit 1
             fi
           done
+      - name: Adicionar instalador, tutorial e painel compacto na gestão
+        run: |
+          python3 catalogos-atuais/scripts/instalador-mb-impressao-configuracoes.py
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/worker/native-print.js"
+            node --check "stores/$store/worker/staff-sales.js"
+            grep -q 'mbOriginalRenderVendorAccess' "stores/$store/worker/staff-sales.js"
+            grep -q "/downloads/mb-impressao-elgin-windows.zip" "stores/$store/worker/api.js"
+          done
       - name: Verificar sintaxe real do painel antes de publicar
         shell: bash
         run: |
@@ -2011,7 +2030,7 @@ jobs:
           import {readFileSync} from 'node:fs';
           for (const store of ['dryfit','her']) {
             const built=readFileSync('cloudflare-dist/'+store+'/worker.js','utf8');
-            for (const term of ['mbPrinterToken','function mountDirectPrinter','function reviewLabelBatch','mbBridgeRequest','Salvar e conectar uma vez']) {
+            for (const term of ['mbPrinterToken','function mountDirectPrinter','function reviewLabelBatch','mbBridgeRequest','Salvar e conectar uma vez','mbPrinterConnectedPanel','/downloads/mb-impressao-elgin-windows.zip','Tutorial de instalação em computador novo']) {
               if(!built.includes(term))throw Error(store+': campo ou integração de impressão ausente no Worker final: '+term);
             }
             const mountBeforeGrid='mountDirectPrinter();drawLabelModels();previewLabels()}';
