@@ -1871,6 +1871,37 @@ jobs:
         run: python3 catalogos-atuais/scripts/ajustes-pedido-whatsapp-impressao.py
       - name: Corrigir filtros do catálogo e painel do dono
         run: python3 catalogos-atuais/scripts/corrigir-opcoes-filtros.py
+      - name: Aplicar correção de acesso móvel da main nos dois Workers
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for store in ('mb-dryfit','mb-for-her'):
+              target=Path('stores')/store/'worker/page.html'
+              source=Path('catalogos-atuais/stores')/store/'worker/page.html'
+              old=target.read_text(encoding='utf-8')
+              new=source.read_text(encoding='utf-8')
+              def between(text, start, end):
+                  assert text.count(start)==1 and text.count(end)>=1, (store,start)
+                  return start+text.split(start,1)[1].split(end,1)[0]
+              before=between(old,"async function api(path,method='GET',data)","\nfunction toast(")
+              after=between(new,"async function api(path,method='GET',data)","\nfunction toast(")
+              assert 'AbortController' in after and 'finally{clearTimeout(timeout)}' in after
+              assert before in old
+              old=old.replace(before,after,1)
+              marker='<script src="/vendor/qz-tray.js"></script><script src="/vendor/zxing-browser.min.js"></script>'
+              defer='<script defer src="/vendor/qz-tray.js"></script><script defer src="/vendor/zxing-browser.min.js"></script>'
+              assert old.count(marker)==1 and new.count(defer)==1
+              old=old.replace(marker,defer,1)
+              watchdog_start='<script>\n(function(){\n  var startupError'
+              watchdog=between(new,watchdog_start,'</script>')+'</script>'
+              assert watchdog.count("setTimeout(function(){")==1
+              assert old.count('</style></head>')==1 and watchdog_start not in old
+              old=old.replace('</style></head>','</style>'+watchdog+'</head>',1)
+              assert 'AbortController' in old and watchdog in old and defer in old
+              target.write_text(old,encoding='utf-8')
+              print('Startup da gestão protegido para',store)
+          PY
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
