@@ -149,8 +149,8 @@ for store in ('mb-dryfit','mb-for-her'):
  'ref before uploads in model save',store)
  s=rep(s,'let restockDraft=new Map(),restockQuery=',RESTOCK_HELPERS+'\nlet restockDraft=new Map(),restockQuery=', 'restock new sizes',store)
  # Exponha o botão dentro de cada modelo na própria grade de reposição.
- s=rep(s,"return '<section style=\"margin:18px 0 28px\"><h3>'+esc(g.name)+'</h3><div class=\"table-wrap\">'",
- """return '<section class="restock-model-section" style="margin:18px 0 28px"><div class="mb-restock-title"><h3>'+esc(g.name)+'</h3>'+(g.variants[0].model_id?'<button type="button" class="secondary" data-restock-add-size="'+esc(g.variants[0].model_id)+'">＋ Adicionar tamanho</button>':'')+'</div><div class="table-wrap">'""",
+ s=rep(s,"""return '<section style="margin:18px 0 28px"><h3>'+esc(g.name)+'</h3><div class="table-wrap"><table>""",
+ """return '<section class="restock-model-section" style="margin:18px 0 28px"><div class="mb-restock-title"><h3>'+esc(g.name)+'</h3>'+(g.variants[0].model_id?'<button type="button" class="secondary" data-restock-add-size="'+esc(g.variants[0].model_id)+'">＋ Adicionar tamanho</button>':'')+'</div><div class="table-wrap"><table>""",
  'add size button in restock group',store)
  s=rep(s,"document.querySelectorAll('[data-restock]').forEach(input=>input.oninput=()=>{",
  "document.querySelectorAll('[data-restock-add-size]').forEach(button=>button.onclick=()=>openReceiptVariant(button.dataset.restockAddSize));document.querySelectorAll('[data-restock]').forEach(input=>input.oninput=()=>{",
