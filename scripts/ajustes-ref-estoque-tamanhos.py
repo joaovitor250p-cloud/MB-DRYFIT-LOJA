@@ -28,6 +28,10 @@ OWNER_CSS = r"""
 #modelForm .mb-ref-required .help{font-size:11px;line-height:1.5}
 #modelForm .mb-code-auto{align-self:center;min-height:52px}
 #modelForm .mb-model-data .help{font-size:11px;max-width:100%;line-height:1.5}
+.mb-restock-title{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin:0 0 10px}
+.mb-restock-title h3{margin:0}
+.mb-restock-title button{min-height:41px;white-space:nowrap}
+@media(max-width:460px){.mb-restock-title{align-items:stretch}.mb-restock-title button{width:100%}}
 .mb-new-size-summary{padding:13px 14px;border:1px solid var(--line,#e6e6e2);
  border-radius:12px;margin:10px 0;display:flex;justify-content:space-between;align-items:center;
  gap:10px;font-size:12px}
@@ -45,54 +49,83 @@ OWNER_CSS = r"""
 }
 """
 RESTOCK_HELPERS = r"""
-let pendingReceiptVariants=[];
-function drawPendingReceiptVariants(){
- const host=document.querySelector('#pendingReceiptVariants');
- if(!host)return;
- const escLocal=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- host.innerHTML=pendingReceiptVariants.length?
- '<h3 style="font-size:16px;margin:14px 0">Novos tamanhos nesta reposição</h3>'+
- pendingReceiptVariants.map((v,i)=>'<div class="mb-new-size-summary"><span><b>'+escLocal(v.color)+' · '+escLocal(v.size)+'</b> · '+v.quantity+' peça(s) · '+escLocal(products.find(p=>p.model_id===v.model_id)?.name||'Modelo')+'</span><button class="secondary" type="button" data-remove-new-size="'+i+'">Remover</button></div>').join(''):'';
- host.querySelectorAll('[data-remove-new-size]').forEach(button=>button.onclick=()=>{
-  pendingReceiptVariants.splice(Number(button.dataset.removeNewSize),1);
-  drawPendingReceiptVariants();updateRestockSummary()
- })
+// Escolha o modelo a partir do mesmo painel de Reposição, sem navegar.
+function chooseReceiptModel(){
+ if(!owner())return;
+ const models=[...new Map(products.filter(p=>p.model_id).map(p=>[p.model_id,p])).values()]
+   .sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+ if(!models.length){toast('Cadastre um modelo antes de adicionar tamanhos.');return}
+ let dialog=document.getElementById('mbReceiptSelectModel');
+ if(!dialog){dialog=document.createElement('dialog');dialog.id='mbReceiptSelectModel';dialog.style.width='min(480px,calc(100vw - 20px))';document.body.append(dialog)}
+ dialog.innerHTML='<div class="modal-head"><div><h2>Selecionar modelo</h2><p class="help">Escolha a peça para criar o novo tamanho.</p></div><button type="button" class="secondary" data-model-close>✕</button></div>'+
+ '<form id="mbReceiptModelForm"><label>Buscar modelo<input id="mbReceiptModelSearch" placeholder="Nome ou referência" autocomplete="off"></label>'+
+ '<label>Modelo<select id="mbReceiptModelSelect" required></select></label><p class="help" id="mbReceiptModelHint"></p>'+
+ '<div class="actions"><button type="button" class="secondary" data-model-close>Cancelar</button><button type="submit" class="primary">Escolher modelo</button></div></form>';
+ const select=dialog.querySelector('#mbReceiptModelSelect'),search=dialog.querySelector('#mbReceiptModelSearch');
+ const draw=()=>{
+  const q=search.value.toLocaleLowerCase('pt-BR').trim();
+  const results=models.filter(p=>[p.name,p.extra_code,p.brand].join(' ').toLocaleLowerCase('pt-BR').includes(q)).slice(0,120);
+  select.replaceChildren(...results.map(p=>new Option(p.name+' · '+(p.extra_code||'Sem REF'),p.model_id)));
+  select.disabled=!results.length;
+  dialog.querySelector('#mbReceiptModelHint').textContent=results.length?results.length+' modelo(s) disponíveis':'Nenhum modelo encontrado.';
+ };
+ search.oninput=draw;draw();
+ dialog.querySelectorAll('[data-model-close]').forEach(btn=>btn.onclick=()=>dialog.close());
+ dialog.querySelector('form').onsubmit=e=>{e.preventDefault();if(!select.value)return;const modelId=select.value;dialog.close();openReceiptVariant(modelId)};
+ dialog.showModal();search.focus();
 }
-function openReceiptVariant(modelId){
+
+// Adicionar um tamanho no mesmo fluxo de Reposição: não altera outros tamanhos.
+async function openReceiptVariant(modelId){
  if(!owner())return;
  const variants=products.filter(v=>v.model_id===modelId);
- if(!modelId||!variants.length){toast('Este modelo ainda não está agrupado. Abra Produtos e modelos para corrigir o cadastro.');return}
- const base=variants[0],colorNames=[...new Set(variants.map(v=>v.color))];
- if(!String(base.extra_code||'').trim()){toast('Informe a referência obrigatória em Produtos e modelos antes de adicionar tamanho.');return}
+ if(!modelId||!variants.length){toast('Abra Produtos e modelos para agrupar este cadastro antes de adicionar um tamanho.');return}
+ const base=variants[0],colors=[...new Set(variants.map(v=>v.color).filter(Boolean))];
  let dialog=document.getElementById('mbAddSizeDialog');
  if(!dialog){dialog=document.createElement('dialog');dialog.id='mbAddSizeDialog';document.body.append(dialog)}
- dialog.innerHTML='<div class="modal-head"><div><span class="eyebrow">REPOSIÇÃO · NOVA VARIAÇÃO</span><h2>Adicionar tamanho</h2><p class="sub">'+esc(base.name)+'</p></div><button type="button" class="secondary" data-size-cancel>✕</button></div>'+
- '<p class="help">Crie o tamanho nesta cor e já registre a quantidade recebida. Os outros códigos e estoques não mudam.</p>'+
- '<form id="mbAddSizeForm" class="form-grid"><label>Cor<select name="color" required>'+colorNames.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('')+'</select></label>'+
- '<label>Tamanho<select name="size" required>'+sizeOptions.map(z=>'<option>'+esc(z)+'</option>').join('')+'</select></label>'+
+ dialog.innerHTML='<div class="modal-head"><div><span class="eyebrow">ESTOQUE / NOVO TAMANHO</span><h2>Adicionar tamanho</h2><p class="sub">'+esc(base.name)+'</p></div><button type="button" class="secondary" data-size-close aria-label="Fechar">✕</button></div>'+
+ '<p class="help">Escolha uma cor existente. O código será gerado automaticamente e as quantidades serão registradas na reposição. Os códigos e estoques atuais não mudam.</p>'+
+ '<form id="mbAddSizeForm" class="form-grid"><label>Cor<select name="color" required>'+colors.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('')+'</select></label>'+
+ '<label>Novo tamanho<select name="size" required>'+sizeOptions.map(z=>'<option>'+esc(z)+'</option>').join('')+'</select></label>'+
  '<label>Quantidade recebida<input type="number" name="quantity" min="1" max="99999" step="1" value="1" required></label>'+
- '<label class="mb-code-auto"><input id="mbReceiptAuto" type="checkbox" checked> Gerar código automaticamente</label>'+
- '<label style="grid-column:1/-1" id="mbReceiptCodeWrap" hidden>Código manual<input name="barcode" maxlength="40" autocomplete="off" placeholder="Código único por tamanho"></label>'+
+ '<div class="help" style="align-self:center">Código novo gerado automaticamente, sem alterar etiquetas anteriores.</div>'+
  '<p class="help" id="mbReceiptSizeError" role="alert" style="grid-column:1/-1;color:#b43e27"></p>'+
- '<div class="actions" style="grid-column:1/-1"><button type="button" class="secondary" data-size-cancel>Cancelar</button><button type="submit" class="primary">Adicionar à reposição</button></div></form>';
- dialog.querySelectorAll('[data-size-cancel]').forEach(b=>b.onclick=()=>dialog.close());
- const form=dialog.querySelector('#mbAddSizeForm'),auto=form.querySelector('#mbReceiptAuto');
- auto.onchange=()=>{const wrap=form.querySelector('#mbReceiptCodeWrap');wrap.hidden=auto.checked;form.elements.barcode.required=!auto.checked};
- form.onsubmit=e=>{
-  e.preventDefault();
-  const color=form.elements.color.value,size=form.elements.size.value,quantity=Number(form.elements.quantity.value),
-   barcode=String(form.elements.barcode.value||'').trim().toUpperCase();
-  const exists=variants.some(v=>v.color===color&&v.size===size)||
-   pendingReceiptVariants.some(v=>v.model_id===modelId&&v.color===color&&v.size===size);
-  if(exists){form.querySelector('#mbReceiptSizeError').textContent='Esta cor e tamanho já existem. Use a quantidade da grade.';return}
-  if(!Number.isInteger(quantity)||quantity<1||quantity>99999){
-   form.querySelector('#mbReceiptSizeError').textContent='Informe uma quantidade de 1 a 99999.';return
-  }
-  if(!auto.checked&&!/^[0-9A-Z][0-9A-Z .$/+%\x2d]{0,39}$/.test(barcode)){
-   form.querySelector('#mbReceiptSizeError').textContent='Código manual inválido. Use letras maiúsculas e números.';return
-  }
-  pendingReceiptVariants.push({model_id:modelId,color,size,quantity,barcode_mode:auto.checked?'auto':'manual',...(auto.checked?{}:{barcode})});
-  dialog.close();drawPendingReceiptVariants();updateRestockSummary();
+ '<div class="actions" style="grid-column:1/-1"><button type="button" class="secondary" data-size-close>Cancelar</button><button type="submit" class="primary">Cadastrar tamanho e repor</button></div></form>';
+ dialog.querySelectorAll('[data-size-close]').forEach(b=>b.onclick=()=>{if(!dialog.dataset.saving)dialog.close()});
+ const form=dialog.querySelector('#mbAddSizeForm');
+ form.onsubmit=async e=>{
+  e.preventDefault();if(dialog.dataset.saving)return;
+  const color=form.elements.color.value,size=form.elements.size.value,quantity=Number(form.elements.quantity.value);
+  const issue=form.querySelector('#mbReceiptSizeError');
+  issue.textContent='';
+  if(!Number.isInteger(quantity)||quantity<1||quantity>99999){issue.textContent='Informe uma quantidade inteira de 1 a 99999.';return}
+  if(variants.some(v=>v.color===color&&v.size===size)){issue.textContent='Este tamanho já existe nessa cor. Informe a quantidade diretamente na grade.';return}
+  const source=variants.find(v=>v.color===color);
+  if(!source||!String(source.extra_code||base.extra_code||'').trim()){issue.textContent='Informe a REF obrigatória do modelo antes de adicionar um tamanho.';return}
+  const submit=form.querySelector('[type=submit]');submit.disabled=true;dialog.dataset.saving='1';
+  let newVariantCreated=false;
+  try{
+   // Envia apenas a nova combinação: nenhuma outra variação recebe UPDATE.
+   const payload={model_id:modelId,name:base.name,description:base.description||'',
+    category:base.category,brand:base.brand||'',price:source.price,
+    extra_code:source.extra_code||base.extra_code,active:!!source.active,
+    main_photo:base.main_photo||null,
+    colors:[{name:color,photo:source.photo||null,sizes:[
+     {size,stock:0,price:source.price,extra_code:source.extra_code||base.extra_code,active:!!source.active}
+    ]}]};
+   const result=await api('product-models','POST',payload);
+   const created=result.variants?.find(v=>v.color===color&&v.size===size);
+   if(result.created!==1||!created?.id)throw Error('Este tamanho já foi cadastrado. Atualize a página e utilize a grade.');
+   newVariantCreated=true;
+   await api('stock-receipts','POST',{request_id:crypto.randomUUID(),
+    items:[{product_id:created.id,quantity}],note:'Nova variação via Reposição: '+base.name+' / '+color+' / '+size});
+   dialog.close();await refresh();toast('Tamanho '+size+' adicionado à cor '+color+'. '+quantity+' peça(s) registradas na reposição.');
+  }catch(err){
+   if(newVariantCreated){
+    dialog.close();await refresh();
+    toast('O tamanho foi criado com estoque zero. A entrada não foi confirmada: use a grade de reposição para lançar as peças.');
+   }else issue.textContent=err.message||'Não foi possível cadastrar o novo tamanho.';
+  }finally{delete dialog.dataset.saving;submit.disabled=false}
  };
  dialog.showModal();
 }
@@ -141,9 +174,13 @@ for store in ('mb-dryfit','mb-for-her'):
  "const data=Object.fromEntries(new FormData(e.target));if(!String(data.extra_code||'').trim()){error.textContent='Informe a referência (REF) obrigatória.';return}data.price=Math.round(Number(data.price)*100);",
  'ref before uploads in model save',store)
  s=rep(s,'let restockDraft=new Map(),restockQuery=',RESTOCK_HELPERS+'\nlet restockDraft=new Map(),restockQuery=', 'restock new sizes',store)
- s=rep(s,'<div id="restockGrid"></div></div><div class="panel restock-summary">',
- '<div id="restockGrid"></div><div id="pendingReceiptVariants" aria-live="polite"></div></div><div class="panel restock-summary">',
- 'new sizes summary',store)
+ # Botão sempre disponível na barra de reposição, independente do HTML da grade.
+ s=rep(s,'<button class="secondary" id="restockClear">Limpar quantidades</button>',
+ '<button class="secondary" type="button" id="mbRestockAddSize">＋ Adicionar tamanho</button><button class="secondary" id="restockClear">Limpar quantidades</button>',
+ 'add size toolbar button',store)
+ s=rep(s,"$('#restockClear').onclick=()=>{",
+ "$('#mbRestockAddSize').onclick=chooseReceiptModel;$('#restockClear').onclick=()=>{",
+ 'wire add size toolbar',store)
  s=rep(s,'</head>','<style>'+OWNER_CSS+'</style></head>','owner form style',store)
  page.write_text(s,encoding='utf-8')
  
