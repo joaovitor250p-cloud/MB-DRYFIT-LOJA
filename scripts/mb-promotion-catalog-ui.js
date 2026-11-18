@@ -27,6 +27,11 @@ function mbRenderPromotionCollection(){
   const link=document.createElement('a');link.href='#promocoes';link.dataset.mbPromoLink='1';link.textContent='Promoções';nav.append(link)
  }
  if(!panel){panel=document.createElement('section');panel.id='promocoes';panel.className='mb-promotion-collection';place.parentElement.insertBefore(panel,place)}
+ // The main catalog may render repeatedly while choosing a size. Reuse the
+ // promotion grid unless the actual promotional products change.
+ const stamp=JSON.stringify(eligible.map(p=>[p.id,p.price,p.original_price,p.color,p.size,p.photo||p.main_photo,p.available]));
+ if(panel.dataset.mbPromoStamp===stamp)return;
+ panel.dataset.mbPromoStamp=stamp;
  const buckets=new Map();
  for(const p of eligible){
   const key=(p.model_id||p.name)+'|'+p.color;
