@@ -217,7 +217,7 @@ function reviewLabelBatch(){
      confirm.textContent='Conferir etiquetas já enviadas';
      confirm.onclick=()=>dialog.close();
      confirm.disabled=false;cancel.disabled=false;
-   }else{confirm.disabled=false;cancel.disabled=false;recalc()}
+   }else{confirm.disabled=false;cancel.disabled=false;recalc();error.style.color='#b43e27';error.textContent=result.error||'Não foi possível enviar o lote.'}
  };
  actions.append(cancel,confirm);
  dialog.append(heading,help,tableWrap,summary,error,actions);recalc();dialog.showModal();
