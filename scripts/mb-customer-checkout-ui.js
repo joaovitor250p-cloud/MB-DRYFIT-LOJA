@@ -3,7 +3,7 @@
  * optional assistance and never silently replaces customer-entered details.
  */
 const MB_PICKUP_ADDRESS='Rua Monsenhor Andrade, 811, Loja L1390, 1º andar, Brás, São Paulo - SP, Brasil';
-const mbCheckoutGeography={states:[],cities:[],loadedState:''};
+const mbCheckoutGeography={states:[],cities:[],loadedState:'',citiesRequest:0,loadingStates:null};
 function mbPickupChooser(){
  let d=document.getElementById('mbPickupChooser');
  if(!d){d=document.createElement('dialog');d.id='mbPickupChooser';d.className='mb-pickup-map-dialog';document.body.append(d)}
@@ -36,14 +36,19 @@ function mbCheckoutDeliveryChanged(form){
  if(pickup)pickup.hidden=mode!=='pickup';
 }
 async function mbLoadStates(form){
- try{
+ if(mbCheckoutGeography.states.length)return;
+ if(mbCheckoutGeography.loadingStates)return mbCheckoutGeography.loadingStates;
+ mbCheckoutGeography.loadingStates=(async()=>{try{
   const response=await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome');
   if(!response.ok)throw Error();
   const data=await response.json();mbCheckoutGeography.states=data;
   const list=form.querySelector('#mbStateOptions');if(list)list.innerHTML=data.map(x=>'<option value="'+String(x.nome).replaceAll('"','&quot;')+'"></option>').join('');
  }catch{const status=form.querySelector('#mbRegionStatus');if(status)status.textContent='Não foi possível carregar as sugestões. Informe estado e cidade manualmente.'}
+ finally{mbCheckoutGeography.loadingStates=null}})();
+ return mbCheckoutGeography.loadingStates;
 }
 async function mbLoadCities(form){
+ const request=++mbCheckoutGeography.citiesRequest;
  const state=form.querySelector('[name="shipping_state"]')?.value||'';
  const selected=mbCheckoutGeography.states.find(x=>x.nome.toLocaleLowerCase('pt-BR')===state.trim().toLocaleLowerCase('pt-BR'));
  const city=form.querySelector('[name="shipping_city"]'),list=form.querySelector('#mbCityOptions');
@@ -53,7 +58,8 @@ async function mbLoadCities(form){
  try{
   const res=await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados/'+selected.sigla+'/municipios');
   if(!res.ok)throw Error();
-  const cities=await res.json();mbCheckoutGeography.cities=cities;mbCheckoutGeography.loadedState=selected.nome;
+  const cities=await res.json();if(request!==mbCheckoutGeography.citiesRequest)return;
+  mbCheckoutGeography.cities=cities;mbCheckoutGeography.loadedState=selected.nome;
   if(list)list.innerHTML=cities.map(x=>'<option value="'+String(x.nome).replaceAll('"','&quot;')+'"></option>').join('');
  }catch{const status=form.querySelector('#mbRegionStatus');if(status)status.textContent='Falha ao carregar municípios. Informe a cidade manualmente.'}
 }
@@ -90,6 +96,7 @@ function setupMBCheckoutExtra(form){
  if(!isHer)holder.querySelector('#mbPickupAddressButton').onclick=mbPickupChooser;
  const state=form.querySelector('[name="shipping_state"]');if(state)state.addEventListener('change',()=>mbLoadCities(form));
  const postcode=form.querySelector('[name="shipping_postcode"]');if(postcode)postcode.addEventListener('change',()=>mbLookupCEP(form));
- form.querySelectorAll('[name="delivery_mode"]').forEach(input=>input.addEventListener('change',()=>mbCheckoutDeliveryChanged(form)));
- mbLoadStates(form);mbCheckoutDeliveryChanged(form);
+ form.querySelectorAll('[name="delivery_mode"]').forEach(input=>input.addEventListener('change',()=>{mbCheckoutDeliveryChanged(form);if(input.checked&&input.value!=='pickup')mbLoadStates(form)}));
+ mbCheckoutDeliveryChanged(form);
+ if(form.querySelector('[name="delivery_mode"]:checked:not([value="pickup"])'))mbLoadStates(form);
 }
