@@ -124,8 +124,11 @@ def camera_fix(s):
  return s
 
 def print_fix(s):
+ # The frozen release is patched to use local MB Impressão. QZ is no longer
+ # necessary and must not be downloaded when opening its screen.
+ if 'qz.websocket.connect(' not in s:return s
  marker='async function connectLabelPrinter(){'
- return once(s,marker,marker+"\n await mbLoadVendorOnce('/vendor/qz-tray.js');",'lazy native printer')
+ return once(s,marker,marker+"\n await mbLoadVendorOnce('/vendor/qz-tray.js');",'lazy legacy printer')
 
 def add_loader(s):
  # Shared loader injected before all inline camera and printer modules.
