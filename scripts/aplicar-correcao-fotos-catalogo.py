@@ -55,4 +55,4 @@ old = old[:style_end] + stock_css + "\n" + old[style_end:]
 
 assert "function drawProductDetails" in old and "id=\"catalog\"" in old
 target.write_text(old, encoding="utf-8")
-print("MB Dryfit: round colors above sizes, compact sizing, variant stock and photo fixes applied to release build.")
+print("MB Dryfit: optimized color-size stock including sold-out colors; photo and compact size fixes applied.")
