@@ -55,10 +55,12 @@ for shop in ("mb-dryfit","mb-for-her"):
         "section('received')+section('done')",
         "section('received')+section('done')+section('cancelled')",
         shop+" buyer cancelled card list")
-    s=one(s,
-        "(o.status==='done'?'FEITO':'RECEBIDO')",
-        "(o.status==='cancelled'?'CANCELADO':o.status==='done'?'FEITO':'RECEBIDO')",
-        shop+" buyer cancelled details")
+    status_pattern=r"\(o\.status\s*===\s*['\"]done['\"]\s*\?\s*['\"][^'\"]+['\"]\s*:\s*['\"][^'\"]+['\"]\)"
+    status_matches=list(re.finditer(status_pattern,s))
+    if len(status_matches)!=1:
+        raise RuntimeError(shop+": status text expression unresolved ("+str(len(status_matches))+")")
+    status=status_matches[0].group()
+    s=s.replace(status,"(o.status==='cancelled'?'CANCELADO':"+status[1:],1)
     private.write_text(s,encoding="utf-8")
 
     api=root/"retail-operations.js"
