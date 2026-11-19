@@ -80,3 +80,59 @@ migração aplicada ou exclusão de R2 antes dessa resposta e do backup conferid
 A versão congelada pode conter 0034 seguida de 0042, com lacunas 0035–0041.
 Não editar migrações aplicadas nem incluir `pending-migrations` diretamente no
 deploy enquanto a sequência não estiver conciliada com cada D1 real.
+
+
+## Reiniciar ambas as lojas — inclui arquivos e modelos arquivados
+
+O titular solicitou **zerar todas as vendas históricas e atuais, todos os modelos
+publicados e arquivados e os dados antigos do Nex**. Acessos de dono/vendedor,
+contas de clientes e personalização das lojas devem permanecer. Isso **não
+autoriza ignorar a proteção obrigatória por backup**.
+
+Código preparado: `scripts/mb-zero-reset-plan-2026.py`. Ele **lê
+somente uma cópia local** do banco, verifica integridade, identifica todas as
+tabelas conhecidas, inclui produtos arquivados e publicados, examina chaves
+de foto e gera:
+
+- inventário por loja, com modelos, variações, vendas, pedidos, dinheiro e
+  referências de imagens;
+- uma proposta de SQL com transação, checagem de contagens, dependências,
+  restrições de FK e reinício da sequência de pedidos;
+- registros claros das tabelas **preservadas** e das tabelas **esvaziadas**.
+
+Testes fictícios: `scripts/testar-zero-reset-2026.py` aplica todas
+as migrações da versão congelada a um SQLite temporário, insere arquivos,
+vendas, pedidos, itens, produtos publicados e arquivados, Nex, caixa, metas,
+clientes e equipe, testa alteração concorrente, executa a proposta em cópia
+de teste e verifica a integridade, preservação de contas e recomeço em MB-0001
+e FH-0001.
+
+**O banco D1 não pode ser esvaziado por um simples deploy.** As tabelas e seus
+dados atuais permanecem inalterados até que os backups reais sejam copiados
+para fora e restaurados em ambiente de teste, o relatório real seja
+conferido e a autorização final de exclusão seja confirmada.
+
+**O R2 não participa de uma transação SQLite.** Portanto, não se deve
+prometer atomicidade entre D1 e R2. Fazer a transição apenas em janela sem
+novas escritas, manter os objetos de imagem protegidos por backup durante
+toda a verificação do sistema e usar um processo de cópia, conferência e
+compensação em caso de falha. Nunca apagar banners, logotipos e fotos
+compartilhadas com configurações ou contas de cliente.
+
+Apenas imagens comprovadamente ligadas a modelos antigos e não utilizadas
+por dados preservados são candidatas à remoção. A lista real deve ser
+cruzada com a relação íntegra de objetos R2 obtida do backup.
+
+As variantes de promoções antigas são limpas da configuração da promoção,
+mas opções gerais como "esconder esgotados" são mantidas, assim como tema,
+cores e banners. As definições de cupons permanecem e seus contadores de
+uso voltam a zero. Histórico de vendas, caixa, metas antigas, Nex e códigos
+de barras somem. O número sequencial de pedidos reinicia em MB-0001 e FH-0001.
+
+### Nova conferência obrigatória antes da exclusão
+
+O inventário real deve comparar contagens do D1 com o manifest do backup
+externo, indicar precisamente quantos objetos R2 são elegíveis e verificar
+que o snapshot pré-limpeza foi guardado com retenção **mínima de 90 dias**.
+Somente então submeter ao dono o resumo real por loja e solicitar aprovação
+final explícita de exclusão; sem o relatório não é seguro executar o plano.
