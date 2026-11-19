@@ -20,7 +20,7 @@ function mbRenderPromotionCollection(){
   document.head.append(style);
  }
  let panel=document.querySelector('#promocoes');
- const eligible=products.filter(p=>p.promotion_price&&p.original_price>p.price);
+ const eligible=products.filter(p=>p.promotion_price&&p.original_price>p.price&&p.available!==false&&(p.available_quantity??Math.max(0,(p.stock??1)-(p.reserved_stock??0)))>0);
  const nav=document.querySelector('.main-nav');
  if(!eligible.length){panel?.remove();nav?.querySelector('[data-mb-promo-link]')?.remove();return}
  if(nav&&!nav.querySelector('[data-mb-promo-link]')){

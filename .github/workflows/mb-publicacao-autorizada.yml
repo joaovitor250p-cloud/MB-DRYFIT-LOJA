@@ -10,6 +10,19 @@ on:
       - scripts/limpar-catalogos-publicos.py
       - scripts/mb-banner-topo-2026.py
       - scripts/testar-banner-topo-2026.py
+      - scripts/mb-short-order-display-2026.py
+      - scripts/mb-followup-ui-2026.py
+      - scripts/mb-cancelamento-seguro-2026.py
+      - scripts/mb-search-short-codes-2026.py
+      - scripts/mb-dashboard-indicadores-2026.py
+      - scripts/mb-historico-cancelados-2026.py
+      - scripts/mb-esgotados-catalogo-2026.py
+      - scripts/testar-codigos-curtos.py
+      - scripts/testar-cancelamento-seguro-2026.py
+      - scripts/testar-contato-vendedor-2026.mjs
+      - scripts/testar-historico-cancelados-2026.mjs
+      - scripts/mb-promotion-stock-regression.test.mjs
+      - scripts/mb-dashboard-test-refresh-2026.py
       - scripts/aplicar-filtros-marca-peca.py
       - scripts/organizar-modelos-export-mobile.py
       - scripts/carrinho-tela-imediata.py
@@ -64,6 +77,19 @@ on:
       - scripts/mb-verify-release-assets.mjs
       - scripts/mb-banner-topo-2026.py
       - scripts/testar-banner-topo-2026.py
+      - scripts/mb-short-order-display-2026.py
+      - scripts/mb-followup-ui-2026.py
+      - scripts/mb-cancelamento-seguro-2026.py
+      - scripts/mb-search-short-codes-2026.py
+      - scripts/mb-dashboard-indicadores-2026.py
+      - scripts/mb-historico-cancelados-2026.py
+      - scripts/mb-esgotados-catalogo-2026.py
+      - scripts/testar-codigos-curtos.py
+      - scripts/testar-cancelamento-seguro-2026.py
+      - scripts/testar-contato-vendedor-2026.mjs
+      - scripts/testar-historico-cancelados-2026.mjs
+      - scripts/mb-promotion-stock-regression.test.mjs
+      - scripts/mb-dashboard-test-refresh-2026.py
   workflow_dispatch:
 permissions:
   contents: read
@@ -1053,6 +1079,26 @@ jobs:
           python3 -m py_compile catalogos-atuais/scripts/mb-banner-topo-2026.py
           python3 catalogos-atuais/scripts/mb-banner-topo-2026.py
           python3 catalogos-atuais/scripts/testar-banner-topo-2026.py
+      - name: Validar funcionalidades de pedidos e estoque na ordem final
+        run: |
+          python3 catalogos-atuais/scripts/mb-short-order-display-2026.py
+          python3 catalogos-atuais/scripts/mb-followup-ui-2026.py
+          python3 catalogos-atuais/scripts/mb-cancelamento-seguro-2026.py
+          python3 catalogos-atuais/scripts/mb-search-short-codes-2026.py
+          python3 catalogos-atuais/scripts/mb-dashboard-indicadores-2026.py
+          python3 catalogos-atuais/scripts/mb-historico-cancelados-2026.py
+          python3 catalogos-atuais/scripts/mb-esgotados-catalogo-2026.py
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/worker/staff-workspace.js"
+            node --check "stores/$store/worker/storefront-orders.js"
+            node --check "stores/$store/worker/mb-order-adjustments.js"
+          done
+          python3 catalogos-atuais/scripts/testar-codigos-curtos.py
+          python3 catalogos-atuais/scripts/testar-cancelamento-seguro-2026.py
+          node catalogos-atuais/scripts/testar-contato-vendedor-2026.mjs
+          node catalogos-atuais/scripts/testar-historico-cancelados-2026.mjs
+          node catalogos-atuais/scripts/mb-promotion-stock-regression.test.mjs
+          python3 catalogos-atuais/scripts/mb-dashboard-test-refresh-2026.py
       - run: npm run check
       - run: npm run test:hosting
       - name: Extrair arquivos estáticos e privados na pré-verificação
@@ -2192,6 +2238,26 @@ jobs:
           python3 -m py_compile catalogos-atuais/scripts/mb-banner-topo-2026.py
           python3 catalogos-atuais/scripts/mb-banner-topo-2026.py
           python3 catalogos-atuais/scripts/testar-banner-topo-2026.py
+      - name: Integrar e testar pedidos cancelamentos e estoque nas duas lojas
+        run: |
+          python3 catalogos-atuais/scripts/mb-short-order-display-2026.py
+          python3 catalogos-atuais/scripts/mb-followup-ui-2026.py
+          python3 catalogos-atuais/scripts/mb-cancelamento-seguro-2026.py
+          python3 catalogos-atuais/scripts/mb-search-short-codes-2026.py
+          python3 catalogos-atuais/scripts/mb-dashboard-indicadores-2026.py
+          python3 catalogos-atuais/scripts/mb-historico-cancelados-2026.py
+          MB_REQUIRE_SOLDOUT_API=1 python3 catalogos-atuais/scripts/mb-esgotados-catalogo-2026.py
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/worker/staff-workspace.js"
+            node --check "stores/$store/worker/storefront-orders.js"
+            node --check "stores/$store/worker/mb-order-adjustments.js"
+          done
+          python3 catalogos-atuais/scripts/testar-codigos-curtos.py
+          python3 catalogos-atuais/scripts/testar-cancelamento-seguro-2026.py
+          node catalogos-atuais/scripts/testar-contato-vendedor-2026.mjs
+          node catalogos-atuais/scripts/testar-historico-cancelados-2026.mjs
+          node catalogos-atuais/scripts/mb-promotion-stock-regression.test.mjs
+          python3 catalogos-atuais/scripts/mb-dashboard-test-refresh-2026.py
       - name: Revalidar a suíte completa após otimização da versão final
         run: npm run check
       - name: Empacotar módulos das promoções e pedidos em Workers únicos
