@@ -36,12 +36,16 @@ if(!owner){
     rep(start,security,"new seller model role restriction")
     fixed="if(!['P','M','G','GG','EG','EGG','Único'].includes(size.size))return json({error:'Tamanho inválido.'},400);"
     new="size.size=mbV3ValidSize(size.size);if(!size.size)return json({error:'Tamanho inválido.'},400);"
+    if store=="mb-for-her":
+        fixed="if(!['PP','P','M','G','GG','EG','EGG','Único'].includes(size.size))return json({error:'Tamanho inválido.'},400);"
     rep(fixed,new,"create size validation")
     # Hardcoded restock size check remains unchanged: v3 uses a separate atomic route.
     path.write_text(s,encoding="utf-8")
     mg=root/"model-management.js"
     src=mg.read_text(encoding="utf-8")
     old="if(!['P','M','G','GG','EG','EGG','Único'].includes(v.size))throw modelProblem('Tamanho inválido.');"
+    if store=="mb-for-her":
+        old="if(!['PP','P','M','G','GG','EG','EGG','Único'].includes(v.size))throw modelProblem('Tamanho inválido.');"
     if src.count(old)==1:
         valid="if(!(['PP','P','M','G','GG','XG','EG','EGG','EXG','XGG','G1','G2','G3','G4','Único'].includes(v.size)||/^(3[4-9]|4[0-9]|5[0-4])$/.test(v.size)||/^[A-Z0-9-]{1,6}$/.test(v.size)))throw modelProblem('Tamanho inválido.');"
         src=src.replace(old,valid,1)
