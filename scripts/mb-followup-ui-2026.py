@@ -50,12 +50,11 @@ for shop in ('mb-dryfit','mb-for-her'):
         s=s.replace('esc(o.id.toUpperCase())','esc((o.short_code||o.id).toUpperCase())')
         # The dashboard keeps its existing server-backed metrics, cash status,
         # last sales and low-stock data; remove duplicates of sidebar shortcuts.
-        prefix="+'<div class=\"operations-shortcuts\">'+workspaceShortcuts().map(([id,label,desc])=>"
-        p=s.find(prefix)
+        p=s.find('<div class="operations-shortcuts">')
         if p<0:raise RuntimeError('Operations shortcut block changed')
-        q=s.find("+'</div><section id=\"operationsMetrics\"",p)
+        q=s.find('</div><section id="operationsMetrics"',p)
         if q<0:raise RuntimeError('Operations metrics anchor changed')
-        s=s[:p]+"+'<section id=\"operationsMetrics\""+s[q+len("+'</div><section id=\"operationsMetrics\""):]
+        s=s[:p]+s[q+len('</div>'):]
         # Remove giant duplicated promotional hero; keep compact metrics and lists.
         begin=s.find(" const heading=view.querySelector('.operations-heading');heading.insertAdjacentHTML(")
         end=s.find("\n view.querySelectorAll('[data-workspace-action]')",begin)
