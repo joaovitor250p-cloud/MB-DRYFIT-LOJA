@@ -21,8 +21,9 @@ for store in ("mb-dryfit","mb-for-her"):
  if s.count(orig)!=1:raise RuntimeError(store+": unique render function missing")
  s=s.replace(orig,orig+"if(page==='clients'&&!owner()&&staff()){nav();mbV3SellerClients();return}",1)
  css_hook="</style>"
- if s.count(css_hook)!=1:raise RuntimeError(store+": admin style tag changed")
- s=s.replace(css_hook,"\n"+CSS+"\n"+css_hook,1)
+ pos=s.find(css_hook)
+ if pos<0:raise RuntimeError(store+": admin style tag missing")
+ s=s[:pos]+"\n"+CSS+"\n"+s[pos:]
  page.write_text(s,encoding="utf-8")
  # The shop remains the source of truth for available stock and never displays
  # archived/inactive sizes. The only change here is display order.
