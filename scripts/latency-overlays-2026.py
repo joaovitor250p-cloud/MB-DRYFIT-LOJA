@@ -23,7 +23,7 @@ MEDIA_HOOK = """
  if(!proto)return;
  const show=proto.showModal,close=proto.close;
  const update=()=>{
-   const open=!!document.querySelector('dialog[open],.shop-cart-workspace[open],.mb-orders-overlay[open]');
+   const open=document.body.classList.contains('shopping-page')||!!document.querySelector('dialog[open],.shop-cart-workspace[open],.mb-orders-overlay[open]');
    document.querySelectorAll('video').forEach(video=>{
      if(open){if(!video.paused)video.dataset.mbRestorePlaying='1';video.pause();}
      else if(video.dataset.mbRestorePlaying==='1'){
@@ -37,7 +37,7 @@ MEDIA_HOOK = """
  proto.close=function(...args){const result=close.apply(this,args);queueMicrotask(update);return result};
  document.addEventListener('close',update,true);
  document.addEventListener('cancel',()=>queueMicrotask(update),true);
- document.addEventListener('visibilitychange',update);
+ document.addEventListener('visibilitychange',update);\n new MutationObserver(update).observe(document.body,{attributes:true,attributeFilter:['class']});
 })();
 """
 
@@ -54,12 +54,8 @@ def save(path,fn):
 
 def cart_fix(s):
  # A cart is a section, not an HTMLDialogElement. Update hero media explicitly.
- s=once(s,"document.body.classList.add('shopping-page');document.body.classList.remove('favorites-page');",
-   "document.body.classList.add('shopping-page');document.body.classList.remove('favorites-page');if(typeof window!=='undefined')window.mbRefreshDialogMedia?.();",
-   'pause hero when cart opens')
- s=once(s,"document.body.classList.remove('shopping-page');if(updateHash",
-   "document.body.classList.remove('shopping-page');if(typeof window!=='undefined')window.mbRefreshDialogMedia?.();if(updateHash",
-   'resume hero when cart closes')
+ # Cart overlays are not native dialogs. The media hook watches body classes
+ # instead of matching fragile legacy function bodies modified by other patches.
 
  start=s.index('async function mbGuestSellers(){')
  end=s.index('\nfunction mbContactStorageKey()',start)
