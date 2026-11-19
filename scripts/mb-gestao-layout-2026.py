@@ -25,6 +25,12 @@ for store in ("mb-dryfit","mb-for-her"):
     page=root/"page.html"
     s=page.read_text(encoding="utf-8")
     s=once(s,"function render(){",NAV+"\nfunction render(){",store+" navigation")
+    legacy_nav="nav();if(owner()){let entry=document.querySelector('#mbPromotionsNav');if(!entry){entry=document.createElement('button');entry.id='mbPromotionsNav';entry.type='button';entry.textContent='Promoções por cor e tamanho';document.querySelector('#nav')?.append(entry)}entry.onclick=()=>{page='mbPromotions';render()};entry.classList.toggle('active',page==='mbPromotions')}"
+    if s.count(legacy_nav)==1:
+        s=s.replace(legacy_nav,"nav();",1)
+    elif "#mbPromotionsNav" in s:
+        raise RuntimeError(store+": unexpected duplicate promotion navigation")
+
     s=once(s,"function render(){",
       "function render(){if(page==='mbReports'&&owner()){nav();renderMBReports();return}"+
       "if((page==='mbBackup'||page==='mbConta')&&owner()){nav();renderMBConfigPane(page);return}",store+" report routing")
