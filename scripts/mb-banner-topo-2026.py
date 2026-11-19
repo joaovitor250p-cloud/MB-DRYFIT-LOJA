@@ -112,14 +112,23 @@ JS=r"""
  const hero=document.querySelector('.mbh');if(!hero)return;
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  const scroller=()=>reduced?'auto':'smooth';
- hero.querySelectorAll('a[href="#promocoes"],a[href="#novidades"]').forEach(a=>a.addEventListener('click',e=>{const target=document.querySelector(a.getAttribute('href'));if(target&&!target.hidden&&getComputedStyle(target).display!=='none')return;e.preventDefault();document.getElementById('colecao')?.scrollIntoView({behavior:scroller(),block:'start'});}));
+ document.querySelectorAll('.mbh a[href="#promocoes"],.mbh a[href="#novidades"],.mbh-top-nav a[href="#promocoes"],.mbh-top-nav a[href="#novidades"]').forEach(a=>a.addEventListener('click',e=>{const target=document.querySelector(a.getAttribute('href'));if(target&&!target.hidden&&getComputedStyle(target).display!=='none')return;e.preventDefault();document.getElementById('colecao')?.scrollIntoView({behavior:scroller(),block:'start'});}));
  const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
  // Use the real existing hidden #filters controls to preserve catalog behavior.
  hero.querySelectorAll('[data-category]').forEach(link=>link.addEventListener('click',e=>{
   e.preventDefault();
-  const wanted=norm(link.dataset.category).replace(/s$/,'');
-  const opt=[...document.querySelectorAll('#filters [data-category],#colecao .mb-filter-choice')]
-    .find(b=>{const key=norm(b.dataset.category||b.dataset.value||b.textContent);return key.replace(/s$/,'').includes(wanted)||wanted.includes(key.replace(/s$/,''))});
+  const label=norm(link.dataset.category);
+  const names={
+   'camisas':['camisa','camiseta','regata','manga longa'],
+   'bermudas':['bermuda','short','shorts'],
+   'conjuntos':['conjunto'],
+   'tops':['top'],
+   'leggings':['legging']
+  };
+  const desired=names[label]||[label.replace(/s$/,'')];
+  const matches=value=>{const n=norm(value);return desired.some(term=>n.includes(term))};
+  const opt=[...document.querySelectorAll('#colecao .mb-filter-choice,#filters [data-category]')]
+    .find(b=>matches(b.dataset.category||b.dataset.value||b.textContent));
   if(opt)opt.click();
   else {
    const piece=[...document.querySelectorAll('#colecao .mb-header-filter')].find(x=>norm(x.textContent).includes('peca'));
