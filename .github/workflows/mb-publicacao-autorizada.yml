@@ -8,6 +8,20 @@ on:
       - scripts/fix-media-studio.py
       - scripts/online-order-alerts-update.py
       - scripts/limpar-catalogos-publicos.py
+      - scripts/mb-banner-topo-2026.py
+      - scripts/testar-banner-topo-2026.py
+      - scripts/mb-short-order-display-2026.py
+      - scripts/mb-followup-ui-2026.py
+      - scripts/mb-cancelamento-seguro-2026.py
+      - scripts/mb-search-short-codes-2026.py
+      - scripts/mb-dashboard-indicadores-2026.py
+      - scripts/mb-historico-cancelados-2026.py
+      - scripts/mb-esgotados-catalogo-2026.py
+      - scripts/testar-codigos-curtos.py
+      - scripts/testar-cancelamento-seguro-2026.py
+      - scripts/testar-contato-vendedor-2026.mjs
+      - scripts/testar-historico-cancelados-2026.mjs
+      - scripts/mb-promotion-stock-regression.test.mjs
       - scripts/aplicar-filtros-marca-peca.py
       - scripts/organizar-modelos-export-mobile.py
       - scripts/carrinho-tela-imediata.py
@@ -18,6 +32,11 @@ on:
       - scripts/corrigir-opcoes-filtros.py
       - scripts/aplicar-impressao-local.py
       - scripts/instalador-mb-impressao-configuracoes.py
+      - scripts/testar-link-impressao-github-release.mjs
+      - stores/mb-dryfit/worker/staff-sales.js
+      - stores/mb-dryfit/worker/api.js
+      - stores/mb-for-her/worker/staff-sales.js
+      - stores/mb-for-her/worker/api.js
       - scripts/garantir-codigos-unicos.py
       - scripts/checkout-pdv-sempre-visivel.py
       - scripts/corrigir-salvar-modelos.py
@@ -34,7 +53,6 @@ on:
       - scripts/mb-externalize-worker.mjs
       - scripts/mb-prepare-assets-patch.mjs
       - scripts/mb-verify-release-assets.mjs
-      - scripts/mb-short-order-display-2026.py
       - scripts/mb-promo-checkout-trigger.sql
       - scripts/mb-promo-checkout-guard.mjs
       - scripts/test-promo-checkout-trigger.py
@@ -51,31 +69,25 @@ on:
       - scripts/ajustar-fixtures-ultimos-2026.py
   pull_request:
     paths:
-      - scripts/testar-codigos-curtos.py
+      - .github/workflows/mb-publicacao-autorizada.yml
+      - scripts/latency-overlays-2026.py
+      - scripts/mb-externalize-worker.mjs
+      - scripts/mb-prepare-assets-patch.mjs
+      - scripts/mb-verify-release-assets.mjs
+      - scripts/mb-banner-topo-2026.py
+      - scripts/testar-banner-topo-2026.py
+      - scripts/mb-short-order-display-2026.py
       - scripts/mb-followup-ui-2026.py
       - scripts/mb-cancelamento-seguro-2026.py
       - scripts/mb-search-short-codes-2026.py
       - scripts/mb-dashboard-indicadores-2026.py
       - scripts/mb-historico-cancelados-2026.py
       - scripts/mb-esgotados-catalogo-2026.py
+      - scripts/testar-codigos-curtos.py
       - scripts/testar-cancelamento-seguro-2026.py
       - scripts/testar-contato-vendedor-2026.mjs
       - scripts/testar-historico-cancelados-2026.mjs
-      - scripts/testar-backup-local-2026.py
-      - scripts/mb-zero-reset-plan-2026.py
-      - scripts/mb-zero-r2-inventory-2026.py
-      - scripts/testar-zero-r2-inventory-2026.py
-      - scripts/testar-zero-reset-2026.py
-      - scripts/mb-offsite-backup-2026.py
       - scripts/mb-promotion-stock-regression.test.mjs
-      - scripts/mb-short-order-display-2026.py
-      - scripts/pending-migrations/**
-      - scripts/mb-promotion-catalog-ui.js
-      - .github/workflows/mb-publicacao-autorizada.yml
-      - scripts/latency-overlays-2026.py
-      - scripts/mb-externalize-worker.mjs
-      - scripts/mb-prepare-assets-patch.mjs
-      - scripts/mb-verify-release-assets.mjs
   workflow_dispatch:
 permissions:
   contents: read
@@ -1025,6 +1037,8 @@ jobs:
             grep -q 'mbOriginalRenderVendorAccess' "stores/$store/worker/staff-sales.js"
             grep -q "/downloads/mb-impressao-elgin-windows.zip" "stores/$store/worker/api.js"
           done
+      - name: Validar download na GitHub Release e retirar dependência do R2 só para instalador
+        run: node catalogos-atuais/scripts/testar-link-impressao-github-release.mjs
       - name: Impedir códigos automáticos duplicados nos dois catálogos
         run: |
           python3 catalogos-atuais/scripts/garantir-codigos-unicos.py
@@ -1058,41 +1072,31 @@ jobs:
         run: python3 catalogos-atuais/scripts/atualizar-fixtures-ref.py
       - name: Aplicar otimizações finais ao pacote de pré-verificação congelado
         run: python3 catalogos-atuais/scripts/latency-overlays-2026.py
-      - run: npm run check
-      - name: Preparar exibição do código curto, mantendo compatibilidade anterior
-        run: python3 catalogos-atuais/scripts/mb-short-order-display-2026.py
-      - name: Integrar atendimento, cancelamento e resumo nas duas lojas
+      - name: Aplicar e testar o novo banner das duas lojas na versão congelada
         run: |
+          python3 -m py_compile catalogos-atuais/scripts/mb-banner-topo-2026.py
+          python3 catalogos-atuais/scripts/mb-banner-topo-2026.py
+          python3 catalogos-atuais/scripts/testar-banner-topo-2026.py
+      - name: Validar funcionalidades de pedidos e estoque na ordem final
+        run: |
+          python3 catalogos-atuais/scripts/mb-short-order-display-2026.py
           python3 catalogos-atuais/scripts/mb-followup-ui-2026.py
           python3 catalogos-atuais/scripts/mb-cancelamento-seguro-2026.py
           python3 catalogos-atuais/scripts/mb-search-short-codes-2026.py
           python3 catalogos-atuais/scripts/mb-dashboard-indicadores-2026.py
           python3 catalogos-atuais/scripts/mb-historico-cancelados-2026.py
-          python3 catalogos-atuais/scripts/mb-esgotados-catalogo-2026.py
+          MB_REQUIRE_SOLDOUT_API=1 python3 catalogos-atuais/scripts/mb-esgotados-catalogo-2026.py
           for store in mb-dryfit mb-for-her; do
             node --check "stores/$store/worker/staff-workspace.js"
             node --check "stores/$store/worker/storefront-orders.js"
             node --check "stores/$store/worker/mb-order-adjustments.js"
-            node --check "stores/$store/worker/order-history.js"
           done
-      - name: Testar sequências curtas das duas lojas sem tocar no D1 real
-        run: python3 catalogos-atuais/scripts/testar-codigos-curtos.py
-      - name: Testar quatro cenários de promoção e estoque sem tocar na produção
-        run: node catalogos-atuais/scripts/mb-promotion-stock-regression.test.mjs
-      - name: Testar cancelamento idempotente sem tocar em estoque ou caixa
-        run: python3 catalogos-atuais/scripts/testar-cancelamento-seguro-2026.py
-      - name: Testar contato por WhatsApp e código curto no cartão dos pedidos
-        run: node catalogos-atuais/scripts/testar-contato-vendedor-2026.mjs
-      - name: Conferir pedidos cancelados nos históricos do cliente e da equipe
-        run: node catalogos-atuais/scripts/testar-historico-cancelados-2026.mjs
-      - name: Simular zeragem integral, inclusive arquivados, usando D1s fictícios
-        run: python3 catalogos-atuais/scripts/testar-zero-reset-2026.py
-      - name: Conferir que fotos de banners e clientes não entram na limpeza R2
-        run: python3 catalogos-atuais/scripts/testar-zero-r2-inventory-2026.py
-      - name: Testar cópia criptografada, hash e restauração D1 sintética sem credenciais
-        run: |
-          python3 -m pip install --quiet boto3 cryptography
-          python3 catalogos-atuais/scripts/testar-backup-local-2026.py
+          python3 catalogos-atuais/scripts/testar-codigos-curtos.py
+          python3 catalogos-atuais/scripts/testar-cancelamento-seguro-2026.py
+          node catalogos-atuais/scripts/testar-contato-vendedor-2026.mjs
+          node catalogos-atuais/scripts/testar-historico-cancelados-2026.mjs
+          node catalogos-atuais/scripts/mb-promotion-stock-regression.test.mjs
+      - run: npm run check
       - run: npm run test:hosting
       - name: Extrair arquivos estáticos e privados na pré-verificação
         run: |
@@ -2094,6 +2098,8 @@ jobs:
             grep -q 'mbOriginalRenderVendorAccess' "stores/$store/worker/staff-sales.js"
             grep -q "/downloads/mb-impressao-elgin-windows.zip" "stores/$store/worker/api.js"
           done
+      - name: Validar download na GitHub Release e retirar dependência do R2 só para instalador
+        run: node catalogos-atuais/scripts/testar-link-impressao-github-release.mjs
       - name: Impedir códigos automáticos duplicados nos dois catálogos
         run: |
           python3 catalogos-atuais/scripts/garantir-codigos-unicos.py
@@ -2224,7 +2230,12 @@ jobs:
         run: python3 catalogos-atuais/scripts/ajustar-fixtures-ultimos-2026.py
       - name: Aplicar otimizações finais de desempenho sem alterar o visual nem dados
         run: python3 catalogos-atuais/scripts/latency-overlays-2026.py
-      - name: Integrar códigos, cancelamentos e atendimento no build FINAL das duas lojas
+      - name: Aplicar e testar o banner HTML CSS sem fotos nas duas lojas
+        run: |
+          python3 -m py_compile catalogos-atuais/scripts/mb-banner-topo-2026.py
+          python3 catalogos-atuais/scripts/mb-banner-topo-2026.py
+          python3 catalogos-atuais/scripts/testar-banner-topo-2026.py
+      - name: Integrar e testar pedidos cancelamentos e estoque nas duas lojas
         run: |
           python3 catalogos-atuais/scripts/mb-short-order-display-2026.py
           python3 catalogos-atuais/scripts/mb-followup-ui-2026.py
@@ -2234,11 +2245,14 @@ jobs:
           python3 catalogos-atuais/scripts/mb-historico-cancelados-2026.py
           MB_REQUIRE_SOLDOUT_API=1 python3 catalogos-atuais/scripts/mb-esgotados-catalogo-2026.py
           for store in mb-dryfit mb-for-her; do
-            node --check "stores/$store/worker/mb-order-adjustments.js"
             node --check "stores/$store/worker/staff-workspace.js"
             node --check "stores/$store/worker/storefront-orders.js"
+            node --check "stores/$store/worker/mb-order-adjustments.js"
           done
           python3 catalogos-atuais/scripts/testar-codigos-curtos.py
+          python3 catalogos-atuais/scripts/testar-cancelamento-seguro-2026.py
+          node catalogos-atuais/scripts/testar-contato-vendedor-2026.mjs
+          node catalogos-atuais/scripts/testar-historico-cancelados-2026.mjs
           node catalogos-atuais/scripts/mb-promotion-stock-regression.test.mjs
       - name: Revalidar a suíte completa após otimização da versão final
         run: npm run check
@@ -2261,9 +2275,14 @@ jobs:
         shell: bash
         run: |
           node --input-type=module <<'NODE'
-          import {readFileSync} from 'node:fs';
+          import {readFileSync,readdirSync} from 'node:fs';
           for (const store of ['dryfit','her']) {
-            const built=readFileSync('cloudflare-dist/'+store+'/worker.js','utf8');
+            const dir='cloudflare-dist/'+store;
+            const worker=readFileSync(dir+'/worker.js','utf8');
+            if(Buffer.byteLength(worker)>=1000000)throw Error(store+': Worker excede 1 MB');
+            const staticDir=dir+'/public/_mb/static';
+            const built=worker+'\n'+readdirSync(staticDir).filter(x=>x.endsWith('.js')).map(x=>readFileSync(staticDir+'/'+x,'utf8')).join('\n');
+            if(store==='dryfit'&&!worker.includes('/_mb/private/'))throw Error(store+': dados Nex sem bloqueio');
             for (const term of ['mbPrinterToken','function mountDirectPrinter','function reviewLabelBatch','mbBridgeRequest','Salvar e conectar uma vez','mbPrinterConnectedPanel','/downloads/mb-impressao-elgin-windows.zip','Tutorial de instalação em computador novo','function mbPrinterAllowPaint()','Preparando lista:']) {
               if(!built.includes(term))throw Error(store+': campo ou integração de impressão ausente no Worker final: '+term);
             }

@@ -163,8 +163,22 @@ def admin_fix(s):
   if i<0:raise RuntimeError('admin style tag missing')
   s=s[:i]+FAST_CSS+s[i:]
  # Remove eager vendor scripts only after the lazy loaders are installed below.
- s=once(s,'<script src="/vendor/qz-tray.js"></script><script src="/vendor/zxing-browser.min.js"></script>',
-  '', 'eager vendor scripts')
+ # Earlier release patches may remove either or both eager imports first.
+ # Handle both expected layouts and fail closed for partial/unrecognized changes.
+ combined='<script src="/vendor/qz-tray.js"></script><script src="/vendor/zxing-browser.min.js"></script>'
+ qz='<script src="/vendor/qz-tray.js"></script>'
+ zxing='<script src="/vendor/zxing-browser.min.js"></script>'
+ if combined in s:
+  s=once(s,combined,'','eager vendor scripts (original pair)')
+ elif qz in s and zxing in s:
+  s=once(s,qz,'','eager vendor QZ script')
+  s=once(s,zxing,'','eager vendor ZXing script')
+ elif qz not in s and zxing not in s:
+  # Both imports were already removed by the earlier production patches.
+  if '/*__NATIVE_PRINT__*/' not in s:
+   raise RuntimeError('Vendor scripts removed but expected lazy-loader insertion point is missing')
+ else:
+  raise RuntimeError('Only one eager vendor script remains; unexpected partial release patch')
  return s
 
 def startup_fix(s):
@@ -210,8 +224,21 @@ function mbGateInitialView(view){
    helper+"async function refresh(){[products,sales]=await Promise.all([api('products'),api('sales')]);mbViewData.productsReady=true;mbViewData.salesReady=true;render()}",'lazy data bootstrap')
  s=once(s,"async function refreshProductsOnly(){products=await api('products');render()}",
    "async function refreshProductsOnly(){products=await api('products');mbViewData.productsReady=true;render()}",'products ready marker')
- s=once(s,"nav();const view=$('#view');",
-   "nav();const view=$('#view');if(mbGateInitialView(view))return;",'tab skeleton and late fetch')
+ # Production patches can insert additional navigation logic between nav() and
+ # the view binding, so target the unique view declaration instead.
+ if 'if(mbGateInitialView(view))return;' not in s:
+  candidates=[r'const\s+view\s*=\s*\$\(["\x27]#view["\x27]\)\s*;',
+              r'const\s+view\s*=\s*document\.querySelector\(["\x27]#view["\x27]\)\s*;']
+  matches=[m for pattern in candidates for m in re.finditer(pattern,s)]
+  exact="nav();const view=$('#view');"
+  if s.count(exact)==1:
+   s=once(s,exact,exact+"if(mbGateInitialView(view))return;",'canonical view binding')
+  else:
+   after_nav=[m for m in matches if 0<=m.start()-s.rfind('nav();',0,m.start())<=500]
+   if len(after_nav)!=1:
+    raise RuntimeError('Main #view binding unresolved: %d declarations, %d near navigation' %(len(matches),len(after_nav)))
+   m=after_nav[0]
+   s=s[:m.end()]+'if(mbGateInitialView(view))return;'+s[m.end():]
  s=once(s,"setInterval(rememberStaffSession,900000)}await refresh();if(owner()",
    "setInterval(rememberStaffSession,900000)}render();if(owner()", 'immediate first dashboard render')
  return s
