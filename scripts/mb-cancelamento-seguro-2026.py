@@ -44,7 +44,7 @@ for shop in ("mb-dryfit","mb-for-her"):
   const note=category==='outro'?category+': '+detail:category;
   const now=new Date().toISOString(),eventId=crypto.randomUUID();
   const entries=[
-   env.DB.prepare("UPDATE shop_orders SET status='cancelled' WHERE id=? AND status IN ('requested','received','confirmed','preparing','separating') AND NOT EXISTS (SELECT 1 FROM shop_order_sales WHERE order_id=?)").bind(id,id),
+   env.DB.prepare("UPDATE shop_orders SET status='cancelled' WHERE id=? AND status IN ('requested','received','confirmed','attending','preparing','separating','separated','awaiting_payment') AND NOT EXISTS (SELECT 1 FROM shop_order_sales WHERE order_id=?)").bind(id,id),
    env.DB.prepare("INSERT INTO order_status_events(id,order_id,from_status,to_status,operator_id,created_at) SELECT ?,?,?,?,?,? WHERE changes()=1").bind(eventId,id,old.status,'cancelled: '+note,member.id,now),
    env.DB.prepare("UPDATE coupon_redemptions SET active=0 WHERE order_id=? AND active=1 AND EXISTS (SELECT 1 FROM order_status_events WHERE id=?)").bind(id,eventId)
   ];
