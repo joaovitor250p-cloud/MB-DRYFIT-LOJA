@@ -56,6 +56,7 @@ on:
       - scripts/mb-cancelamento-seguro-2026.py
       - scripts/mb-search-short-codes-2026.py
       - scripts/mb-esgotados-catalogo-2026.py
+      - scripts/testar-cancelamento-seguro-2026.py
       - scripts/mb-promotion-stock-regression.test.mjs
       - scripts/mb-short-order-display-2026.py
       - scripts/pending-migrations/**
@@ -1066,6 +1067,8 @@ jobs:
         run: python3 catalogos-atuais/scripts/testar-codigos-curtos.py
       - name: Testar quatro cenários de promoção e estoque sem tocar na produção
         run: node catalogos-atuais/scripts/mb-promotion-stock-regression.test.mjs
+      - name: Testar cancelamento idempotente sem tocar em estoque ou caixa
+        run: python3 catalogos-atuais/scripts/testar-cancelamento-seguro-2026.py
       - run: npm run test:hosting
       - name: Extrair arquivos estáticos e privados na pré-verificação
         run: |
