@@ -58,6 +58,34 @@ def tables_from_sql(sql_path, db_path):
     finally:
         db.close()
 
+def cleanup_inventory(db_path):
+    """Read-only report for owner confirmation, never executes DELETE."""
+    db=sqlite3.connect(str(db_path))
+    try:
+        known={x[0] for x in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        def num(table):
+            return db.execute('SELECT COUNT(*) FROM "'+table+'"').fetchone()[0] if table in known else None
+        models=None
+        if "products" in known:
+            columns={x[1] for x in db.execute('PRAGMA table_info(products)')}
+            column="COALESCE(NULLIF(model_id,''),lower(name))" if 'model_id' in columns else 'lower(name)'
+            models=db.execute('SELECT COUNT(DISTINCT '+column+') FROM products').fetchone()[0]
+        return {
+            "remove_only_after_explicit_approval":{
+                "pdv_sales":num("sales"),"sale_batches":num("sale_batches"),
+                "online_orders":num("shop_orders"),"online_order_items":num("shop_order_items"),
+                "returns":num("sale_returns"),"return_lines":num("sale_return_items"),
+                "cash_sessions":num("cash_sessions"),"cash_movements":num("cash_movements"),
+                "products_variants":num("products"),"models":models,
+                "stock_receipts":num("stock_receipts")},
+            "preserve":{
+                "owners_and_team":num("members"),"sales_agents":num("sales_agents"),
+                "customers":num("customer_accounts"),"coupons":num("shop_coupons"),
+                "storefront_settings":num("storefront_settings")}
+        }
+    finally:
+        db.close()
+
 def encrypt(source, encrypted, key):
     iv = os.urandom(12)
     encryptor = Cipher(algorithms.AES(key), modes.GCM(iv)).encryptor()
@@ -150,8 +178,9 @@ def main():
         if not sql_path.exists() or sql_path.stat().st_size==0:
             raise RuntimeError("Exportação D1 vazia")
         counts=tables_from_sql(sql_path,work/"original.sqlite")
+        inventory=cleanup_inventory(work/"original.sqlite")
         manifest={"store":args.store,"created_at":created.isoformat(),
-                  "db_sha256":sha(sql_path),"tables":counts,"objects":[]}
+                  "db_sha256":sha(sql_path),"tables":counts,"objects":[],"inventory":inventory}
         archive=work/"plaintext.tar"
         with tarfile.open(archive,"w") as tar:
             tar.add(sql_path,arcname="database.sql",recursive=False)
@@ -192,6 +221,6 @@ def main():
                         dest.delete_object(Bucket=bucket,Key=item["Key"])
         print(json.dumps({"store":args.store,"offsite_key":name,"bytes":cipher.stat().st_size,
                           "tables":len(counts),"photos":len(manifest["objects"]),
-                          "verified":True,"restore_test":True}))
+                          "verified":True,"restore_test":True,"inventory":inventory}))
 if __name__=="__main__":
     main()
