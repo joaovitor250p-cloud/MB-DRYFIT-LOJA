@@ -63,6 +63,8 @@ on:
       - scripts/testar-historico-cancelados-2026.mjs
       - scripts/testar-backup-local-2026.py
       - scripts/mb-zero-reset-plan-2026.py
+      - scripts/mb-zero-r2-inventory-2026.py
+      - scripts/testar-zero-r2-inventory-2026.py
       - scripts/testar-zero-reset-2026.py
       - scripts/mb-offsite-backup-2026.py
       - scripts/mb-promotion-stock-regression.test.mjs
@@ -1085,6 +1087,8 @@ jobs:
         run: node catalogos-atuais/scripts/testar-historico-cancelados-2026.mjs
       - name: Simular zeragem integral, inclusive arquivados, usando D1s fictícios
         run: python3 catalogos-atuais/scripts/testar-zero-reset-2026.py
+      - name: Conferir que fotos de banners e clientes não entram na limpeza R2
+        run: python3 catalogos-atuais/scripts/testar-zero-r2-inventory-2026.py
       - name: Testar cópia criptografada, hash e restauração D1 sintética sem credenciais
         run: |
           python3 -m pip install --quiet boto3 cryptography
