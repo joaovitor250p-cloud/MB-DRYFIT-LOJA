@@ -2193,6 +2193,18 @@ jobs:
         run: python3 catalogos-atuais/scripts/ajustar-fixtures-ultimos-2026.py
       - name: Aplicar otimizações finais de desempenho sem alterar o visual nem dados
         run: python3 catalogos-atuais/scripts/latency-overlays-2026.py
+      - name: Integrar códigos, cancelamentos e atendimento no build FINAL das duas lojas
+        run: |
+          python3 catalogos-atuais/scripts/mb-short-order-display-2026.py
+          python3 catalogos-atuais/scripts/mb-followup-ui-2026.py
+          python3 catalogos-atuais/scripts/mb-cancelamento-seguro-2026.py
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/worker/mb-order-adjustments.js"
+            node --check "stores/$store/worker/staff-workspace.js"
+            node --check "stores/$store/worker/storefront-orders.js"
+          done
+          python3 catalogos-atuais/scripts/testar-codigos-curtos.py
+          node catalogos-atuais/scripts/mb-promotion-stock-regression.test.mjs
       - name: Revalidar a suíte completa após otimização da versão final
         run: npm run check
       - name: Empacotar módulos das promoções e pedidos em Workers únicos
