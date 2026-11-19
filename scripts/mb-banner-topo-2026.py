@@ -78,7 +78,7 @@ html[data-theme=dark] .mbh-sub,html[data-theme=dark] .mbh-badges small{color:#cb
 html[data-theme=dark] .mbh-btn-ghost{color:#fff!important;border-color:#63646b}
 html[data-theme=dark] .campaign-header .mbh-logo{color:#fff!important}
 html[data-theme=dark] .campaign-header .mbh-logo b{color:#fff!important}
-html[data-theme=dark] .mbh[data-store=forher]~* .mbh-logo b{color:#c44e71!important}
+html[data-theme=dark] .campaign-header:has(+ .mbh[data-store=forher]) .mbh-logo b{color:#c44e71!important}
 html[data-theme=dark] .campaign-header [data-my-orders]{color:#fff!important}
 @media(max-width:950px){.mbh h1{font-size:clamp(30px,4.5vw,54px)}.mbh-copy{padding-left:22px}.mbh-badges{gap:13px}.mbh-badges li{grid-template-columns:36px minmax(0,1fr);column-gap:7px}.mbh-badges li>span{width:36px;height:36px}.mbh-badges small{white-space:normal}}
 @media(max-width:750px){
@@ -196,10 +196,10 @@ def main():
     html,n=re.subn(r'<section class="mbw-hero"\b.*?</section>',"__MBH_HERO__",html,count=1,flags=re.S)
     if n!=1:raise RuntimeError(store+" não conseguiu substituir o banner antigo")
     # Remove wholesale visual CSS block that was appended by the old workflow.
-    html,n=re.subn(r'/\* MB wholesale:.*?(?=</style>)','',html,count=1,flags=re.S)
+    html,n=re.subn(r'/\* MB wholesale:.*?@media\(prefers-reduced-motion:reduce\)\{\.mbw-media-item\{transition:none\}\}','',html,count=1,flags=re.S)
     if n!=1:raise RuntimeError(store+" estilo antigo não encontrado")
     # Remove obsolete wholesale video/gallery script.
-    html,n=re.subn(r'<script>\s*\(\(\) => \{\s*const hero=document.querySelector\('+"r'"+r"'\.mbw-hero'"+r'\).*?</script>','',html,count=1,flags=re.S)
+    html,n=re.subn(r"<script>\s*\(\(\) => \{\s*const hero=document\.querySelector\('\.mbw-hero'\).*?</script>",'',html,count=1,flags=re.S)
     if n!=1:raise RuntimeError(store+" script de vídeo/carrossel antigo não encontrado")
     cats=''.join(f'<a href="#colecao" data-category="{x}">{x} <span aria-hidden="true">→</span></a>' for x in c['cats'])
     label='MB Dryfit' if store=='mb-dryfit' else 'MB For Her'
@@ -230,7 +230,7 @@ def main():
     html=html.replace('<div class="shop-header-tools">',nav+'<div class="shop-header-tools">',1)
     # The prior catalog intentionally removes Novidades, and promotions may be absent:
     # anchor their navigation to existing collections until those sections are enabled.
-    html=html.replace('</style></head>',CSS+'</style></head>',1)
+    html=html.replace('</head>',"<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin><style>"+CSS.replace("@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,800;1,900&display=swap');",'')+"</style><link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,800;1,900&display=swap\"></head>",1)
     html=html.replace('</body></html>',JS+'</body></html>',1)
     path.write_text(html,encoding="utf-8")
     builder=root/'scripts/build.mjs'
