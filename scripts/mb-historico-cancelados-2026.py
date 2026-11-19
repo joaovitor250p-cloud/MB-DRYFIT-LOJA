@@ -4,6 +4,7 @@ Run after followup and cancellation scripts, on both frozen storefronts.
 All read endpoints remain scoped to the authenticated viewer or staff role.
 """
 from pathlib import Path
+import re
 
 def one(text,before,after,label):
     n=text.count(before)
@@ -42,10 +43,14 @@ for shop in ("mb-dryfit","mb-for-her"):
     end+=len("</button>")
     if 'data-customer-order-state="cancelled"' not in s:
         s=s[:end]+'<button class="order-filter" data-customer-order-state="cancelled">Cancelados</button>'+s[end:]
-    s=one(s,
-        "(state==='done'?'feitos':'recebidos')",
-        "(state==='done'?'feitos':state==='cancelled'?'cancelados':'recebidos')",
-        shop+" buyer cancelled section title")
+    # Earlier patches may rename Feitos/Recebidos; preserve the existing
+    # captions while introducing a title for the new Cancelados state.
+    title_pattern=r"\(state\s*===\s*['\"]done['\"]\s*\?\s*['\"][^'\"]+['\"]\s*:\s*['\"][^'\"]+['\"]\)"
+    title_matches=list(re.finditer(title_pattern,s))
+    if len(title_matches)!=1:
+        raise RuntimeError(shop+": order section title expression unresolved ("+str(len(title_matches))+")")
+    title=title_matches[0].group()
+    s=s.replace(title,"(state==='cancelled'?'cancelados':"+title[1:],1)
     s=one(s,
         "section('received')+section('done')",
         "section('received')+section('done')+section('cancelled')",
