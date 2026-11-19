@@ -22,9 +22,13 @@ for shop in ("mb-dryfit","mb-for-her"):
     swap(w/"storefront-account.js",
          "esc(order.id.slice(0,8).toUpperCase())",
          "esc(order.short_code||order.id.slice(0,8).toUpperCase())")
-    swap(w/"owner-commerce.js",
-         "esc(order.id.slice(0,8).toUpperCase())",
-         "esc(order.short_code||order.id.slice(0,8).toUpperCase())")
+    # Legacy frozen owner-commerce renders coupons only; online orders render
+    # in staff-workspace after the 2026 patches.
+    owner_path=w/"owner-commerce.js"
+    if "esc(order.id.slice(0,8).toUpperCase())" in owner_path.read_text(encoding="utf-8"):
+        swap(owner_path,
+             "esc(order.id.slice(0,8).toUpperCase())",
+             "esc(order.short_code||order.id.slice(0,8).toUpperCase())")
     swap(w/"storefront-cart.js",
          "quote.id.slice(0,8).toUpperCase()",
          "(quote.short_code||quote.id.slice(0,8).toUpperCase())")
