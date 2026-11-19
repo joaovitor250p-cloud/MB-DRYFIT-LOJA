@@ -35,7 +35,7 @@ nav=function(){
   const id=groupId(group),active=items.some(([p])=>p===page||alias[p]===page),expanded=stored[id]!==undefined?stored[id]:active||idx===0||idx===1;
   return '<section class="mb-nav-group" data-mb-group="'+id+'"><button type="button" class="mb-nav-header" data-mb-header="'+id+'" aria-expanded="'+Boolean(expanded)+'">'+
    esc(group)+'<span aria-hidden="true">'+(expanded?'−':'+')+'</span></button><div class="mb-nav-children" '+(expanded?'':'hidden')+'>'+
-   items.map(([target,title])=>'<button type="button" class="mb-nav-link '+(page===target?'on':'')+'" data-mb-target="'+target+'" aria-current="'+(page===target?'page':'false')+'">'+
+   items.map(([target,title])=>'<button type="button" class="mb-nav-link '+(page===target?'on':'')+'" data-page="'+target+'" data-mb-target="'+target+'" aria-current="'+(page===target?'page':'false')+'">'+
     navIcon(target==='mbReports'?'sales':target==='mbPromotions'?'commerce':target==='mbBackup'||target==='mbConta'?'settings':target)+
     '<span>'+esc(title)+'</span>'+(target==='orders'?'<span id="mbNavPending" class="mb-nav-count" hidden></span>':'')+'</button>').join('')+
    '</div></section>';
@@ -66,6 +66,14 @@ nav=function(){
   next.compact=isCompact;mbMenuRemember(next);toggle.textContent=isCompact?'Expandir menu':'Recolher menu';
   toggle.setAttribute('aria-expanded',String(!isCompact));
  };
+ let appButton=document.getElementById('mbInstallApplication');
+ if(!appButton){
+  appButton=document.createElement('button');appButton.type='button';
+  appButton.id='mbInstallApplication';appButton.className='secondary mb-install-app';
+  appButton.textContent='Instalar aplicativo';
+  document.getElementById('staffSidebar')?.insertBefore(appButton,host.nextSibling);
+ }
+ appButton.onclick=()=>mbInstallApplication();
  const selected=host.querySelector('[aria-current=page]');
  document.getElementById('breadcrumb').textContent=selected?.textContent.trim()||'Visão geral';
 };
