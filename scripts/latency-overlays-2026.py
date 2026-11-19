@@ -234,9 +234,11 @@ function mbGateInitialView(view){
   if s.count(exact)==1:
    s=once(s,exact,exact+"if(mbGateInitialView(view))return;",'canonical view binding')
   else:
-   # Two or more views may exist (e.g. secondary UI). Target the binding
-   # immediately following the main navigation call, never an arbitrary match.
-   candidates_after_nav=[m for m in matches if re.search(r'nav\(\);[\s\S]{0,280}
+   after_nav=[m for m in matches if 0<=m.start()-s.rfind('nav();',0,m.start())<=500]
+   if len(after_nav)!=1:
+    raise RuntimeError('Main #view binding unresolved: %d declarations, %d near navigation' %(len(matches),len(after_nav)))
+   m=after_nav[0]
+   s=s[:m.end()]+'if(mbGateInitialView(view))return;'+s[m.end():]
  s=once(s,"setInterval(rememberStaffSession,900000)}await refresh();if(owner()",
    "setInterval(rememberStaffSession,900000)}render();if(owner()", 'immediate first dashboard render')
  return s
