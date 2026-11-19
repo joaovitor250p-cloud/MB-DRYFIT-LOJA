@@ -30,6 +30,7 @@ on:
       - scripts/mb-gestao-home-2026.js
       - scripts/mb-gestao-navigation-2026.js
       - scripts/mb-gestao-style-2026.css
+      - scripts/mb-gestao-tests-2026.py
       - scripts/aplicar-filtros-marca-peca.py
       - scripts/organizar-modelos-export-mobile.py
       - scripts/carrinho-tela-imediata.py
@@ -104,6 +105,7 @@ on:
       - scripts/mb-gestao-home-2026.js
       - scripts/mb-gestao-navigation-2026.js
       - scripts/mb-gestao-style-2026.css
+      - scripts/mb-gestao-tests-2026.py
   workflow_dispatch:
 permissions:
   contents: read
@@ -1120,6 +1122,7 @@ jobs:
           python3 catalogos-atuais/scripts/mb-gestao-layout-2026.py
           python3 catalogos-atuais/scripts/mb-gestao-printer-2026.py
           python3 catalogos-atuais/scripts/mb-gestao-pwa-2026.py
+          python3 catalogos-atuais/scripts/mb-gestao-tests-2026.py
           for store in mb-dryfit mb-for-her; do
             node --check "stores/$store/worker/staff-workspace.js"
             node --check "stores/$store/worker/retail-ui.js"
@@ -2291,6 +2294,7 @@ jobs:
           python3 catalogos-atuais/scripts/mb-gestao-layout-2026.py
           python3 catalogos-atuais/scripts/mb-gestao-printer-2026.py
           python3 catalogos-atuais/scripts/mb-gestao-pwa-2026.py
+          python3 catalogos-atuais/scripts/mb-gestao-tests-2026.py
           for store in mb-dryfit mb-for-her; do
             node --check "stores/$store/worker/staff-workspace.js"
             node --check "stores/$store/worker/retail-ui.js"
