@@ -86,10 +86,12 @@ for shop in ("mb-dryfit","mb-for-her"):
     # Add the action beside the existing finalized-action buttons after render;
     # do not depend on the exact HTML template changed by earlier release scripts.
     marker="const find=id=>data.items.find(o=>o.id===id);"
-    binding="""view.querySelectorAll('[data-order-done]').forEach(b=>{
+    binding="""view.querySelectorAll('[data-order-details]').forEach(b=>{
+ const order=find(b.dataset.orderDetails);
+ if(!order||order.sale_batch_id||order.status==='cancelled'||['paid','completed','done'].includes(order.status))return;
  const cancel=document.createElement('button');
  cancel.type='button';cancel.className='secondary';cancel.textContent='Cancelar pedido';
- cancel.dataset.orderCancel=b.dataset.orderDone;b.after(cancel);
+ cancel.dataset.orderCancel=b.dataset.orderDetails;b.after(cancel);
 });
 view.querySelectorAll('[data-order-cancel]').forEach(b=>b.onclick=()=>mbCancelOnlineOrder(find(b.dataset.orderCancel)));"""
     t=once(t,marker,marker+binding,shop+" cancel handler binding")
