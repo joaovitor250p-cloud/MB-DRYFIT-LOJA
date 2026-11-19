@@ -52,6 +52,7 @@ on:
   pull_request:
     paths:
       - scripts/testar-codigos-curtos.py
+      - scripts/mb-promotion-stock-regression.test.mjs
       - scripts/mb-short-order-display-2026.py
       - scripts/pending-migrations/**
       - scripts/mb-promotion-catalog-ui.js
@@ -1047,6 +1048,8 @@ jobs:
         run: python3 catalogos-atuais/scripts/mb-short-order-display-2026.py
       - name: Testar sequências curtas das duas lojas sem tocar no D1 real
         run: python3 catalogos-atuais/scripts/testar-codigos-curtos.py
+      - name: Testar quatro cenários de promoção e estoque sem tocar na produção
+        run: node catalogos-atuais/scripts/mb-promotion-stock-regression.test.mjs
       - run: npm run test:hosting
       - name: Extrair arquivos estáticos e privados na pré-verificação
         run: |
