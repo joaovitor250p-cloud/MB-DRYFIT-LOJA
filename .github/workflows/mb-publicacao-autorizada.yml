@@ -52,6 +52,8 @@ on:
   pull_request:
     paths:
       - scripts/testar-codigos-curtos.py
+      - scripts/mb-followup-ui-2026.py
+      - scripts/mb-cancelamento-seguro-2026.py
       - scripts/mb-promotion-stock-regression.test.mjs
       - scripts/mb-short-order-display-2026.py
       - scripts/pending-migrations/**
@@ -1046,6 +1048,16 @@ jobs:
       - run: npm run check
       - name: Preparar exibição do código curto, mantendo compatibilidade anterior
         run: python3 catalogos-atuais/scripts/mb-short-order-display-2026.py
+      - name: Integrar atendimento, cancelamento e resumo nas duas lojas
+        run: |
+          python3 catalogos-atuais/scripts/mb-followup-ui-2026.py
+          python3 catalogos-atuais/scripts/mb-cancelamento-seguro-2026.py
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/worker/staff-workspace.js"
+            node --check "stores/$store/worker/storefront-orders.js"
+            node --check "stores/$store/worker/mb-order-adjustments.js"
+            node --check "stores/$store/worker/order-history.js"
+          done
       - name: Testar sequências curtas das duas lojas sem tocar no D1 real
         run: python3 catalogos-atuais/scripts/testar-codigos-curtos.py
       - name: Testar quatro cenários de promoção e estoque sem tocar na produção
