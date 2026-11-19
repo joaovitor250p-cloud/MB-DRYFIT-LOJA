@@ -42,7 +42,10 @@ for shop in ("mb-dryfit","mb-for-her"):
       'SELECT a.name,g.target_amount,g.target_units FROM sales_goals g JOIN sales_agents a ON a.id=g.agent_id WHERE g.month=? AND a.active=1 AND lower(a.member_email)=lower(?) LIMIT 1'
     ).bind(goalMonth,member.email).all()).results;
   }
-  return retailReply({comparison,goals:goalRows,recent_movements:movements?.results||null"""
+  const cashBalance=member.role==='owner'&&cash?
+    (await env.DB.prepare("SELECT c.opening_balance+COALESCE((SELECT SUM(CASE WHEN m.kind IN ('sale','supply') THEN m.amount ELSE -m.amount END) FROM cash_movements m WHERE m.cash_session_id=c.id AND m.payment_method='cash'),0) AS expected_cash FROM cash_sessions c WHERE c.id=?").bind(cash.id).first())?.expected_cash??null
+    :null;
+  return retailReply({comparison,goals:goalRows,cash_balance:cashBalance,recent_movements:movements?.results||null"""
     part=once(part,target,insert,shop+" backend dashboard")
     src=src[:begin]+part+src[end:]
     backend.write_text(src,encoding="utf-8")
@@ -56,12 +59,18 @@ for shop in ("mb-dryfit","mb-for-her"):
     addition="""  if(data.comparison){
    const c=data.comparison;
    const transactions=Number(c.today_transactions)||0;
+   const percent=(current,previous)=>Number(previous)>0?
+     (Math.round((Number(current)/Number(previous)-1)*1000)/10).toLocaleString('pt-BR')+'%':
+     'sem base anterior';
    items.splice(1,0,
      ['Peças vendidas hoje',String(c.today_units||0),'Líquido de devoluções'],
      ['Ticket médio de hoje',transactions?money(Math.round(Number(t.today_total||0)/transactions)):money(0),'Vendas líquidas ÷ atendimentos'],
-     ['Vendas de ontem',money(c.yesterday_total||0),'Comparar com hoje'],
-     ['Últimos 7 dias',money(c.week_total||0),'Incluindo hoje'],
+     ['Vendas de ontem',money(c.yesterday_total||0),'Variação de hoje: '+percent(t.today_total,c.yesterday_total)],
+     ['Últimos 7 dias',money(c.week_total||0),'Variação: '+percent(c.week_total,c.previous_week_total)],
      ['7 dias anteriores',money(c.previous_week_total||0),'Período equivalente']);
+  }
+  if(isOwner&&data.cash_balance!==null&&data.cash_balance!==undefined){
+   items.push(['Saldo esperado em dinheiro',money(data.cash_balance),'Caixa atual · somente espécie']);
   }
   if(data.goals?.length){
    items.push(...data.goals.map(g=>[
