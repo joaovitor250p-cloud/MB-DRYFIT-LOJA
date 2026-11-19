@@ -227,8 +227,8 @@ function mbGateInitialView(view){
  # Production patches can insert additional navigation logic between nav() and
  # the view binding, so target the unique view declaration instead.
  if 'if(mbGateInitialView(view))return;' not in s:
-  candidates=[r"const\\s+view\\s*=\\s*\\$\\(['\\\"]#view['\\\"]\\)\\s*;",
-              r"const\\s+view\\s*=\\s*document\\.querySelector\\(['\\\"]#view['\\\"]\\)\\s*;"]
+  candidates=[r"const\s+view\s*=\s*\$\(['\\"]#view['\\"]\)\s*;",
+              r"const\s+view\s*=\s*document\.querySelector\(['\\"]#view['\\"]\)\s*;"]
   matches=[m for pattern in candidates for m in re.finditer(pattern,s)]
   if len(matches)!=1:raise RuntimeError('tab skeleton insertion point: expected one #view declaration; found %d' %len(matches))
   m=matches[0]
