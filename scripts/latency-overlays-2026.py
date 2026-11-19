@@ -230,9 +230,89 @@ function mbGateInitialView(view){
   candidates=[r'const\s+view\s*=\s*\$\(["\x27]#view["\x27]\)\s*;',
               r'const\s+view\s*=\s*document\.querySelector\(["\x27]#view["\x27]\)\s*;']
   matches=[m for pattern in candidates for m in re.finditer(pattern,s)]
-  if len(matches)!=1:raise RuntimeError('tab skeleton insertion point: expected one #view declaration; found %d' %len(matches))
-  m=matches[0]
-  s=s[:m.end()]+'if(mbGateInitialView(view))return;'+s[m.end():]
+  exact="nav();const view=$('#view');"
+  if s.count(exact)==1:
+   s=once(s,exact,exact+"if(mbGateInitialView(view))return;",'canonical view binding')
+  else:
+   # Two or more views may exist (e.g. secondary UI). Target the binding
+   # immediately following the main navigation call, never an arbitrary match.
+   candidates_after_nav=[m for m in matches if re.search(r'nav\(\);[\s\S]{0,280}
+ s=once(s,"setInterval(rememberStaffSession,900000)}await refresh();if(owner()",
+   "setInterval(rememberStaffSession,900000)}render();if(owner()", 'immediate first dashboard render')
+ return s
+
+def camera_fix(s):
+ marker='async function startCameraDevice(deviceId,forceFallback=false,preserveHeld=false){'
+ assert marker in s
+ # Dialog opens synchronously in openCameraScanner before this async call.
+ s=once(s,marker,marker+"\n if(typeof ZXingBrowser==='undefined'&&typeof mbLoadVendorOnce==='function')await mbLoadVendorOnce('/vendor/zxing-browser.min.js');",'lazy camera')
+ return s
+
+def print_fix(s):
+ # The frozen release is patched to use local MB Impressão. QZ is no longer
+ # necessary and must not be downloaded when opening its screen.
+ if 'qz.websocket.connect(' not in s:return s
+ marker='async function connectLabelPrinter(){'
+ return once(s,marker,marker+"\n await mbLoadVendorOnce('/vendor/qz-tray.js');",'lazy legacy printer')
+
+def add_loader(s):
+ # Shared loader injected before all inline camera and printer modules.
+ script="""const mbVendorLoadPromises=new Map();
+function mbLoadVendorOnce(path){
+ if(mbVendorLoadPromises.has(path))return mbVendorLoadPromises.get(path);
+ const pending=new Promise((resolve,reject)=>{
+  const el=document.createElement('script');el.src=path;el.async=true;
+  el.onload=()=>resolve();el.onerror=()=>{mbVendorLoadPromises.delete(path);reject(Error('Não foi possível carregar o leitor/conector.'))};
+  document.head.appendChild(el);
+ });
+ mbVendorLoadPromises.set(path,pending);return pending;
+}
+"""
+ return once(s,'/*__NATIVE_PRINT__*/',script+'/*__NATIVE_PRINT__*/','shared vendor loader')
+
+def bootstrap_guard(s):
+ old="if(env.MB_OWNER_SETUP_JSON&&(u.pathname.startsWith('/api/')||u.pathname==='/gestao'||u.pathname==='/dono'))await bootstrapOwnerCredentials(env);"
+ new="""if(env.MB_OWNER_SETUP_JSON&&(u.pathname.startsWith('/api/')||u.pathname==='/gestao'||u.pathname==='/dono')){
+ mbOwnerInitPromise??=bootstrapOwnerCredentials(env).catch(error=>{mbOwnerInitPromise=null;throw error});
+ await mbOwnerInitPromise;
+}"""
+ s=once(s,old,new,'owner bootstrap guard')
+ return once(s,'const mbWorker={async fetch(req,env){',"let mbOwnerInitPromise=null;\nconst mbWorker={async fetch(req,env){",'memoize owner bootstrap')
+
+for shop in ('mb-dryfit','mb-for-her'):
+ root=Path('stores')/shop/'worker'
+ save(root/'storefront-cart.js',cart_fix)
+ save(root/'storefront-contacts.js',contacts_fix)
+ save(root/'appearance-client.js',appearance_fix)
+ save(root/'storefront.html',catalog_fix)
+ save(root/'page.html',admin_fix)
+ save(root/'camera.js',camera_fix)
+ save(root/'native-print.js',print_fix)
+ save(root/'page.html',add_loader)
+ save(root/'page.html',startup_fix)
+ save(root/'api.js',bootstrap_guard)
+ cart=(root/'storefront-cart.js').read_text()
+ contacts=(root/'storefront-contacts.js').read_text()
+ appearance=(root/'appearance-client.js').read_text()
+ assert cart.count("mbGuestSellerRequest=(async()=>") == 1
+ assert "return mbGuestSellers()" in contacts
+ assert "new MutationObserver(()=>renderCurated" not in appearance
+ assert "mbAfterCatalogRender" in (root/'storefront.html').read_text()
+ # A legacy test demanded a network fetch after every opening. Replace it
+ # with the requested five-minute cache contract and expiry verification.
+ test_file=Path('stores')/shop/'tests/storefront-contacts.test.mjs'
+ if test_file.exists():
+  test_code=test_file.read_text(encoding='utf-8')
+  before="await request('sales-agents/agent-raquel','DELETE');await ctx.openContactChooser(text);links=[...document.querySelectorAll('[data-seller-contact]')];assert.equal(links.length,7);assert.ok(!links.some(a=>a.textContent.includes('Raquel')));"
+  after="await request('sales-agents/agent-raquel','DELETE');await ctx.openContactChooser(text);links=[...document.querySelectorAll('[data-seller-contact]')];assert.equal(links.length,8);assert.ok(links.some(a=>a.textContent.includes('Raquel')));const future=Date.now()+300001;ctx.Date=class extends Date{static now(){return future}};await ctx.openContactChooser(text);links=[...document.querySelectorAll('[data-seller-contact]')];assert.equal(links.length,7);assert.ok(!links.some(a=>a.textContent.includes('Raquel')));"
+  if before not in test_code:raise RuntimeError(shop+': stale contact cache regression test changed')
+  test_file.write_text(test_code.replace(before,after,1),encoding='utf-8')
+ print(shop+': shared seller cache 300s, lazy vendor scripts, no curated observer, light modals, bootstrap once per isolate')
+,s[max(0,m.start()-300):m.start()])]
+   if len(candidates_after_nav)!=1:
+    raise RuntimeError('Main #view binding unresolved: %d declarations, %d after nav()' %(len(matches),len(candidates_after_nav)))
+   m=candidates_after_nav[0]
+   s=s[:m.end()]+'if(mbGateInitialView(view))return;'+s[m.end():]
  s=once(s,"setInterval(rememberStaffSession,900000)}await refresh();if(owner()",
    "setInterval(rememberStaffSession,900000)}render();if(owner()", 'immediate first dashboard render')
  return s
