@@ -150,8 +150,8 @@ def plan(source, store):
         for table in clears:
             sql.append("SELECT json_extract('MB_RESET_FAILED_NONEMPTY','$') "
                        "WHERE (SELECT COUNT(*) FROM "+qname(table)+") != 0;")
-        sql.extend([
-            "SELECT json_extract('MB_RESET_FK_ABORT','
+        sql.append("SELECT json_extract('MB_RESET_FK_ABORT',char(36)) WHERE EXISTS (SELECT 1 FROM pragma_foreign_key_check);")
+        sql.append("COMMIT;")
         report["plan_sha256"]=hashlib.sha256(
             "\n".join(sql).encode("utf-8")).hexdigest()
         return report,"\n".join(sql)+"\n"
