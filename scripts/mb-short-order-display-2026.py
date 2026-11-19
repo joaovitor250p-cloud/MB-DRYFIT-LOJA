@@ -32,4 +32,9 @@ for shop in ("mb-dryfit","mb-for-her"):
     swap(w/"storefront-cart.js",
          "quote.id.slice(0,8).toUpperCase()",
          "(quote.short_code||quote.id.slice(0,8).toUpperCase())")
+    # Once the server has assigned a public code, every WhatsApp message must
+    # use it, including the direct seller link immediately after checkout.
+    swap(w/"storefront-cart.js",
+         "quote.id.toUpperCase()",
+         "(quote.short_code||quote.id).toUpperCase()")
     print(shop+": customer history and WhatsApp prefer short_code, UUID remains internal")
