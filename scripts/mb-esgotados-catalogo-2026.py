@@ -14,9 +14,15 @@ for shop in ("mb-dryfit","mb-for-her"):
     root=Path("stores")/shop/"worker"
     catalog=root/"storefront.html"
     s=catalog.read_text(encoding="utf-8")
-    s=once(s,"return [...map.values()]}\nfunction isStoreGroupVisible",
-           "return [...map.values()].sort((a,b)=>Number(!a.variants.some(p=>p.available_quantity>0))-Number(!b.variants.some(p=>p.available_quantity>0)))}\nfunction isStoreGroupVisible",
-           shop+" sold-out ordering")
+    # Older/optimized storefronts may wrap groups differently. Sort at the
+    # catalog render boundary if necessary, preserving all model variations.
+    if "return [...map.values()]}\nfunction isStoreGroupVisible" in s:
+        s=once(s,"return [...map.values()]}\nfunction isStoreGroupVisible",
+               "return [...map.values()].sort((a,b)=>Number(!a.variants.some(p=>p.available_quantity>0))-Number(!b.variants.some(p=>p.available_quantity>0)))}\nfunction isStoreGroupVisible",
+               shop+" sold-out ordering")
+    else:
+        marker="visible=all.filter(isStoreGroupVisible)"
+        s=once(s,marker,marker+".sort((a,b)=>Number(!a.variants.some(p=>p.available_quantity>0))-Number(!b.variants.some(p=>p.available_quantity>0)))",shop+" render sold-out ordering")
     s=once(s,"card.classList.add('luxury-card','catalog-product-card');",
            "card.classList.add('luxury-card','catalog-product-card');card.classList.toggle('mb-fully-sold-out',!g.variants.some(v=>v.available_quantity>0));",
            shop+" fully exhausted badge")
