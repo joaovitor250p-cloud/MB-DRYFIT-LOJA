@@ -1,0 +1,64 @@
+name: Excluir apenas ZIP MB Impressão R2 após verificar a GitHub Release
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/remover-apenas-installer-r2-apos-release.yml
+permissions:
+  contents: read
+concurrency:
+  group: mb-remover-installer-r2-verificado
+  cancel-in-progress: false
+jobs:
+  remover-apenas-zip:
+    runs-on: ubuntu-latest
+    environment: cloudflare-producao
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_R2_API_TOKEN }}
+      MB_RELEASE_URL: https://github.com/joaovitor250p-cloud/MB-DRYFIT-LOJA/releases/download/mb-impressao-elgin-2026-11-19/MB-Impressao-Elgin-Windows.zip
+      MB_EXPECTED_SHA256: 448e4dc5e5d8e5f7a5b2adcc88e18fda791c1f3abae84f8c221420b487f6483b
+      MB_R2_EXACT_OBJECT: mb-dryfit-fotos/software/MB-Impressao-Elgin-Windows.zip
+    steps:
+      - name: Validar novamente o download publicado em AMBAS as lojas
+        shell: bash
+        run: |
+          set -euo pipefail
+          for domain in mbdryfit.com.br forher.mbdryfit.com.br; do
+            result=$(curl --silent --show-error --max-time 35 --output /dev/null --write-out '%{http_code} %{redirect_url}' \
+              "https://$domain/downloads/mb-impressao-elgin-windows.zip")
+            test "$result" = "302 $MB_RELEASE_URL" || {
+              echo "::error::$domain não redireciona corretamente para GitHub; NÃO APAGAR R2. Estado: $result"; exit 1;
+            }
+          done
+          curl --fail --location --retry 3 --connect-timeout 20 --max-time 180 \
+            --silent --show-error --output /tmp/mb-impressao-github.zip "$MB_RELEASE_URL"
+          echo "$MB_EXPECTED_SHA256  /tmp/mb-impressao-github.zip" | sha256sum --check
+          echo "Os dois sites e o arquivo no GitHub estão validados. Nenhum R2 foi removido ainda."
+
+      - name: Instalar ferramenta de acesso ao R2
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "::error::Token R2 ausente. Sem exclusão."; exit 1; }
+          npm install --global wrangler@4.161.0
+
+      - name: Ler ZIP original R2 e confirmar que é EXATAMENTE o arquivo transferido
+        shell: bash
+        run: |
+          set -euo pipefail
+          wrangler r2 object get "$MB_R2_EXACT_OBJECT" \
+            --file /tmp/mb-impressao-original-r2.zip --remote
+          echo "$MB_EXPECTED_SHA256  /tmp/mb-impressao-original-r2.zip" | sha256sum --check
+          cmp --silent /tmp/mb-impressao-original-r2.zip /tmp/mb-impressao-github.zip
+          echo "R2 original idêntico à Release pública, byte por byte."
+
+      - name: Excluir SOMENTE o ZIP antigo, sem tocar nas fotos ou no aplicativo
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$MB_R2_EXACT_OBJECT" = "mb-dryfit-fotos/software/MB-Impressao-Elgin-Windows.zip"
+          wrangler r2 object delete "$MB_R2_EXACT_OBJECT" --remote
+          echo "Remoção limitada ao único ZIP confirmado."
+          printf '### MB Impressão movido do R2 para GitHub Release\n- R2 excluído: %s\n- Release SHA256: %s\n- Ambos os domínios redirecionavam antes da exclusão\n- Nenhuma foto ou código de impressão alterado\n' \
+            "$MB_R2_EXACT_OBJECT" "$MB_EXPECTED_SHA256" >> "$GITHUB_STEP_SUMMARY"
