@@ -320,7 +320,7 @@ def main():
       js=js.replace("file.endsWith('.svg')?'image/svg+xml':'image/jpeg'",
         "file.endsWith('.svg')?'image/svg+xml':file.endsWith('.webp')?'image/webp':'image/jpeg'")
     builder.write_text(js,encoding="utf-8")
-    print(store+": new HTML/CSS hero, legacy video removed, assets validated; database unchanged")
+    print(store+": HTML/CSS novo e vídeo legado removido; fotos reais "+("NÃO validadas (somente teste de PR)" if os.environ.get("MB_BANNER_HTML_ONLY_TEST")=="1" else "verificadas")+"; D1 intocado")
 
 if __name__=="__main__":
   try:main()
