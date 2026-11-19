@@ -20,8 +20,9 @@ for store in ("mb-dryfit","mb-for-her"):
         "if(page==='appearance')page=owner()?'overview':'sell';"
         "if(page==='mbPrinterOnly'&&staff()){nav();mbV3PrinterSettings();return}",1)
     css_anchor="</style>"
-    if text.count(css_anchor)!=1:raise RuntimeError(store+": CSS closing tag changed")
-    text=text.replace(css_anchor,"\n"+css+"\n"+css_anchor,1)
+    pos=text.find(css_anchor)
+    if pos<0:raise RuntimeError(store+": CSS closing tag missing")
+    text=text[:pos]+"\n"+css+"\n"+text[pos:]
     # The customer storefront and its already-published banner stay untouched.
     # Only the administrative editor is removed from the bundled staff UI.
     appearance="/*__APPEARANCE_EDITOR__*/"
