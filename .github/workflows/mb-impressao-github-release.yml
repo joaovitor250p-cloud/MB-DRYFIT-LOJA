@@ -31,7 +31,7 @@ jobs:
         with:
           name: MB-Impressao-Elgin-Windows
           run-id: 44296175144
-          github-token: \${{ github.token }}
+          github-token: ${{ github.token }}
           path: original
 
       - name: Conferir ZIP e comparar hash com cópia comprovada anteriormente no R2
@@ -54,8 +54,8 @@ jobs:
       - name: Publicar ZIP original na GitHub Release pública sem recriar o EXE
         shell: bash
         env:
-          GH_TOKEN: \${{ github.token }}
-          GH_REPO: \${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
           if gh release view "$MB_RELEASE_TAG" >/dev/null 2>&1; then
