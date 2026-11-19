@@ -22,7 +22,7 @@ for store in ("mb-dryfit","mb-for-her"):
  return authorizationFailure(req,env,identity,member,'owner_write');"""
     rep(guard,seller_guard,"owner-only guard")
     role="const owner=member.role==='owner';const staff=owner||member.role==='seller';"
-    route="""if(u.pathname==='/api/flexible-sizes'||u.pathname==='/api/flexible-receipts')
+    route="""if(u.pathname==='/api/flexible-sizes'||u.pathname==='/api/flexible-receipts'||u.pathname==='/api/flexible-clients')
  return mbV3SizeRoutes(req,env,member,u);"""
     rep(role,role+"\n"+route,"authenticated staff routing")
     start="if(u.pathname==='/api/product-models'&&req.method==='POST'){\nconst input=await req.json();"
