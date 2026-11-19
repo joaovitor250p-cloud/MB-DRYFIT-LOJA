@@ -44,8 +44,6 @@ if(!owner){
     mg=root/"model-management.js"
     src=mg.read_text(encoding="utf-8")
     old="if(!['P','M','G','GG','EG','EGG','Único'].includes(v.size))throw modelProblem('Tamanho inválido.');"
-    if store=="mb-for-her":
-        old="if(!['PP','P','M','G','GG','EG','EGG','Único'].includes(v.size))throw modelProblem('Tamanho inválido.');"
     if src.count(old)==1:
         valid="if(!(['PP','P','M','G','GG','XG','EG','EGG','EXG','XGG','G1','G2','G3','G4','Único'].includes(v.size)||/^(3[4-9]|4[0-9]|5[0-4])$/.test(v.size)||/^[A-Z0-9-]{1,6}$/.test(v.size)))throw modelProblem('Tamanho inválido.');"
         src=src.replace(old,valid,1)
