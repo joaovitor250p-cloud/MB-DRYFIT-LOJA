@@ -209,7 +209,7 @@ def main():
     html=path.read_text(encoding="utf-8")
     if '<section class="mbw-hero"' not in html:
       raise RuntimeError(store+" banner original ausente; execute depois dos scripts antigos")
-    html,n=re.subn(r'<section class="mbw-hero"\b.*?</section>',"__MBH_HERO__",html,count=1,flags=re.S)
+    html,n=re.subn(r'<section class="mbw-hero"[^>]*>.*?</section>',"__MBH_HERO__",html,count=1,flags=re.S)
     if n!=1:raise RuntimeError(store+" não conseguiu substituir o banner antigo")
     # Remove wholesale visual CSS block that was appended by the old workflow.
     html,n=re.subn(r'/\* MB wholesale:.*?@media\(prefers-reduced-motion:reduce\)\{\.mbw-media-item\{transition:none\}\}','',html,count=1,flags=re.S)
