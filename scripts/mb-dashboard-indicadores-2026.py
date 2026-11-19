@@ -45,7 +45,11 @@ for shop in ("mb-dryfit","mb-for-her"):
   const cashBalance=member.role==='owner'&&cash?
     (await env.DB.prepare("SELECT c.opening_balance+COALESCE((SELECT SUM(CASE WHEN m.kind IN ('sale','supply') THEN m.amount ELSE -m.amount END) FROM cash_movements m WHERE m.cash_session_id=c.id AND m.payment_method='cash'),0) AS expected_cash FROM cash_sessions c WHERE c.id=?").bind(cash.id).first())?.expected_cash??null
     :null;
-  return retailReply({comparison,goals:goalRows,cash_balance:cashBalance,recent_movements:movements?.results||null"""
+  // Individual sellers see only online orders assigned to their own identity.
+  const ownOrders=member.role==='seller'&&!member.shared_seller
+   ?(await env.DB.prepare("SELECT COUNT(*) AS count FROM shop_orders o JOIN sales_agents a ON a.id=o.agent_id WHERE lower(a.member_email)=lower(?) AND o.status NOT IN ('cancelled','paid','completed') AND NOT EXISTS(SELECT 1 FROM shop_order_sales s WHERE s.order_id=o.id)").bind(member.email).first())?.count||0
+   :null;
+  return retailReply({comparison,goals:goalRows,assigned_online_orders:ownOrders,cash_balance:cashBalance,recent_movements:movements?.results||null"""
     part=once(part,target,insert,shop+" backend dashboard")
     src=src[:begin]+part+src[end:]
     backend.write_text(src,encoding="utf-8")
@@ -71,6 +75,9 @@ for shop in ("mb-dryfit","mb-for-her"):
   }
   if(isOwner&&data.cash_balance!==null&&data.cash_balance!==undefined){
    items.push(['Saldo esperado em dinheiro',money(data.cash_balance),'Caixa atual · somente espécie']);
+  }
+  if(!isOwner&&data.assigned_online_orders!==null&&data.assigned_online_orders!==undefined){
+   items.push(['Pedidos online atribuídos',String(data.assigned_online_orders),'Aguardando conclusão do atendimento']);
   }
   if(data.goals?.length){
    items.push(...data.goals.map(g=>[
