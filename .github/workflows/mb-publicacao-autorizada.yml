@@ -62,6 +62,8 @@ on:
       - scripts/testar-contato-vendedor-2026.mjs
       - scripts/testar-historico-cancelados-2026.mjs
       - scripts/testar-backup-local-2026.py
+      - scripts/mb-zero-reset-plan-2026.py
+      - scripts/testar-zero-reset-2026.py
       - scripts/mb-offsite-backup-2026.py
       - scripts/mb-promotion-stock-regression.test.mjs
       - scripts/mb-short-order-display-2026.py
@@ -1081,6 +1083,8 @@ jobs:
         run: node catalogos-atuais/scripts/testar-contato-vendedor-2026.mjs
       - name: Conferir pedidos cancelados nos históricos do cliente e da equipe
         run: node catalogos-atuais/scripts/testar-historico-cancelados-2026.mjs
+      - name: Simular zeragem integral, inclusive arquivados, usando D1s fictícios
+        run: python3 catalogos-atuais/scripts/testar-zero-reset-2026.py
       - name: Testar cópia criptografada, hash e restauração D1 sintética sem credenciais
         run: |
           python3 -m pip install --quiet boto3 cryptography
