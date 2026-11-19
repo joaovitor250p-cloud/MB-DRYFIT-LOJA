@@ -7,7 +7,7 @@ products, orders, or published sites. Run only after the last catalog patches.
 """
 from pathlib import Path
 import re
-import struct
+from PIL import Image
 import sys
 
 STORES={
@@ -59,7 +59,7 @@ html:has(.mbh[data-store=forher]) .campaign-header .mbh-logo b{color:#c44e71!imp
 .mbh-badges li>span{grid-row:1/3;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:color-mix(in srgb,var(--accent) 12%,#fff);color:var(--accent);font-size:21px}
 .mbh-badges b{font-size:12px;white-space:nowrap;color:#1a1c21}
 .mbh-badges small{font-size:11px;color:#676a71;white-space:nowrap}
-.mbh-badges [data-contact-vendors]{cursor:pointer;text-decoration:none}
+.mbh-badges [data-contact-vendors]{cursor:pointer;text-decoration:none;display:flex;flex-direction:column;gap:2px}
 .mbh-art{position:relative;min-width:0;min-height:620px}
 .mbh-visual{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 .mbh-wash{position:absolute;inset:0;background:var(--wash);clip-path:polygon(28% 0,100% 0,100% 100%,0 100%)}
@@ -118,6 +118,7 @@ JS=r"""
  const hero=document.querySelector('.mbh');if(!hero)return;
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  const scroller=()=>reduced?'auto':'smooth';
+ hero.querySelectorAll('a[href="#promocoes"],a[href="#novidades"]').forEach(a=>a.addEventListener('click',e=>{const target=document.querySelector(a.getAttribute('href'));if(target&&!target.hidden&&getComputedStyle(target).display!=='none')return;e.preventDefault();document.getElementById('colecao')?.scrollIntoView({behavior:scroller(),block:'start'});}));
  const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
  // Use the real existing hidden #filters controls to preserve catalog behavior.
  hero.querySelectorAll('[data-category]').forEach(link=>link.addEventListener('click',e=>{
@@ -181,11 +182,13 @@ JS=r"""
 
 def photo_is_webp_transparent(path, expected):
     raw=path.read_bytes()
-    if len(raw)<10000 or raw[:4]!=b"RIFF" or raw[8:12]!=b"WEBP":
+    if len(raw)<250 or raw[:4]!=b"RIFF" or raw[8:12]!=b"WEBP":
         raise RuntimeError("Arquivo não é WebP válido: "+str(path))
-    # VP8X contains alpha flag; transparency must be checked before deployment.
-    if b"VP8X" not in raw or b"ALPH" not in raw:
-        raise RuntimeError("Imagem deve possuir transparência WebP (VP8X/ALPH): "+str(path))
+    with Image.open(path) as im:
+        if im.format!="WEBP" or max(im.size)!=expected:
+            raise RuntimeError("Imagem precisa ser WebP, com lado maior de "+str(expected)+" px: "+str(path))
+        if "A" not in im.getbands() or im.getchannel("A").getextrema()[0]==255:
+            raise RuntimeError("Imagem sem fundo transparente: "+str(path))
     return True
 
 def main():
