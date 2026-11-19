@@ -45,7 +45,7 @@ DORMANT = r"""
    "COALESCE(SUM(CASE WHEN os.order_id IS NOT NULL THEN o.total ELSE 0 END),0) AS total_spent "+
    "FROM shop_orders o LEFT JOIN shop_order_sales os ON os.order_id=o.id "+
    "WHERE o.customer_whatsapp!='' GROUP BY o.customer_whatsapp "+
-   "HAVING last_purchase IS NOT NULL AND last_purchase < datetime('now', ?) "+
+   "HAVING last_purchase IS NOT NULL AND julianday(last_purchase) < julianday('now', ?) "+
    "ORDER BY last_purchase DESC LIMIT 100"
   ).bind('-'+days+' days').all()).results;
   return retailReply({days,items:rows});
