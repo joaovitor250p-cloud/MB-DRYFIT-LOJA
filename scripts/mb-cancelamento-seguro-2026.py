@@ -65,21 +65,43 @@ for shop in ("mb-dryfit","mb-for-her"):
     t=staff.read_text(encoding="utf-8")
     marker="async function renderOnlineOrders(offset=0){"
     modal="""async function mbCancelOnlineOrder(o){
- if(o.sale_batch_id||o.status==='cancelled'||['completed','paid','done'].includes(o.status))return;
- const reason=prompt('Motivo do cancelamento: desistência do cliente, sem estoque, pagamento não feito ou outro');
- if(reason===null)return;
- const category=reason.trim().toLowerCase();
- if(!['desistência do cliente','sem estoque','pagamento não feito','outro'].includes(category)){
-  alert('Informe um dos quatro motivos disponíveis.');return;
+ if(!o||o.sale_batch_id||o.status==='cancelled'||['completed','paid','done'].includes(o.status))return;
+ let dialog=document.getElementById('mbCancelOnlineOrderDialog');
+ if(!dialog){
+  dialog=document.createElement('dialog');dialog.id='mbCancelOnlineOrderDialog';
+  dialog.style.cssText='width:min(440px,calc(100vw - 32px));max-width:440px;border-radius:14px;padding:22px;border:1px solid var(--line,#ddd);background:var(--panel,#fff);color:var(--ink,#222);box-shadow:0 12px 35px #0003';
+  dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close()});
+  document.body.append(dialog);
  }
- const details=category==='outro'?prompt('Descreva o motivo (mínimo 8 caracteres):'):'';
- if(category==='outro'&&(details===null||details.trim().length<8)){alert('É necessário detalhar o motivo.');return}
- if(!confirm('Cancelar o pedido '+(o.short_code||o.id)+'? Essa ação será registrada no histórico.'))return;
- try{
-  const result=await api('mb-order/'+o.id+'/cancel','PUT',{reason:category,details});
-  toast(result.reused?'Este pedido já estava cancelado.':'Pedido cancelado e registrado no histórico.');
-  renderOnlineOrders();
- }catch(e){toast(e.message)}
+ if(dialog.open)return;
+ dialog.innerHTML='<form id="mbCancelOrderForm"><h2>Cancelar pedido</h2><p>Pedido <strong>'+esc(o.short_code||o.id)+'</strong>. Informe o motivo para registrar no histórico.</p>'+
+  '<label>Motivo do cancelamento<select name="reason" required><option value="">Selecione um motivo</option>'+
+  '<option value="desistência do cliente">Desistência do cliente</option><option value="sem estoque">Sem estoque</option>'+
+  '<option value="pagamento não feito">Pagamento não feito</option><option value="outro">Outro</option></select></label>'+
+  '<label data-cancel-details hidden>Explique o motivo<textarea name="details" maxlength="250" minlength="8" rows="3"></textarea></label>'+
+  '<p role="alert" data-cancel-error></p><div class="actions"><button type="button" class="secondary" data-cancel-close>Voltar</button>'+
+  '<button type="submit" class="primary">Confirmar cancelamento</button></div></form>';
+ const form=dialog.querySelector('form'),reason=form.elements.reason,details=form.elements.details,extra=form.querySelector('[data-cancel-details]');
+ reason.onchange=()=>{extra.hidden=reason.value!=='outro';details.required=reason.value==='outro'};
+ form.querySelector('[data-cancel-close]').onclick=()=>dialog.close();
+ form.onsubmit=async event=>{
+  event.preventDefault();
+  const category=reason.value,description=details.value.trim();
+  if(!category||(category==='outro'&&(description.length<8||description.length>250))){
+   form.querySelector('[data-cancel-error]').textContent='Escolha o motivo e descreva Outro com 8 a 250 caracteres.';return;
+  }
+  const button=form.querySelector('[type=submit]');
+  button.disabled=true;
+  try{
+   const result=await api('mb-order/'+o.id+'/cancel','PUT',{reason:category,details:description});
+   dialog.close();
+   toast(result.reused?'Este pedido já estava cancelado.':'Pedido cancelado e registrado no histórico.');
+   renderOnlineOrders();
+  }catch(e){
+   form.querySelector('[data-cancel-error]').textContent=e.message||'Não foi possível cancelar.';
+  }finally{button.disabled=false}
+ };
+ dialog.showModal();
 }
 """
     t=once(t,marker,modal+marker,shop+" cancellation UI helper")
