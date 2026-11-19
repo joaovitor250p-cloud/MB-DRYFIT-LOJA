@@ -31,10 +31,17 @@ for shop in ("mb-dryfit","mb-for-her"):
 
     private=root/"storefront-orders.js"
     s=private.read_text(encoding="utf-8")
-    s=one(s,
-        '<button class="order-filter" data-customer-order-state="done">Feitos</button>',
-        '<button class="order-filter" data-customer-order-state="done">Feitos</button><button class="order-filter" data-customer-order-state="cancelled">Cancelados</button>',
-        shop+" buyer cancelled chip")
+    # Earlier production scripts may rename the completed chip without changing
+    # its data-state. Insert after the completed button regardless of caption.
+    finished='data-customer-order-state="done"'
+    p=s.find(finished)
+    if p<0 or s.find(finished,p+len(finished))>=0:
+        raise RuntimeError(shop+": completed order filter missing or ambiguous")
+    end=s.find("</button>",p)
+    if end<0 or end-p>300:raise RuntimeError(shop+": completed order button closing tag missing")
+    end+=len("</button>")
+    if 'data-customer-order-state="cancelled"' not in s:
+        s=s[:end]+'<button class="order-filter" data-customer-order-state="cancelled">Cancelados</button>'+s[end:]
     s=one(s,
         "(state==='done'?'feitos':'recebidos')",
         "(state==='done'?'feitos':state==='cancelled'?'cancelados':'recebidos')",
