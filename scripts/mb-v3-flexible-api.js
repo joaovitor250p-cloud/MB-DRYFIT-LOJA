@@ -14,6 +14,10 @@ function mbV3Bad(message,status=400){return json({error:message},status)}
 async function mbV3SizeRoutes(req,env,member,u){
  const method=req.method,path=u.pathname;
  if(!['owner','seller'].includes(member.role))return mbV3Bad('Acesso exclusivo da equipe.',403);
+ if(path==='/api/flexible-clients'&&method==='GET'){
+  const rows=(await env.DB.prepare("SELECT customer_whatsapp AS whatsapp,MAX(customer_name) AS name,COUNT(*) AS orders,MAX(created_at) AS last_order FROM shop_orders WHERE customer_whatsapp!='' GROUP BY customer_whatsapp ORDER BY last_order DESC LIMIT 100").all()).results;
+  return json({items:rows});
+ }
  if(path==='/api/flexible-sizes'&&method==='GET'){
   const modelId=u.searchParams.get('model_id');
   const listed=(await env.DB.prepare('SELECT size FROM store_custom_sizes ORDER BY size').all()).results.map(v=>v.size);
