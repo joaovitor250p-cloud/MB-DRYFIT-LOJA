@@ -17,7 +17,11 @@ async function mbV3SizeRoutes(req,env,member,u){
  if(path==='/api/flexible-sizes'&&method==='GET'){
   const modelId=u.searchParams.get('model_id');
   const listed=(await env.DB.prepare('SELECT size FROM store_custom_sizes ORDER BY size').all()).results.map(v=>v.size);
-  if(!modelId)return json({standard:MB_V3_STANDARD_SIZES,custom:listed});
+  if(!modelId){
+   const models=(await env.DB.prepare("SELECT model_id,name,extra_code,MIN(id) AS first_id,COUNT(*) AS variants,SUM(stock) AS stock FROM products WHERE archived_at IS NULL AND model_id IS NOT NULL GROUP BY model_id,name ORDER BY name LIMIT 1000").all()).results;
+   const recent=(await env.DB.prepare("SELECT r.id,r.created_at,MAX(l.name) AS name,SUM(l.quantity) AS quantity FROM stock_receipts r JOIN stock_receipt_lines l ON l.receipt_id=r.id GROUP BY r.id ORDER BY r.created_at DESC LIMIT 5").all()).results;
+   return json({standard:MB_V3_STANDARD_SIZES,custom:listed,models,recent});
+  }
   if(!/^[a-zA-Z0-9-]{1,80}$/.test(modelId))return mbV3Bad('Modelo inválido.');
   const variants=(await env.DB.prepare('SELECT id,model_id,name,color,size,stock,reserved_stock,active,size_enabled,barcode,photo,main_photo,extra_code FROM products WHERE model_id=? AND archived_at IS NULL ORDER BY color,size').bind(modelId).all()).results;
   const states=(await env.DB.prepare('SELECT size,enabled FROM model_size_states WHERE model_id=?').bind(modelId).all()).results;
