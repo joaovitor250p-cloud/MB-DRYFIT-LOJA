@@ -54,6 +54,7 @@ on:
       - scripts/testar-codigos-curtos.py
       - scripts/mb-followup-ui-2026.py
       - scripts/mb-cancelamento-seguro-2026.py
+      - scripts/mb-search-short-codes-2026.py
       - scripts/mb-promotion-stock-regression.test.mjs
       - scripts/mb-short-order-display-2026.py
       - scripts/pending-migrations/**
@@ -1052,6 +1053,7 @@ jobs:
         run: |
           python3 catalogos-atuais/scripts/mb-followup-ui-2026.py
           python3 catalogos-atuais/scripts/mb-cancelamento-seguro-2026.py
+          python3 catalogos-atuais/scripts/mb-search-short-codes-2026.py
           for store in mb-dryfit mb-for-her; do
             node --check "stores/$store/worker/staff-workspace.js"
             node --check "stores/$store/worker/storefront-orders.js"
@@ -2198,6 +2200,7 @@ jobs:
           python3 catalogos-atuais/scripts/mb-short-order-display-2026.py
           python3 catalogos-atuais/scripts/mb-followup-ui-2026.py
           python3 catalogos-atuais/scripts/mb-cancelamento-seguro-2026.py
+          python3 catalogos-atuais/scripts/mb-search-short-codes-2026.py
           for store in mb-dryfit mb-for-her; do
             node --check "stores/$store/worker/mb-order-adjustments.js"
             node --check "stores/$store/worker/staff-workspace.js"
