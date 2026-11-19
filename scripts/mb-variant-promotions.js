@@ -5,9 +5,9 @@
 const PROMO_SETTINGS_ID='mb_variant_promotions_2026';
 export async function promotionState(env){
  const row=await env.DB.prepare('SELECT published,revision FROM storefront_settings WHERE id=?').bind(PROMO_SETTINGS_ID).first();
- let variants={};
- try{const data=JSON.parse(row?.published||'{}');if(data&&typeof data.variants==='object'&&!Array.isArray(data.variants))variants=data.variants}catch{}
- return {variants,revision:row?.revision||0};
+ let variants={},hide_sold_out=false;
+ try{const data=JSON.parse(row?.published||'{}');if(data&&typeof data.variants==='object'&&!Array.isArray(data.variants))variants=data.variants;hide_sold_out=data?.hide_sold_out===true}catch{}
+ return {variants,hide_sold_out,revision:row?.revision||0};
 }
 export function activePromotion(variants,product,now=Date.now()){
  const promotion=variants?.[product.id];
@@ -17,13 +17,13 @@ export function activePromotion(variants,product,now=Date.now()){
  if(!Number.isFinite(start)||(promotion.ends_at&&!Number.isFinite(end))||now<start||now>=end)return null;
  return {price:promotion.price,original_price:product.price};
 }
-export async function publicPromotionMap(env){return (await promotionState(env)).variants}
+export async function publicPromotionMap(env){const state=await promotionState(env);return {...state.variants,__hide_sold_out:state.hide_sold_out}}
 export async function handleVariantPromotions(req,env,member){
  const reply=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store'}});
  if(member?.role!=='owner')return reply({error:'Somente o dono pode administrar promoções.'},403);
  if(req.method==='GET'){
-  const {variants,revision}=await promotionState(env);
-  return reply({variants,revision});
+  const {variants,revision,hide_sold_out}=await promotionState(env);
+  return reply({variants,revision,hide_sold_out});
  }
  if(req.method!=='PUT')return reply({error:'Método inválido.'},405);
  if(req.headers.get('Origin')!==new URL(req.url).origin)return reply({error:'Origem inválida.'},403);
@@ -39,7 +39,8 @@ export async function handleVariantPromotions(req,env,member){
   const products=entries.length?(await env.DB.prepare('SELECT id,price FROM products WHERE id IN ('+entries.map(()=>'?').join(',')+') AND archived_at IS NULL').bind(...entries.map(p=>p.id)).all()).results:[];
   if(products.length!==entries.length||entries.some(p=>p.price>=(products.find(x=>x.id===p.id)?.price||0)))return reply({error:'A promoção deve ser menor que o preço normal de uma variação existente.'},400);
   const variants=Object.fromEntries(entries.map(({id,...rest})=>[id,rest]));
-  const now=new Date().toISOString(),json=JSON.stringify({variants});
+  const hide_sold_out=data.hide_sold_out===true;
+  const now=new Date().toISOString(),json=JSON.stringify({variants,hide_sold_out});
   let updated;
   if(data.revision===0){
    updated=await env.DB.prepare('INSERT OR IGNORE INTO storefront_settings(id,draft,published,revision,updated_at,updated_by) VALUES (?,?,?,1,?,?)').bind(PROMO_SETTINGS_ID,json,json,now,member.id).run();
