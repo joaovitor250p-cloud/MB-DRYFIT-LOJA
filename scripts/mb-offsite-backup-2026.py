@@ -212,6 +212,41 @@ def main():
         restored=restored_manifest(unpacked,work)
         if restored["store"]!=args.store or restored["created_at"]!=manifest["created_at"]:
             raise RuntimeError("Restauração verificada pertence a outra loja")
+        # Read-only preclear inventory computed FROM THE RESTORED D1 snapshot.
+        # Never issue DELETE/UPDATE against either Cloudflare production binding.
+        reset_preview={"ready":False,"reason":"Não há relatório compatível com o esquema D1"}
+        try:
+            import importlib.util
+            for filename,modname in (("mb-zero-reset-plan-2026.py","mbreset"),
+                                     ("mb-zero-r2-inventory-2026.py","mbr2preview")):
+                module_path=Path(__file__).with_name(filename)
+                spec=importlib.util.spec_from_file_location(modname,module_path)
+                module=importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                if modname=="mbreset":
+                    planner=module
+                else:
+                    media_planner=module
+            proposal,_candidate_sql=planner.plan(work/"restored.sqlite",args.store)
+            media=media_planner.compare(proposal,manifest)
+            reset_preview={
+                "ready":False,
+                "awaiting_preserved_backup_and_owner_review":True,
+                "models":proposal["models"],
+                "archived_variants":proposal.get("archived_variants",0),
+                "published_variants":proposal.get("published_variants",0),
+                "all_variants":proposal["total_variants"],
+                "sales":proposal["cleared_tables"].get("sales",0),
+                "online_orders":proposal["cleared_tables"].get("shop_orders",0),
+                "cash_movements":proposal["cleared_tables"].get("cash_movements",0),
+                "verified_backup_r2_objects":media["source_r2_objects"],
+                "photo_candidates_in_verified_backup":media["product_photo_candidates_in_backup"],
+                "unmatched_photo_references":len(media["product_photo_references_missing_in_r2"]),
+                "no_live_changes":True
+            }
+        except Exception as inventory_error:
+            reset_preview={"ready":False,
+                           "reason":"Prévia de limpeza bloqueada: "+str(inventory_error)}
         if args.mode=="daily":
             cutoff=created-dt.timedelta(days=30)
             for page in dest.get_paginator("list_objects_v2").paginate(Bucket=bucket,
@@ -221,6 +256,7 @@ def main():
                         dest.delete_object(Bucket=bucket,Key=item["Key"])
         print(json.dumps({"store":args.store,"offsite_key":name,"bytes":cipher.stat().st_size,
                           "tables":len(counts),"photos":len(manifest["objects"]),
-                          "verified":True,"restore_test":True,"inventory":inventory}))
+                          "verified":True,"restore_test":True,"inventory":inventory,
+                          "reset_preview":reset_preview}))
 if __name__=="__main__":
     main()
