@@ -33,6 +33,17 @@ on:
       - scripts/mb-gestao-tests-2026.py
       - scripts/testar-mb-impressao-compartilhado.py
       - scripts/mb-gestao-chart.test.mjs
+      - scripts/mb-v3-shell.js
+      - scripts/mb-v3-shell.css
+      - scripts/mb-v3-shell-patch.py
+      - scripts/mb-v3-flexible-api.js
+      - scripts/mb-v3-api-patch.py
+      - scripts/mb-v3-restock.js
+      - scripts/mb-v3-restock.css
+      - scripts/mb-v3-restock-patch.py
+      - scripts/mb-v3-seller-clients.js
+      - scripts/mb-v3-migration.sql
+      - scripts/mb-v3-flexible-sizes.test.mjs
       - scripts/aplicar-filtros-marca-peca.py
       - scripts/organizar-modelos-export-mobile.py
       - scripts/carrinho-tela-imediata.py
@@ -110,6 +121,17 @@ on:
       - scripts/mb-gestao-tests-2026.py
       - scripts/testar-mb-impressao-compartilhado.py
       - scripts/mb-gestao-chart.test.mjs
+      - scripts/mb-v3-shell.js
+      - scripts/mb-v3-shell.css
+      - scripts/mb-v3-shell-patch.py
+      - scripts/mb-v3-flexible-api.js
+      - scripts/mb-v3-api-patch.py
+      - scripts/mb-v3-restock.js
+      - scripts/mb-v3-restock.css
+      - scripts/mb-v3-restock-patch.py
+      - scripts/mb-v3-seller-clients.js
+      - scripts/mb-v3-migration.sql
+      - scripts/mb-v3-flexible-sizes.test.mjs
   workflow_dispatch:
 permissions:
   contents: read
@@ -1129,6 +1151,15 @@ jobs:
           python3 catalogos-atuais/scripts/mb-gestao-tests-2026.py
           python3 catalogos-atuais/scripts/testar-mb-impressao-compartilhado.py
           node --test catalogos-atuais/scripts/mb-gestao-chart.test.mjs
+          # New idempotent post-overlay patches in the same order for both jobs.
+          python3 -m py_compile catalogos-atuais/scripts/mb-v3-*-patch.py
+          python3 catalogos-atuais/scripts/mb-v3-api-patch.py
+          python3 catalogos-atuais/scripts/mb-v3-shell-patch.py
+          python3 catalogos-atuais/scripts/mb-v3-restock-patch.py
+          # Each script must be safe on repeated execution.
+          python3 catalogos-atuais/scripts/mb-v3-api-patch.py
+          python3 catalogos-atuais/scripts/mb-v3-shell-patch.py
+          python3 catalogos-atuais/scripts/mb-v3-restock-patch.py
           for store in mb-dryfit mb-for-her; do
             node --check "stores/$store/worker/staff-workspace.js"
             node --check "stores/$store/worker/retail-ui.js"
@@ -2303,6 +2334,15 @@ jobs:
           python3 catalogos-atuais/scripts/mb-gestao-tests-2026.py
           python3 catalogos-atuais/scripts/testar-mb-impressao-compartilhado.py
           node --test catalogos-atuais/scripts/mb-gestao-chart.test.mjs
+          # New idempotent post-overlay patches in the same order for both jobs.
+          python3 -m py_compile catalogos-atuais/scripts/mb-v3-*-patch.py
+          python3 catalogos-atuais/scripts/mb-v3-api-patch.py
+          python3 catalogos-atuais/scripts/mb-v3-shell-patch.py
+          python3 catalogos-atuais/scripts/mb-v3-restock-patch.py
+          # Each script must be safe on repeated execution.
+          python3 catalogos-atuais/scripts/mb-v3-api-patch.py
+          python3 catalogos-atuais/scripts/mb-v3-shell-patch.py
+          python3 catalogos-atuais/scripts/mb-v3-restock-patch.py
           for store in mb-dryfit mb-for-her; do
             node --check "stores/$store/worker/staff-workspace.js"
             node --check "stores/$store/worker/retail-ui.js"
