@@ -18,6 +18,11 @@ on:
       - scripts/corrigir-opcoes-filtros.py
       - scripts/aplicar-impressao-local.py
       - scripts/instalador-mb-impressao-configuracoes.py
+      - scripts/testar-link-impressao-github-release.mjs
+      - stores/mb-dryfit/worker/staff-sales.js
+      - stores/mb-dryfit/worker/api.js
+      - stores/mb-for-her/worker/staff-sales.js
+      - stores/mb-for-her/worker/api.js
       - scripts/garantir-codigos-unicos.py
       - scripts/checkout-pdv-sempre-visivel.py
       - scripts/corrigir-salvar-modelos.py
@@ -993,6 +998,8 @@ jobs:
             grep -q 'mbOriginalRenderVendorAccess' "stores/$store/worker/staff-sales.js"
             grep -q "/downloads/mb-impressao-elgin-windows.zip" "stores/$store/worker/api.js"
           done
+      - name: Validar download na GitHub Release e retirar dependência do R2 só para instalador
+        run: node catalogos-atuais/scripts/testar-link-impressao-github-release.mjs
       - name: Impedir códigos automáticos duplicados nos dois catálogos
         run: |
           python3 catalogos-atuais/scripts/garantir-codigos-unicos.py
@@ -2014,6 +2021,8 @@ jobs:
             grep -q 'mbOriginalRenderVendorAccess' "stores/$store/worker/staff-sales.js"
             grep -q "/downloads/mb-impressao-elgin-windows.zip" "stores/$store/worker/api.js"
           done
+      - name: Validar download na GitHub Release e retirar dependência do R2 só para instalador
+        run: node catalogos-atuais/scripts/testar-link-impressao-github-release.mjs
       - name: Impedir códigos automáticos duplicados nos dois catálogos
         run: |
           python3 catalogos-atuais/scripts/garantir-codigos-unicos.py
