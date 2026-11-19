@@ -163,8 +163,22 @@ def admin_fix(s):
   if i<0:raise RuntimeError('admin style tag missing')
   s=s[:i]+FAST_CSS+s[i:]
  # Remove eager vendor scripts only after the lazy loaders are installed below.
- s=once(s,'<script src="/vendor/qz-tray.js"></script><script src="/vendor/zxing-browser.min.js"></script>',
-  '', 'eager vendor scripts')
+ # Earlier release patches may remove either or both eager imports first.
+ # Handle both expected layouts and fail closed for partial/unrecognized changes.
+ combined='<script src="/vendor/qz-tray.js"></script><script src="/vendor/zxing-browser.min.js"></script>'
+ qz='<script src="/vendor/qz-tray.js"></script>'
+ zxing='<script src="/vendor/zxing-browser.min.js"></script>'
+ if combined in s:
+  s=once(s,combined,'','eager vendor scripts (original pair)')
+ elif qz in s and zxing in s:
+  s=once(s,qz,'','eager vendor QZ script')
+  s=once(s,zxing,'','eager vendor ZXing script')
+ elif qz not in s and zxing not in s:
+  # Both imports were already removed by the earlier production patches.
+  if '/*__NATIVE_PRINT__*/' not in s:
+   raise RuntimeError('Vendor scripts removed but expected lazy-loader insertion point is missing')
+ else:
+  raise RuntimeError('Only one eager vendor script remains; unexpected partial release patch')
  return s
 
 def startup_fix(s):
