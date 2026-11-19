@@ -20,6 +20,7 @@ ORIGINS = {
 }
 CONFIG_DIR = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "MB-Impressao-Elgin"
 TOKEN_FILE = CONFIG_DIR / "pareamento.txt"
+PAIRED_FILE = CONFIG_DIR / "pareado.flag"
 
 
 def load_or_create_token():
@@ -75,7 +76,10 @@ class Handler(BaseHTTPRequestHandler):
         return
 
     def allowed(self):
-        return self.headers.get("Origin", "") in ORIGINS
+        # Reject DNS-rebinding hosts and untrusted web origins.
+        host = self.headers.get("Host", "")
+        return (host in {f"127.0.0.1:{PORT}", f"localhost:{PORT}"}
+                and self.headers.get("Origin", "") in ORIGINS)
 
     def authorized(self):
         supplied = self.headers.get("X-MB-Token", "")
@@ -112,12 +116,21 @@ class Handler(BaseHTTPRequestHandler):
             self.reply(403, {"error": "Site não autorizado."})
         elif self.path == "/health":
             self.reply(200, {"name": "MB-Impressao-Elgin", "ready": True})
+        elif self.path == "/paired":
+            if not PAIRED_FILE.is_file():
+                self.reply(409, {"error": "Pareie neste computador uma vez."})
+                return
+            self.reply(200, {"token": TOKEN})
         elif self.path == "/printers":
             if not self.authorized():
                 self.reply(401, {"error": "Informe o código de pareamento do programa."})
                 return
             try:
-                self.reply(200, {"printers": printer_names()})
+                printers = printer_names()
+                # A successful, authenticated pairing is shared by the two
+                # official origins on this SAME Windows computer only.
+                PAIRED_FILE.write_text("paired\n", encoding="ascii")
+                self.reply(200, {"printers": printers})
             except Exception as exc:
                 self.reply(503, {"error": "Falha ao listar impressoras: " + str(exc)[:180]})
         else:
@@ -129,6 +142,14 @@ class Handler(BaseHTTPRequestHandler):
             return
         if not self.authorized():
             self.reply(401, {"error": "Código de pareamento inválido."})
+            return
+        if self.path == "/forget":
+            # Revokes the previously paired token on both official sites.
+            global TOKEN
+            TOKEN = secrets.token_hex(32)
+            TOKEN_FILE.write_text(TOKEN, encoding="ascii")
+            PAIRED_FILE.unlink(missing_ok=True)
+            self.reply(200, {"ok": True, "message": "Pareamento removido deste computador."})
             return
         if self.path != "/print":
             self.reply(404, {"error": "Rota desconhecida."})
