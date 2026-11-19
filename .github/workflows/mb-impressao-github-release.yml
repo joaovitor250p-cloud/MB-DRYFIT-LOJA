@@ -1,0 +1,82 @@
+name: Disponibilizar MB Impressão Elgin na GitHub Release verificada
+# Nunca recompila o executável, nem exclui objetos do R2.
+on:
+  push:
+    branches:
+      - fix/mover-mb-impressao-para-github-release-20261119
+    paths:
+      - .github/workflows/mb-impressao-github-release.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: mb-impressao-release-20261119
+  cancel-in-progress: false
+
+jobs:
+  transferir:
+    name: Recuperar ZIP original, verificar SHA256, publicar Release e testar download
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MB_RELEASE_TAG: mb-impressao-elgin-2026-11-19
+      MB_ARCHIVE: MB-Impressao-Elgin-Windows.zip
+      MB_SHA256: 448e4dc5e5d8e5f7a5b2adcc88e18fda791c1f3abae84f8c221420b487f6483b
+    steps:
+      - name: Baixar instalador ORIGINAL gerado no GitHub Actions (sem recompilar)
+        uses: actions/download-artifact@v4
+        with:
+          name: MB-Impressao-Elgin-Windows
+          run-id: 44296175144
+          github-token: \${{ github.token }}
+          path: original
+
+      - name: Conferir ZIP e comparar hash com cópia comprovada anteriormente no R2
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib,os,zipfile
+          from pathlib import Path
+          path=Path('original/MB-Impressao-Elgin-Windows.zip')
+          assert path.is_file() and path.stat().st_size>5_000_000, 'Instalador ausente ou pequeno demais'
+          digest=hashlib.sha256(path.read_bytes()).hexdigest()
+          assert digest==os.environ['MB_SHA256'], 'Arquivo difere do ZIP validado no R2: '+digest
+          with zipfile.ZipFile(path) as archive:
+              assert archive.testzip() is None, 'ZIP corrompido'
+              assert {'MB-Impressao-Elgin.exe','LEIA-ME.txt'}.issubset(archive.namelist()), 'Conteúdo original inválido'
+          print('ZIP original confirmado; bytes=',path.stat().st_size, 'SHA256=',digest)
+          PY
+
+      - name: Publicar ZIP original na GitHub Release pública sem recriar o EXE
+        shell: bash
+        env:
+          GH_TOKEN: \${{ github.token }}
+          GH_REPO: \${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if gh release view "$MB_RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Release existente: nenhuma substituição automática."
+            gh release download "$MB_RELEASE_TAG" --pattern "$MB_ARCHIVE" --dir existing
+            echo "$MB_SHA256  existing/$MB_ARCHIVE" | sha256sum --check --status
+          else
+            gh release create "$MB_RELEASE_TAG" "original/$MB_ARCHIVE" \
+              --title "MB Impressão Elgin — instalador Windows original" \
+              --notes "Arquivo original gerado pelo GitHub Actions 44296175144; SHA-256: $MB_SHA256. Não recompilado nem modificado. Windows / Elgin L42PRO FULL." \
+              --target "$GITHUB_SHA" --latest=false
+          fi
+
+      - name: Testar download PÚBLICO da Release e comparar byte a byte
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://github.com/$GITHUB_REPOSITORY/releases/download/$MB_RELEASE_TAG/$MB_ARCHIVE"
+          curl --fail --location --retry 3 --connect-timeout 20 --max-time 180 --silent --show-error --output /tmp/mb-impressao-release.zip "$url"
+          test "$(wc -c </tmp/mb-impressao-release.zip)" -eq "$(wc -c <original/$MB_ARCHIVE)"
+          cmp --silent "original/$MB_ARCHIVE" /tmp/mb-impressao-release.zip
+          echo "$MB_SHA256  /tmp/mb-impressao-release.zip" | sha256sum --check
+          printf '### Download da Release validado\n- URL: %s\n- SHA256: %s\n- Conteúdo: idêntico ao ZIP original\n- R2: **mantido intacto**\n' "$url" "$MB_SHA256" >> "$GITHUB_STEP_SUMMARY"
+          echo "Release pronta. Nada excluído do R2."
