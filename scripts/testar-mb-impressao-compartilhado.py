@@ -7,6 +7,10 @@ import os
 from pathlib import Path
 import tempfile
 import threading
+import sys
+import types
+# GitHub Ubuntu runners may not ship Tk; UI is intentionally not started here.
+tk=types.ModuleType('tkinter');tk.messagebox=types.ModuleType('tkinter.messagebox');tk.ttk=types.ModuleType('tkinter.ttk');sys.modules.setdefault('tkinter',tk)
 from http.server import ThreadingHTTPServer
 from unittest.mock import patch
 
