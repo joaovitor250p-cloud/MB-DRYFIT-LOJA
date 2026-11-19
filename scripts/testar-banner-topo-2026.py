@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Real generated HTML checks after applying frozen release patches.
 
-Does not claim to validate missing photographs, R2 uploads or a browser
-screenshot. No server or database credentials required.
+No photographs or R2 are involved. This is a source-level regression,
+not a browser screenshot. No server or database credentials required.
 """
 from pathlib import Path
 from html.parser import HTMLParser
@@ -20,9 +20,9 @@ class Capture(HTMLParser):
         if tag=='a':self.links.append(d)
         if tag=='img':self.images.append(d)
 
-for store,slug,expected,photo,categories in [
-    ("mb-dryfit","dryfit","MODA ESPORTIVA MASCULINA","hero-dryfit",("Camisas","Bermudas","Conjuntos")),
-    ("mb-for-her","forher","MODA FITNESS FEMININA","hero-forher",("Tops","Leggings","Conjuntos"))
+for store,slug,expected,categories in [
+    ("mb-dryfit","dryfit","MODA ESPORTIVA MASCULINA",("Camisas","Bermudas","Conjuntos")),
+    ("mb-for-her","forher","MODA FITNESS FEMININA",("Tops","Leggings","Conjuntos"))
 ]:
     root=Path("stores")/store/"worker"
     content=(root/"storefront.html").read_text(encoding="utf-8")
@@ -33,12 +33,9 @@ for store,slug,expected,photo,categories in [
     assert expected in content
     for name in categories:
         assert any(x.get("data-category")==name for x in parser.links),store+" missing category "+name
-    pictures=[x for x in parser.images if x.get("class")=="mbh-person"]
-    assert len(pictures)==1,store+" missing transparent photo"
-    p=pictures[0]
-    assert p["src"]=="/brand-assets/"+photo+".webp"
-    assert photo+"-800.webp 800w" in p["srcset"]
-    assert p["fetchpriority"]=="high"
+    assert not any(x.get("class")=="mbh-person" for x in parser.images),store+" includes unwanted person image"
+    assert "mbh-art-word" in content,store+" missing purely CSS/HTML visual"
+    assert "hero-dryfit.webp" not in content and "hero-forher.webp" not in content
     assert not any(tag=="video" and ("mbw" in str(a) or "hero" in str(a)) for tag,a in parser.elements)
     for discarded in ['class="mbw-hero"','class="mbw-art"','class="mbw-sweep"','class="mbw-fabric"',
                       'class="mbw-media"','class="mbw-dots"']:
@@ -46,9 +43,9 @@ for store,slug,expected,photo,categories in [
     assert "mbh-band" in content and "mbh-wash" in content and "html[data-theme=dark] .mbh" in content
     assert 'data-contact-vendors' in content and 'data-my-orders' in content and 'data-open-cart' in content
     assert "Poppins:ital,wght" in content
-    assert "mbh_slide_" in content and "for(let n=1;n<=3;n++)" in content
+    assert "mbh_slide_" not in content and "mbh-dots" not in content
     owner=(root/"appearance-editor.js").read_text(encoding="utf-8")
     validator=(root/"appearance.js").read_text(encoding="utf-8")
-    assert "mbh_kicker" in owner and "mbh_title_accent" in owner and "mbh_cat_1" in owner and "mbh_slide_3_url" in owner
+    assert "mbh_kicker" in owner and "mbh_title_accent" in owner and "mbh_cat_1" in owner
     assert "mbh_kicker" in validator and "mbh_cat_3" in validator
-    print(store+": new semantic HTML hero, CSS, controls, URL hooks and picture srcset OK")
+    print(store+": semantic HTML hero without photos, responsive CSS and owner text/category controls OK")
