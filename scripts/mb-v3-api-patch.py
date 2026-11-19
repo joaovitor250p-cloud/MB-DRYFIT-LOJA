@@ -48,4 +48,14 @@ if(!owner){
         mg.write_text(src,encoding="utf-8")
     elif "^(3[4-9]|4[0-9]|5[0-4])$" not in src:
         raise RuntimeError(store+": model editor size validation changed")
-    print(store+": v3 secure size routes installed; existing transactions preserved")
+    migration=root.parent/"drizzle"/"0026_flexible_sizes.sql"
+    migration_text=(SRC/"mb-v3-migration.sql").read_text(encoding="utf-8")
+    if migration.exists() and migration.read_text(encoding="utf-8")!=migration_text:
+        raise RuntimeError(store+": different 0026 migration already exists")
+    migration.write_text(migration_text,encoding="utf-8")
+    test_file=root.parent/"tests"/"mb-flexible-sizes.test.mjs"
+    test_text=(SRC/"mb-v3-flexible-sizes.test.mjs").read_text(encoding="utf-8")
+    if test_file.exists() and test_file.read_text(encoding="utf-8")!=test_text:
+        raise RuntimeError(store+": flexible-size test collision")
+    test_file.write_text(test_text,encoding="utf-8")
+    print(store+": v3 secure size routes, non-destructive migration and tests installed")
