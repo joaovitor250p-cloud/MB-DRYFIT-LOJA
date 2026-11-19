@@ -29,6 +29,8 @@ for store in ("mb-dryfit","mb-for-her"):
  shop=root/"storefront.html"
  ss=shop.read_text(encoding="utf-8")
  order="const chosen=new Map(),sizesOrder=['P','M','G','GG','EG','EGG','Único'];"
+ if store=="mb-for-her":
+  order="const chosen=new Map(),sizesOrder=['PP','P','M','G','GG','EG','EGG','Único'];"
  if ss.count(order)!=1:raise RuntimeError(store+": storefront size list changed")
  ss=ss.replace(order,"const chosen=new Map(),sizesOrder="+SIZES+";const catalogSizeRank=s=>{const n=sizesOrder.indexOf(s);return n<0?sizesOrder.length:n};",1)
  sorter="sizesOrder.indexOf(a.size)-sizesOrder.indexOf(b.size)"
