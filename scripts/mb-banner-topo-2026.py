@@ -296,6 +296,11 @@ def main():
        "input('mbh_slide_3_url','Foto transparente 3 (URL HTTPS)',2000)+"
     )
     e=e.replace(banner_anchor,banner_anchor+fields_js,1)
+    # Previous marketing patch hid every Banner label except old 5 media
+    # slots. Show ONLY the new real-hero fields to the owner instead.
+    old_hide='label:not(:has([name^="banner_slide_"]))'
+    if old_hide not in e:raise RuntimeError(store+" editor: CSS antigo de campos não localizado")
+    e=e.replace(old_hide,'label:not(:has([name^="mbh_"]))',1)
     editor.write_text(e,encoding='utf-8')
     builder=root/'scripts/build.mjs'
     js=builder.read_text(encoding="utf-8")
