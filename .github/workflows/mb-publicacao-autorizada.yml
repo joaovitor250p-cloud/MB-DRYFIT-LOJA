@@ -8,6 +8,11 @@ on:
       - scripts/fix-media-studio.py
       - scripts/online-order-alerts-update.py
       - scripts/limpar-catalogos-publicos.py
+      - scripts/mb-banner-topo-2026.py
+      - stores/mb-dryfit/brand-assets/hero-dryfit.webp
+      - stores/mb-dryfit/brand-assets/hero-dryfit-800.webp
+      - stores/mb-for-her/brand-assets/hero-forher.webp
+      - stores/mb-for-her/brand-assets/hero-forher-800.webp
       - scripts/aplicar-filtros-marca-peca.py
       - scripts/organizar-modelos-export-mobile.py
       - scripts/carrinho-tela-imediata.py
@@ -49,6 +54,12 @@ on:
       - scripts/aplicar-ultimos-ajustes-2026.py
       - scripts/mb-final-order-2026.test.mjs
       - scripts/ajustar-fixtures-ultimos-2026.py
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/mb-publicacao-autorizada.yml
+      - scripts/mb-banner-topo-2026.py
+      - 'stores/**/brand-assets/hero-*.webp'
   workflow_dispatch:
 permissions:
   contents: read
@@ -68,7 +79,7 @@ jobs:
       - name: Buscar apenas os catálogos atualizados
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.event.pull_request.head.sha || 'main' }}
           path: catalogos-atuais
           persist-credentials: false
       - name: Instalar codificador de frames para vídeos leves
@@ -1031,6 +1042,25 @@ jobs:
       - run: npm ci
       - name: Ajustar fixtures históricas aos cadastros com REF obrigatória
         run: python3 catalogos-atuais/scripts/atualizar-fixtures-ref.py
+      - name: Testar novo banner HTML/CSS sem imagens fictícias nos sites
+        env:
+          MB_BANNER_HTML_ONLY_TEST: ${{ github.event_name == 'pull_request' && '1' || '0' }}
+        run: |
+          python3 -m py_compile catalogos-atuais/scripts/mb-banner-topo-2026.py
+          for store in mb-dryfit mb-for-her; do
+            case "$store" in mb-dryfit) prefix=hero-dryfit;; *) prefix=hero-forher;; esac
+            for image in "$prefix.webp" "$prefix-800.webp"; do
+              if test -f "catalogos-atuais/stores/$store/brand-assets/$image"; then
+                cp "catalogos-atuais/stores/$store/brand-assets/$image" "stores/$store/brand-assets/$image"
+              fi
+            done
+          done
+          python3 catalogos-atuais/scripts/mb-banner-topo-2026.py
+          for store in mb-dryfit mb-for-her; do
+            grep -q 'class="mbh"' "stores/$store/worker/storefront.html"
+            ! grep -q 'class="mbw-hero"' "stores/$store/worker/storefront.html"
+            node --check "stores/$store/scripts/build.mjs"
+          done
       - run: npm run check
       - run: npm run test:hosting
       - name: Preparar apenas o código, sem ativar R2 nem aplicar a migração 0042
@@ -1070,6 +1100,7 @@ jobs:
           NODE
   publicar:
     name: Publicar Workers da Cloudflare
+    if: github.event_name != 'pull_request'
     needs: preparar
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -2151,6 +2182,20 @@ jobs:
         run: node --test catalogos-atuais/scripts/mb-final-order-2026.test.mjs
       - name: Atualizar apenas testes legados dos rótulos de pedidos
         run: python3 catalogos-atuais/scripts/ajustar-fixtures-ultimos-2026.py
+      - name: Aplicar banner final com fotos reais nas duas lojas antes do build
+        run: |
+          python3 -m py_compile catalogos-atuais/scripts/mb-banner-topo-2026.py
+          for store in mb-dryfit mb-for-her; do
+            case "$store" in mb-dryfit) prefix=hero-dryfit;; *) prefix=hero-forher;; esac
+            for image in "$prefix.webp" "$prefix-800.webp"; do
+              cp "catalogos-atuais/stores/$store/brand-assets/$image" "stores/$store/brand-assets/$image"
+            done
+          done
+          python3 catalogos-atuais/scripts/mb-banner-topo-2026.py
+          for store in mb-dryfit mb-for-her; do
+            grep -q 'class="mbh"' "stores/$store/worker/storefront.html"
+            ! grep -q 'class="mbw-hero"' "stores/$store/worker/storefront.html"
+          done
       - name: Revalidar a suíte completa após otimização da versão final
         run: npm run check
       - name: Empacotar módulos das promoções e pedidos em Workers únicos
