@@ -72,10 +72,10 @@ for shop in ("mb-dryfit","mb-for-her"):
     after+=len('</button>')
     extra="""<button data-order-tab="cancelled" class="'+(onlineOrderState==='cancelled'?'primary':'secondary')+'">Cancelados</button>"""
     section=section[:after]+extra+section[after:]
-    section=one(section,
-        "'Pesquisa em recebidos e feitos'",
-        "'Pesquisa em todos os pedidos'",
-        shop+" staff search label")
+    # The explanatory label is not a security boundary; some earlier UI
+    # scripts already renamed it. Keep whichever updated wording exists.
+    section=section.replace("'Pesquisa em recebidos e feitos'",
+                            "'Pesquisa em todos os pedidos'")
     s=s[:begin]+section+s[end:]
     staff.write_text(s,encoding="utf-8")
     print(shop+": cancelled history visible in private customer and staff panels")
