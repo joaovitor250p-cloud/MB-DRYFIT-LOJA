@@ -248,6 +248,15 @@ def main():
     html=html.replace('</head>',"<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin><style>"+CSS.replace("@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,800;1,900&display=swap');",'')+"</style><link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,800;1,900&display=swap\"></head>",1)
     html=html.replace('</body></html>',JS+'</body></html>',1)
     path.write_text(html,encoding="utf-8")
+    # Keep the styled header logo: the old appearance renderer must not replace
+    # it with a plain display_name or old uploaded image.
+    appearance_client=root/'worker/appearance-client.js'
+    ac=appearance_client.read_text(encoding='utf-8')
+    before="'.campaign-header .logo,.campaign-footer .logo'"
+    after="'.campaign-header .logo:not(.mbh-logo),.campaign-footer .logo'"
+    if before not in ac:raise RuntimeError(store+" logo antigo não localizado no renderer")
+    ac=ac.replace(before,after,1)
+    appearance_client.write_text(ac,encoding='utf-8')
     # Saved owner controls; no unsafe HTML from dynamic text.
     appearance=root/'worker/appearance.js'
     a=appearance.read_text(encoding='utf-8')
