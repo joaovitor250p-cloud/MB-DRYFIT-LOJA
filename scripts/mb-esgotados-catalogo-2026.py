@@ -34,7 +34,13 @@ for shop in ("mb-dryfit","mb-for-her"):
  color:#222;background:rgba(245,245,245,.84);font-size:13px;font-weight:800;letter-spacing:.08em
 }
 """
-    s=once(s,"</style></head>",css+"</style></head>",shop+" soldout style")
+    # New banner and legacy layouts both have CSS inside <head>, but closing
+    # style and head tags may be separated by other markup.
+    head_end=s.find("</head>")
+    style_end=s.rfind("</style>",0,head_end)
+    if head_end<0 or style_end<0:raise RuntimeError(shop+": no head style available for sold-out badge")
+    if "/* Only an entirely exhausted model receives the badge. */" not in s:
+        s=s[:style_end]+css+s[style_end:]
     catalog.write_text(s,encoding="utf-8")
 
     appearance=root/"appearance-client.js"
