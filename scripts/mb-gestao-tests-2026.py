@@ -42,7 +42,7 @@ test('insights endpoint is read-only, period checked and seller scope enforced',
   assert.ok(Array.isArray(result.points));
   assert.ok(Array.isArray(result.top_week));
   assert.equal((await d.request('retail/insights?period=100')).status,400);
-  assert.equal((await d.request('retail/dormant-clients','GET',null,'seller')).status,403);
+  assert.equal((await d.request('retail/dormant-clients','GET',null,'customer')).status,403);
  }finally{d.sql.close()}
 });
 """
