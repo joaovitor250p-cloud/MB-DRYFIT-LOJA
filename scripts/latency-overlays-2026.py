@@ -224,8 +224,15 @@ function mbGateInitialView(view){
    helper+"async function refresh(){[products,sales]=await Promise.all([api('products'),api('sales')]);mbViewData.productsReady=true;mbViewData.salesReady=true;render()}",'lazy data bootstrap')
  s=once(s,"async function refreshProductsOnly(){products=await api('products');render()}",
    "async function refreshProductsOnly(){products=await api('products');mbViewData.productsReady=true;render()}",'products ready marker')
- s=once(s,"nav();const view=$('#view');",
-   "nav();const view=$('#view');if(mbGateInitialView(view))return;",'tab skeleton and late fetch')
+ # Production patches can insert additional navigation logic between nav() and
+ # the view binding, so target the unique view declaration instead.
+ if 'if(mbGateInitialView(view))return;' not in s:
+  candidates=[r"const\\s+view\\s*=\\s*\\$\\(['\\\"]#view['\\\"]\\)\\s*;",
+              r"const\\s+view\\s*=\\s*document\\.querySelector\\(['\\\"]#view['\\\"]\\)\\s*;"]
+  matches=[m for pattern in candidates for m in re.finditer(pattern,s)]
+  if len(matches)!=1:raise RuntimeError('tab skeleton insertion point: expected one #view declaration; found %d' %len(matches))
+  m=matches[0]
+  s=s[:m.end()]+'if(mbGateInitialView(view))return;'+s[m.end():]
  s=once(s,"setInterval(rememberStaffSession,900000)}await refresh();if(owner()",
    "setInterval(rememberStaffSession,900000)}render();if(owner()", 'immediate first dashboard render')
  return s
