@@ -83,11 +83,15 @@ for shop in ("mb-dryfit","mb-for-her"):
 }
 """
     t=once(t,marker,modal+marker,shop+" cancellation UI helper")
-    # Add action beside FEITO for noncompleted online orders.
-    old="'<button class=\"primary\" data-order-done=\"'+o.id+'\">FEITO ✓</button>'"
-    new="'<button class=\"primary\" data-order-done=\"'+o.id+'\">FEITO ✓</button><button type=\"button\" class=\"secondary\" data-order-cancel=\"'+o.id+'\">Cancelar pedido</button>'"
-    t=once(t,old,new,shop+" cancel card action")
+    # Add the action beside the existing finalized-action buttons after render;
+    # do not depend on the exact HTML template changed by earlier release scripts.
     marker="const find=id=>data.items.find(o=>o.id===id);"
-    t=once(t,marker,marker+"view.querySelectorAll('[data-order-cancel]').forEach(b=>b.onclick=()=>mbCancelOnlineOrder(find(b.dataset.orderCancel)));",shop+" cancel handler binding")
+    binding="""view.querySelectorAll('[data-order-done]').forEach(b=>{
+ const cancel=document.createElement('button');
+ cancel.type='button';cancel.className='secondary';cancel.textContent='Cancelar pedido';
+ cancel.dataset.orderCancel=b.dataset.orderDone;b.after(cancel);
+});
+view.querySelectorAll('[data-order-cancel]').forEach(b=>b.onclick=()=>mbCancelOnlineOrder(find(b.dataset.orderCancel)));"""
+    t=once(t,marker,marker+binding,shop+" cancel handler binding")
     staff.write_text(t,encoding="utf-8")
     print(shop+": cancellation guarded by paid status and individually assigned agent; audit and coupon rollback atomic")
