@@ -34,6 +34,7 @@ on:
       - scripts/mb-externalize-worker.mjs
       - scripts/mb-prepare-assets-patch.mjs
       - scripts/mb-verify-release-assets.mjs
+      - scripts/mb-short-order-display-2026.py
       - scripts/mb-promo-checkout-trigger.sql
       - scripts/mb-promo-checkout-guard.mjs
       - scripts/test-promo-checkout-trigger.py
@@ -51,6 +52,7 @@ on:
   pull_request:
     paths:
       - scripts/testar-codigos-curtos.py
+      - scripts/mb-short-order-display-2026.py
       - scripts/pending-migrations/**
       - scripts/mb-promotion-catalog-ui.js
       - .github/workflows/mb-publicacao-autorizada.yml
@@ -1041,6 +1043,8 @@ jobs:
       - name: Aplicar otimizações finais ao pacote de pré-verificação congelado
         run: python3 catalogos-atuais/scripts/latency-overlays-2026.py
       - run: npm run check
+      - name: Preparar exibição do código curto, mantendo compatibilidade anterior
+        run: python3 catalogos-atuais/scripts/mb-short-order-display-2026.py
       - name: Testar sequências curtas das duas lojas sem tocar no D1 real
         run: python3 catalogos-atuais/scripts/testar-codigos-curtos.py
       - run: npm run test:hosting
