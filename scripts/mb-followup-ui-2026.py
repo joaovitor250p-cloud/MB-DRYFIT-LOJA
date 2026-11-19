@@ -29,7 +29,7 @@ for shop in ('mb-dryfit','mb-for-her'):
         # Trusted seller phone already comes from the private, authenticated receipt.
         fn="""function mbDirectSellerWhatsApp(o){
  const phone=String(o.agent_phone||'').replace(/[^0-9]/g,'');
- if(!/^55\\\\d{10,11}$/.test(phone))return '';
+ if(!/^55\d{10,11}$/.test(phone))return '';
  const code=o.short_code||o.id;
  const message='Olá, '+(o.agent_name||'vendedor')+'! Quero falar sobre meu pedido '+code+'.';
  return 'https://wa.me/'+phone+'?text='+encodeURIComponent(message);
