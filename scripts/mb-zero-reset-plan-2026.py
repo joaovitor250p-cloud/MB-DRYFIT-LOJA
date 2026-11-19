@@ -150,7 +150,38 @@ def plan(source, store):
         for table in clears:
             sql.append("SELECT json_extract('MB_RESET_FAILED_NONEMPTY','$') "
                        "WHERE (SELECT COUNT(*) FROM "+qname(table)+") != 0;")
-        sql.extend(["PRAGMA foreign_key_check;","COMMIT;"])
+        sql.extend([
+            "SELECT json_extract('MB_RESET_FK_ABORT','
+        report["plan_sha256"]=hashlib.sha256(
+            "\n".join(sql).encode("utf-8")).hexdigest()
+        return report,"\n".join(sql)+"\n"
+    finally:
+        con.close()
+
+def main():
+    parser=argparse.ArgumentParser()
+    parser.add_argument("--database",required=True,type=Path,
+                        help="Restored D1 SQLite copy; NEVER production or online URL")
+    parser.add_argument("--store",choices=("dryfit","her"),required=True)
+    parser.add_argument("--output-dir",required=True,type=Path)
+    args=parser.parse_args()
+    if not args.database.is_file():
+        parser.error("Local restored SQLite file required")
+    args.output_dir.mkdir(parents=True,exist_ok=True)
+    report,sql=plan(args.database,args.store)
+    (args.output_dir/(args.store+"-reset-preview.json")).write_text(
+        json.dumps(report,indent=2,ensure_ascii=False),encoding="utf-8")
+    (args.output_dir/(args.store+"-reset-DRAFT-DO-NOT-RUN.sql")).write_text(
+        sql,encoding="utf-8")
+    print(json.dumps({"store":args.store,"models":report["models"],
+                      "variants":report["total_variants"],
+                      "photo_candidates":len(report["r2"]["possible_deletion_candidates"]),
+                      "preview_only":True},ensure_ascii=False))
+if __name__=="__main__":
+    main()
+) WHERE EXISTS (SELECT 1 FROM pragma_foreign_key_check);",
+            "COMMIT;"
+        ])
         report["plan_sha256"]=hashlib.sha256(
             "\n".join(sql).encode("utf-8")).hexdigest()
         return report,"\n".join(sql)+"\n"
