@@ -79,7 +79,8 @@ html[data-theme=dark] .mbh-sub,html[data-theme=dark] .mbh-badges small{color:#cb
 html[data-theme=dark] .mbh-btn-ghost{color:#fff!important;border-color:#63646b}
 html[data-theme=dark] .campaign-header .mbh-logo{color:#fff!important}
 html[data-theme=dark] .campaign-header .mbh-logo b{color:#fff!important}
-html[data-theme=dark] .campaign-header:has(+ .mbh[data-store=forher]) .mbh-logo b{color:#c44e71!important}
+html[data-theme=dark]:has(.mbh[data-store=forher]) .campaign-header .mbh-logo b{color:#c44e71!important}
+html[data-theme=dark]:has(.mbh[data-store=forher]) .campaign-header .mbh-logo span{color:#fff!important}
 html[data-theme=dark] .campaign-header [data-my-orders]{color:#fff!important}
 @media(max-width:950px){.mbh h1{font-size:clamp(30px,4.5vw,54px)}.mbh-copy{padding-left:22px}.mbh-badges{gap:13px}.mbh-badges li{grid-template-columns:36px minmax(0,1fr);column-gap:7px}.mbh-badges li>span{width:36px;height:36px}.mbh-badges small{white-space:normal}}
 @media(max-width:750px){
