@@ -59,12 +59,12 @@ for shop in ('mb-dryfit','mb-for-her'):
         begin=s.find(" const heading=view.querySelector('.operations-heading');heading.insertAdjacentHTML(")
         end=s.find("\n view.querySelectorAll('[data-workspace-action]')",begin)
         if begin<0 or end<0:raise RuntimeError('Dashboard hero boundaries changed')
-        s=s[:begin]+""" if(!isOwner){
-  const p=document.createElement('div');
-  p.className='operations-quick-pos';
-  p.innerHTML='<button class="primary" type="button" data-workspace-action="sell">Abrir PDV ↗</button>';
-  view.querySelector('.operations-heading').after(p);
- }
+        s=s[:begin]+""" const p=document.createElement('div');
+ p.className='operations-quick-pos';
+ p.innerHTML='<button class="primary" type="button" data-workspace-action="sell">Abrir PDV ↗</button>'+
+ (isOwner?'<button class="secondary" type="button" data-workspace-action="create">Novo modelo</button>':
+ '<button class="secondary" type="button" data-workspace-action="store">Trocar loja</button>');
+ view.querySelector('.operations-heading').after(p);
 """+s[end:]
         return s
     apply(root/'staff-workspace.js',staff)
