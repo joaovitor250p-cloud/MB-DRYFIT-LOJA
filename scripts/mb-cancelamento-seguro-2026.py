@@ -15,6 +15,8 @@ for shop in ("mb-dryfit","mb-for-her"):
     path=root/"mb-order-adjustments.js"
     s=path.read_text(encoding="utf-8")
     s=once(s,"(transfer|items)","(transfer|items|cancel)",shop+" cancel path")
+    s=once(s,"if(sold||['cancelled','completed','paid'].includes(old.status))",
+        "if(sold||['completed','paid'].includes(old.status)||(old.status==='cancelled'&&action!=='cancel'))",shop+" idempotent cancellation preflight")
     marker=" if(action==='transfer'){"
     handler=""" if(action==='cancel'){
   if(req.method!=='PUT')return reply({error:'Use PUT.'},405);
