@@ -13,6 +13,12 @@ def once(s,before,after,label):
 for shop in ("mb-dryfit","mb-for-her"):
     root=Path("stores")/shop/"worker"
     path=root/"mb-order-adjustments.js"
+    # The frozen preflight does not install commerce modules until the later
+    # authorized packaging phase. Prepare an isolated copy for syntax checks.
+    if not path.exists():
+        src=Path("catalogos-atuais/scripts")/"mb-order-adjustments.js"
+        if not src.exists():src=Path("scripts")/"mb-order-adjustments.js"
+        path.write_text(src.read_text(encoding="utf-8"),encoding="utf-8")
     s=path.read_text(encoding="utf-8")
     s=once(s,"(transfer|items)","(transfer|items|cancel)",shop+" cancel path")
     s=once(s,"if(sold||['cancelled','completed','paid'].includes(old.status))",
