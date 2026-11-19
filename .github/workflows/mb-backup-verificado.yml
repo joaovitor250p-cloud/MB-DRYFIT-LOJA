@@ -1,0 +1,58 @@
+name: Backup criptografado e verificado MB (sem alterar produção)
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "daily = rotação de 30 dias; preclear = retenção mínima de 90 dias, sem limpeza"
+        required: true
+        default: daily
+        type: choice
+        options:
+          - daily
+          - preclear
+  schedule:
+    - cron: '17 4 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: mb-offsite-backup-both-stores
+  cancel-in-progress: false
+jobs:
+  backup:
+    name: Exportar D1 e R2 das duas lojas, criptografar, copiar fora e testar restauração
+    if: ${{ vars.MB_BACKUP_CONFIGURED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    environment: cloudflare-producao
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      MB_R2_ACCESS_KEY_ID: ${{ secrets.MB_R2_ACCESS_KEY_ID }}
+      MB_R2_SECRET_ACCESS_KEY: ${{ secrets.MB_R2_SECRET_ACCESS_KEY }}
+      MB_BACKUP_STORAGE_ENDPOINT: ${{ secrets.MB_BACKUP_STORAGE_ENDPOINT }}
+      MB_BACKUP_STORAGE_BUCKET: ${{ secrets.MB_BACKUP_STORAGE_BUCKET }}
+      MB_BACKUP_STORAGE_ACCESS_KEY_ID: ${{ secrets.MB_BACKUP_STORAGE_ACCESS_KEY_ID }}
+      MB_BACKUP_STORAGE_SECRET_ACCESS_KEY: ${{ secrets.MB_BACKUP_STORAGE_SECRET_ACCESS_KEY }}
+      MB_BACKUP_ENCRYPTION_KEY: ${{ secrets.MB_BACKUP_ENCRYPTION_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: cff723e5b8384fccb3d134d8a9da30bdfb62b61f
+          path: frozen
+          persist-credentials: false
+      - name: Configuração Cloudflare da versão congelada
+        run: cp frozen/cloudflare.domains.config.json cloudflare.domains.config.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Preparar ferramentas sem salvar credenciais no repositório
+        run: |
+          npm ci
+          python3 -m pip install --quiet boto3 cryptography
+      - name: D1 e todas as fotos da MB Dryfit
+        run: python3 scripts/mb-offsite-backup-2026.py --store dryfit --mode "${{ github.event.inputs.mode || 'daily' }}"
+      - name: D1 e todas as fotos da MB For Her
+        run: python3 scripts/mb-offsite-backup-2026.py --store her --mode "${{ github.event.inputs.mode || 'daily' }}"
