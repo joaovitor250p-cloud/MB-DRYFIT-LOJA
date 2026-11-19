@@ -30,7 +30,7 @@ for store,prefix in (("dryfit","MB"),("her","FH")):
         for migration in sorted(BASE.glob("*.sql")):
             con.executescript(migration.read_text(encoding="utf-8"))
         # A short number exists in the old store so reset must restart it.
-        con.executescript((MIG/("mb-dryfit" if store=="dryfit" else "mb-for-her")+"-order-short-codes.sql").read_text("utf-8"))
+        con.executescript((MIG/(("mb-dryfit" if store=="dryfit" else "mb-for-her")+"-order-short-codes.sql")).read_text("utf-8"))
 
         con.execute("INSERT INTO members VALUES (?,?,?,?)",("owner","owner@example.invalid","owner",0))
         con.execute("INSERT INTO sales_agents(id,name,phone,member_email,created_at,updated_at) VALUES (?,?,?,?,?,?)",
