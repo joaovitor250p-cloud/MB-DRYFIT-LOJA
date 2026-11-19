@@ -22,6 +22,7 @@ on:
       - scripts/testar-contato-vendedor-2026.mjs
       - scripts/testar-historico-cancelados-2026.mjs
       - scripts/mb-promotion-stock-regression.test.mjs
+      - scripts/mb-dashboard-test-refresh-2026.py
       - scripts/aplicar-filtros-marca-peca.py
       - scripts/organizar-modelos-export-mobile.py
       - scripts/carrinho-tela-imediata.py
@@ -88,6 +89,7 @@ on:
       - scripts/testar-contato-vendedor-2026.mjs
       - scripts/testar-historico-cancelados-2026.mjs
       - scripts/mb-promotion-stock-regression.test.mjs
+      - scripts/mb-dashboard-test-refresh-2026.py
   workflow_dispatch:
 permissions:
   contents: read
@@ -1096,6 +1098,7 @@ jobs:
           node catalogos-atuais/scripts/testar-contato-vendedor-2026.mjs
           node catalogos-atuais/scripts/testar-historico-cancelados-2026.mjs
           node catalogos-atuais/scripts/mb-promotion-stock-regression.test.mjs
+          python3 catalogos-atuais/scripts/mb-dashboard-test-refresh-2026.py
       - run: npm run check
       - run: npm run test:hosting
       - name: Extrair arquivos estáticos e privados na pré-verificação
@@ -2254,6 +2257,7 @@ jobs:
           node catalogos-atuais/scripts/testar-contato-vendedor-2026.mjs
           node catalogos-atuais/scripts/testar-historico-cancelados-2026.mjs
           node catalogos-atuais/scripts/mb-promotion-stock-regression.test.mjs
+          python3 catalogos-atuais/scripts/mb-dashboard-test-refresh-2026.py
       - name: Revalidar a suíte completa após otimização da versão final
         run: npm run check
       - name: Empacotar módulos das promoções e pedidos em Workers únicos
