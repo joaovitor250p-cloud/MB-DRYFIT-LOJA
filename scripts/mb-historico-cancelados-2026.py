@@ -65,9 +65,13 @@ for shop in ("mb-dryfit","mb-for-her"):
     end=s.index("\nasync function ",begin+10) if "\nasync function " in s[begin+10:] else len(s)
     # Do not edit unrelated staff functions.
     section=s[begin:end]
-    old="""<button data-order-tab="done" class="'+(onlineOrderState==='done'?'primary':'secondary')+'">Pedidos feitos</button>"""
-    new=old+"""<button data-order-tab="cancelled" class="'+(onlineOrderState==='cancelled'?'primary':'secondary')+'">Cancelados</button>"""
-    section=one(section,old,new,shop+" staff cancelled tab")
+    tab=section.find('data-order-tab="done"')
+    if tab<0:raise RuntimeError(shop+" staff completed orders tab not found")
+    after=section.find('</button>',tab)
+    if after<0:raise RuntimeError(shop+" staff completed tab closing tag not found")
+    after+=len('</button>')
+    extra="""<button data-order-tab="cancelled" class="'+(onlineOrderState==='cancelled'?'primary':'secondary')+'">Cancelados</button>"""
+    section=section[:after]+extra+section[after:]
     section=one(section,
         "'Pesquisa em recebidos e feitos'",
         "'Pesquisa em todos os pedidos'",
