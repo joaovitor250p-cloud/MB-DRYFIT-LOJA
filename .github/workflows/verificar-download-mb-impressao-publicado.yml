@@ -1,0 +1,38 @@
+name: Conferir instalação MB Impressão nas duas lojas públicas (somente leitura)
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/verificar-download-mb-impressao-publicado.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  conferir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      MB_RELEASE_URL: https://github.com/joaovitor250p-cloud/MB-DRYFIT-LOJA/releases/download/mb-impressao-elgin-2026-11-19/MB-Impressao-Elgin-Windows.zip
+      MB_EXPECTED_SHA256: 448e4dc5e5d8e5f7a5b2adcc88e18fda791c1f3abae84f8c221420b487f6483b
+    steps:
+      - name: Verificar redirecionamento publicado nos dois domínios
+        shell: bash
+        run: |
+          set -euo pipefail
+          for domain in mbdryfit.com.br forher.mbdryfit.com.br; do
+            result=$(curl --silent --show-error --max-time 35 --output /dev/null --write-out '%{http_code} %{redirect_url}' \
+              "https://$domain/downloads/mb-impressao-elgin-windows.zip")
+            test "$result" = "302 $MB_RELEASE_URL" || {
+              echo "::error::$domain ainda não redireciona para a Release: $result"; exit 1;
+            }
+            echo "$domain: download antigo redireciona corretamente para a GitHub Release"
+          done
+      - name: Baixar ZIP público e verificar SHA-256 original
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 --connect-timeout 20 --max-time 180 \
+            --silent --show-error --output /tmp/mb-impressao-elgin.zip "$MB_RELEASE_URL"
+          echo "$MB_EXPECTED_SHA256  /tmp/mb-impressao-elgin.zip" | sha256sum --check
+          echo "Os dois downloads antigos estão disponíveis e o ZIP público é íntegro."
+          echo "### MB Impressão — link público validado nas duas lojas; objeto R2 não foi apagado" >> "$GITHUB_STEP_SUMMARY"
