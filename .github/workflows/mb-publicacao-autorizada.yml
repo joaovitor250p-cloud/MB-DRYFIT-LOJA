@@ -8,6 +8,8 @@ on:
       - scripts/fix-media-studio.py
       - scripts/online-order-alerts-update.py
       - scripts/limpar-catalogos-publicos.py
+      - scripts/mb-banner-topo-2026.py
+      - scripts/testar-banner-topo-2026.py
       - scripts/aplicar-filtros-marca-peca.py
       - scripts/organizar-modelos-export-mobile.py
       - scripts/carrinho-tela-imediata.py
@@ -60,6 +62,8 @@ on:
       - scripts/mb-externalize-worker.mjs
       - scripts/mb-prepare-assets-patch.mjs
       - scripts/mb-verify-release-assets.mjs
+      - scripts/mb-banner-topo-2026.py
+      - scripts/testar-banner-topo-2026.py
   workflow_dispatch:
 permissions:
   contents: read
@@ -1044,6 +1048,11 @@ jobs:
         run: python3 catalogos-atuais/scripts/atualizar-fixtures-ref.py
       - name: Aplicar otimizações finais ao pacote de pré-verificação congelado
         run: python3 catalogos-atuais/scripts/latency-overlays-2026.py
+      - name: Aplicar e testar o novo banner das duas lojas na versão congelada
+        run: |
+          python3 -m py_compile catalogos-atuais/scripts/mb-banner-topo-2026.py
+          python3 catalogos-atuais/scripts/mb-banner-topo-2026.py
+          python3 catalogos-atuais/scripts/testar-banner-topo-2026.py
       - run: npm run check
       - run: npm run test:hosting
       - name: Extrair arquivos estáticos e privados na pré-verificação
@@ -2178,6 +2187,11 @@ jobs:
         run: python3 catalogos-atuais/scripts/ajustar-fixtures-ultimos-2026.py
       - name: Aplicar otimizações finais de desempenho sem alterar o visual nem dados
         run: python3 catalogos-atuais/scripts/latency-overlays-2026.py
+      - name: Aplicar e testar o banner HTML CSS sem fotos nas duas lojas
+        run: |
+          python3 -m py_compile catalogos-atuais/scripts/mb-banner-topo-2026.py
+          python3 catalogos-atuais/scripts/mb-banner-topo-2026.py
+          python3 catalogos-atuais/scripts/testar-banner-topo-2026.py
       - name: Revalidar a suíte completa após otimização da versão final
         run: npm run check
       - name: Empacotar módulos das promoções e pedidos em Workers únicos
