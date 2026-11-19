@@ -23,6 +23,16 @@ on:
       - scripts/testar-historico-cancelados-2026.mjs
       - scripts/mb-promotion-stock-regression.test.mjs
       - scripts/mb-dashboard-test-refresh-2026.py
+      - scripts/mb-gestao-readonly-2026.py
+      - scripts/mb-gestao-layout-2026.py
+      - scripts/mb-gestao-printer-2026.py
+      - scripts/mb-gestao-pwa-2026.py
+      - scripts/mb-gestao-home-2026.js
+      - scripts/mb-gestao-navigation-2026.js
+      - scripts/mb-gestao-style-2026.css
+      - scripts/mb-gestao-tests-2026.py
+      - scripts/testar-mb-impressao-compartilhado.py
+      - scripts/mb-gestao-chart.test.mjs
       - scripts/aplicar-filtros-marca-peca.py
       - scripts/organizar-modelos-export-mobile.py
       - scripts/carrinho-tela-imediata.py
@@ -90,6 +100,16 @@ on:
       - scripts/testar-historico-cancelados-2026.mjs
       - scripts/mb-promotion-stock-regression.test.mjs
       - scripts/mb-dashboard-test-refresh-2026.py
+      - scripts/mb-gestao-readonly-2026.py
+      - scripts/mb-gestao-layout-2026.py
+      - scripts/mb-gestao-printer-2026.py
+      - scripts/mb-gestao-pwa-2026.py
+      - scripts/mb-gestao-home-2026.js
+      - scripts/mb-gestao-navigation-2026.js
+      - scripts/mb-gestao-style-2026.css
+      - scripts/mb-gestao-tests-2026.py
+      - scripts/testar-mb-impressao-compartilhado.py
+      - scripts/mb-gestao-chart.test.mjs
   workflow_dispatch:
 permissions:
   contents: read
@@ -1099,6 +1119,21 @@ jobs:
           node catalogos-atuais/scripts/testar-historico-cancelados-2026.mjs
           node catalogos-atuais/scripts/mb-promotion-stock-regression.test.mjs
           python3 catalogos-atuais/scripts/mb-dashboard-test-refresh-2026.py
+      - name: Aplicar painel homologavel e somente leitura nas duas lojas
+        run: |
+          python3 -m py_compile catalogos-atuais/scripts/mb-gestao-*.py
+          python3 catalogos-atuais/scripts/mb-gestao-readonly-2026.py
+          python3 catalogos-atuais/scripts/mb-gestao-layout-2026.py
+          python3 catalogos-atuais/scripts/mb-gestao-printer-2026.py
+          python3 catalogos-atuais/scripts/mb-gestao-pwa-2026.py
+          python3 catalogos-atuais/scripts/mb-gestao-tests-2026.py
+          python3 catalogos-atuais/scripts/testar-mb-impressao-compartilhado.py
+          node --test catalogos-atuais/scripts/mb-gestao-chart.test.mjs
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/worker/staff-workspace.js"
+            node --check "stores/$store/worker/retail-ui.js"
+            node --check "stores/$store/worker/native-print.js"
+          done
       - run: npm run check
       - run: npm run test:hosting
       - name: Extrair arquivos estáticos e privados na pré-verificação
@@ -2258,6 +2293,21 @@ jobs:
           node catalogos-atuais/scripts/testar-historico-cancelados-2026.mjs
           node catalogos-atuais/scripts/mb-promotion-stock-regression.test.mjs
           python3 catalogos-atuais/scripts/mb-dashboard-test-refresh-2026.py
+      - name: Aplicar painel homologavel e somente leitura nas duas lojas
+        run: |
+          python3 -m py_compile catalogos-atuais/scripts/mb-gestao-*.py
+          python3 catalogos-atuais/scripts/mb-gestao-readonly-2026.py
+          python3 catalogos-atuais/scripts/mb-gestao-layout-2026.py
+          python3 catalogos-atuais/scripts/mb-gestao-printer-2026.py
+          python3 catalogos-atuais/scripts/mb-gestao-pwa-2026.py
+          python3 catalogos-atuais/scripts/mb-gestao-tests-2026.py
+          python3 catalogos-atuais/scripts/testar-mb-impressao-compartilhado.py
+          node --test catalogos-atuais/scripts/mb-gestao-chart.test.mjs
+          for store in mb-dryfit mb-for-her; do
+            node --check "stores/$store/worker/staff-workspace.js"
+            node --check "stores/$store/worker/retail-ui.js"
+            node --check "stores/$store/worker/native-print.js"
+          done
       - name: Revalidar a suíte completa após otimização da versão final
         run: npm run check
       - name: Empacotar módulos das promoções e pedidos em Workers únicos
