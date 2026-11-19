@@ -12,12 +12,12 @@ import sys
 
 STORES={
  "mb-dryfit":dict(slug="dryfit",image="hero-dryfit",kicker="MODA ESPORTIVA MASCULINA",
-   headline="Performance que<br>acompanha seu <em>treino</em>",
+   headline='<span class="mbh-line-main">Performance que</span><br><span class="mbh-line-rest">acompanha seu </span><em class="mbh-line-accent">treino</em>',
    subtitle="Camisas dry fit, bermudas e conjuntos para treino, corrida e dia a dia.",
    badge="Tecido dry fit",detail="Leve e respirável",
    cats=("Camisas","Bermudas","Conjuntos"),logo='<span>MB</span><b>DRYFIT</b>'),
  "mb-for-her":dict(slug="forher",image="hero-forher",kicker="MODA FITNESS FEMININA",
-   headline="Seu movimento.<br><em>Seu estilo.</em>",
+   headline='<span class="mbh-line-main">Seu movimento.</span><br><span class="mbh-line-rest"></span><em class="mbh-line-accent">Seu estilo.</em>',
    subtitle="Tops, leggings e conjuntos para treino e todos os seus momentos.",
    badge="Conforto",detail="Caimento que valoriza",
    cats=("Tops","Leggings","Conjuntos"),logo='<span>MB</span><b>FOR HER</b>'),
@@ -148,10 +148,19 @@ JS=r"""
   timer=setInterval(()=>{if(document.hidden||!visible||dialogOpen())return;show((active+1)%slides.length)},6000);
  }}
  function configure(a){
-  // Existing owner controls can supply up to three IMAGES. Video is intentionally ignored.
+  // New dedicated hero fields: old stored videos/photos must never reappear.
+  for(const [field,selector] of [['mbh_kicker','.mbh-kicker'],['mbh_title_main','.mbh-line-main'],['mbh_title_rest','.mbh-line-rest'],['mbh_title_accent','.mbh-line-accent'],['mbh_subtitle','.mbh-sub']]){
+   const value=a[field];if(typeof value==='string'&&value.trim())hero.querySelector(selector).textContent=value;
+  }
+  for(let i=1;i<=3;i++){
+   const value=a['mbh_cat_'+i];if(typeof value==='string'&&value.trim()){
+    const link=hero.querySelectorAll('.mbh-cats a')[i-1];
+    link.dataset.category=value.trim();link.firstChild.textContent=value.trim()+' ';
+   }
+  }
   const rest=[];for(let n=1;n<=3;n++){
-   const url=a['banner_slide_'+n+'_url'],type=a['banner_slide_'+n+'_type'];
-   if(typeof url!=='string'||!url.trim()||type==='video')continue;
+   const url=a['mbh_slide_'+n+'_url'];
+   if(typeof url!=='string'||!url.trim())continue;
    let valid=false;try{const u=new URL(url,location.origin);valid=(u.origin===location.origin||u.protocol==='https:')&&!u.username&&!u.password}catch{}
    if(valid)rest.push({src:url,srcset:''});
   }
@@ -228,11 +237,59 @@ def main():
     nav='<nav class="mbh-top-nav" aria-label="Navegação principal"><a href="#colecao">Coleção</a><a href="#promocoes">Promoções</a><a href="#novidades">Novidades</a></nav>'
     if html.count('<div class="shop-header-tools">')!=1:raise RuntimeError(store+" ferramentas de cabeçalho inesperadas")
     html=html.replace('<div class="shop-header-tools">',nav+'<div class="shop-header-tools">',1)
-    # The prior catalog intentionally removes Novidades, and promotions may be absent:
-    # anchor their navigation to existing collections until those sections are enabled.
+    # Existing published filters and notices remain intact; do not rewire checkout.
     html=html.replace('</head>',"<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin><style>"+CSS.replace("@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,800;1,900&display=swap');",'')+"</style><link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,800;1,900&display=swap\"></head>",1)
     html=html.replace('</body></html>',JS+'</body></html>',1)
     path.write_text(html,encoding="utf-8")
+    # Saved owner controls; no unsafe HTML from dynamic text.
+    appearance=root/'worker/appearance.js'
+    a=appearance.read_text(encoding='utf-8')
+    needle=' return out;\n}'
+    if needle not in a:raise RuntimeError(store+" aparência: fechamento da validação não encontrado")
+    fields=dict(mbh_kicker=90,mbh_title_main=110,mbh_title_rest=110,
+                mbh_title_accent=90,mbh_subtitle=350,mbh_cat_1=45,
+                mbh_cat_2=45,mbh_cat_3=45)
+    extra=("\n for(const [key,max] of Object.entries("+repr(fields).replace("'",'"')+")){"
+           "if(input[key]!==undefined&&(typeof input[key]!=='string'||input[key].length>max))"
+           "throw Error('Confira o banner: '+key);out[key]=String(input[key]||'').trim()}"
+           "\n for(const n of [2,3]){const key='mbh_slide_'+n+'_url';"
+           "const value=String(input[key]||'');out[key]=value?safeURL(value,true):''}"
+           "\n")
+    a=a.replace(needle,extra+needle,1)
+    appearance.write_text(a,encoding='utf-8')
+    editor=root/'worker/appearance-editor.js'
+    e=editor.read_text(encoding='utf-8')
+    starts="  const a={...defaults,...saved.draft};"
+    if starts not in e:raise RuntimeError(store+" editor: defaults ausentes")
+    defaults=(
+       "  Object.assign(defaults,{"
+       "mbh_kicker:"+repr(c['kicker'])+","
+       "mbh_title_main:"+repr('Seu movimento.' if store=='mb-for-her' else 'Performance que')+","
+       "mbh_title_rest:"+repr('' if store=='mb-for-her' else 'acompanha seu ')+","
+       "mbh_title_accent:"+repr('Seu estilo.' if store=='mb-for-her' else 'treino')+","
+       "mbh_subtitle:"+repr(c['subtitle'])+","
+       "mbh_cat_1:"+repr(c['cats'][0])+",mbh_cat_2:"+repr(c['cats'][1])+","
+       "mbh_cat_3:"+repr(c['cats'][2])+",mbh_slide_2_url:'',mbh_slide_3_url:''});\n"
+    )
+    e=e.replace(starts,defaults+starts,1)
+    # The existing form collector serializes all [name] fields, so these become
+    # draft/preview/publish controls without changing saves or DB schema.
+    banner_anchor="panel('banner',"
+    if e.count(banner_anchor)!=1:raise RuntimeError(store+" não encontrou painel Banner")
+    fields_js=(
+       "input('mbh_kicker','Chamada do novo banner',90)+"
+       "input('mbh_title_main','Título — linha 1',110)+"
+       "input('mbh_title_rest','Título — início da linha 2',110)+"
+       "input('mbh_title_accent','Título — destaque colorido',90)+"
+       "input('mbh_subtitle','Subtítulo do banner',350)+"
+       "input('mbh_cat_1','Categoria 1',45)+"
+       "input('mbh_cat_2','Categoria 2',45)+"
+       "input('mbh_cat_3','Categoria 3',45)+"
+       "input('mbh_slide_2_url','Foto transparente 2 (URL HTTPS)',2000)+"
+       "input('mbh_slide_3_url','Foto transparente 3 (URL HTTPS)',2000)+"
+    )
+    e=e.replace(banner_anchor,banner_anchor+fields_js,1)
+    editor.write_text(e,encoding='utf-8')
     builder=root/'scripts/build.mjs'
     js=builder.read_text(encoding="utf-8")
     if 'jpg|mp4|svg|webp' not in js:
