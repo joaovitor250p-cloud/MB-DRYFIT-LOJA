@@ -53,9 +53,7 @@ if(u.pathname==='/api/catalog/cart/quote')return quoteCatalogCart(req,env);
 if(u.pathname==='/api/nex-model-regroup')return runModelRegroup(req,env,NEX_REGROUP_DATA);
 if(u.pathname==='/api/nex-transfer')return runNexTransfer(req,env,NEX_IMPORT_DATA);
 if(u.pathname==='/downloads/mb-impressao-elgin-windows.zip'&&req.method==='GET'){
-const obj=await env.BUCKET?.get('software/MB-Impressao-Elgin-Windows.zip');
-if(!obj)return new Response('Instalador ainda não disponível. Entre em Configurações novamente.',{status:404,headers:{'Cache-Control':'no-store'}});
-return new Response(obj.body,{headers:{'Content-Type':'application/zip','Content-Disposition':'attachment; filename="MB-Impressao-Elgin-Windows.zip"','Cache-Control':'public, max-age=3600','X-Content-Type-Options':'nosniff'}});
+return new Response(null,{status:302,headers:{'Location':'https://github.com/joaovitor250p-cloud/MB-DRYFIT-LOJA/releases/download/mb-impressao-elgin-2026-11-19/MB-Impressao-Elgin-Windows.zip','Cache-Control':'public, max-age=300','X-Content-Type-Options':'nosniff'}});
 }
 if(u.pathname==='/vendor/three.min.js')return new Response('Não encontrado',{status:404});
 if(u.pathname==='/vendor/zxing-browser.min.js')return new Response(ZXING_SOURCE,{headers:{'Content-Type':'text/javascript; charset=utf-8','Cache-Control':'private, max-age=86400'}});
