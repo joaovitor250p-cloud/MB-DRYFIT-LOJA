@@ -55,6 +55,7 @@ on:
       - scripts/mb-followup-ui-2026.py
       - scripts/mb-cancelamento-seguro-2026.py
       - scripts/mb-search-short-codes-2026.py
+      - scripts/mb-dashboard-indicadores-2026.py
       - scripts/mb-esgotados-catalogo-2026.py
       - scripts/testar-cancelamento-seguro-2026.py
       - scripts/mb-promotion-stock-regression.test.mjs
@@ -1056,6 +1057,7 @@ jobs:
           python3 catalogos-atuais/scripts/mb-followup-ui-2026.py
           python3 catalogos-atuais/scripts/mb-cancelamento-seguro-2026.py
           python3 catalogos-atuais/scripts/mb-search-short-codes-2026.py
+          python3 catalogos-atuais/scripts/mb-dashboard-indicadores-2026.py
           python3 catalogos-atuais/scripts/mb-esgotados-catalogo-2026.py
           for store in mb-dryfit mb-for-her; do
             node --check "stores/$store/worker/staff-workspace.js"
@@ -2206,6 +2208,7 @@ jobs:
           python3 catalogos-atuais/scripts/mb-followup-ui-2026.py
           python3 catalogos-atuais/scripts/mb-cancelamento-seguro-2026.py
           python3 catalogos-atuais/scripts/mb-search-short-codes-2026.py
+          python3 catalogos-atuais/scripts/mb-dashboard-indicadores-2026.py
           MB_REQUIRE_SOLDOUT_API=1 python3 catalogos-atuais/scripts/mb-esgotados-catalogo-2026.py
           for store in mb-dryfit mb-for-her; do
             node --check "stores/$store/worker/mb-order-adjustments.js"
