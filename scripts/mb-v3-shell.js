@@ -27,6 +27,7 @@ function mbV3RouteAllowed(next){
  return ['sell','orders','cash','returns','create','restock','labels','products','clients','mbPrinterOnly'].includes(next);
 }
 function mbV3Go(next){
+ if(next==='create'&&!owner()&&staff()){openModel();return}
  if(next==='appearance'||!mbV3RouteAllowed(next)){next=owner()?'overview':'sell'}
  if(next==='mbProducts')next='products';
  if(next==='mbCashClosures')next='cash';
@@ -39,6 +40,7 @@ function mbV3Go(next){
  if(toggle)toggle.setAttribute('aria-expanded','false');
 }
 function mbV3Shell(){
+ document.body.dataset.mbV3Page=page;
  const sidebar=document.getElementById('staffSidebar'),topbar=document.querySelector('.topbar');
  if(!sidebar||!topbar)return;
  let header=sidebar.querySelector('#mbV3Header');
