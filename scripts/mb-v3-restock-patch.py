@@ -36,6 +36,6 @@ for store in ("mb-dryfit","mb-for-her"):
  ss=ss.replace(order,"const chosen=new Map(),sizesOrder="+SIZES+";const catalogSizeRank=s=>{const n=sizesOrder.indexOf(s);return n<0?sizesOrder.length:n};",1)
  sorter="sizesOrder.indexOf(a.size)-sizesOrder.indexOf(b.size)"
  if ss.count(sorter)!=1:raise RuntimeError(store+": storefront size comparator changed")
- ss=ss.replace(sorter,"catalogSizeRank(a.size)-catalogSizeRank(b.size)||a.size.localeCompare(b.size,'pt-BR')",1)
+ ss=ss.replace(sorter,"(sizesOrder.includes(a.size)?sizesOrder.indexOf(a.size):sizesOrder.length)-(sizesOrder.includes(b.size)?sizesOrder.indexOf(b.size):sizesOrder.length)||a.size.localeCompare(b.size,'pt-BR')",1)
  shop.write_text(ss,encoding="utf-8")
  print(store+": restock grid, size-pills, seller clients and catalog order installed")
