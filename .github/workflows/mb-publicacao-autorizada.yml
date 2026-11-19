@@ -9,6 +9,7 @@ on:
       - scripts/online-order-alerts-update.py
       - scripts/limpar-catalogos-publicos.py
       - scripts/mb-banner-topo-2026.py
+      - scripts/testar-banner-topo-2026.py
       - stores/mb-dryfit/brand-assets/hero-dryfit.webp
       - stores/mb-dryfit/brand-assets/hero-dryfit-800.webp
       - stores/mb-for-her/brand-assets/hero-forher.webp
@@ -59,6 +60,7 @@ on:
     paths:
       - .github/workflows/mb-publicacao-autorizada.yml
       - scripts/mb-banner-topo-2026.py
+      - scripts/testar-banner-topo-2026.py
       - 'stores/**/brand-assets/hero-*.webp'
   workflow_dispatch:
 permissions:
@@ -1056,6 +1058,7 @@ jobs:
             done
           done
           python3 catalogos-atuais/scripts/mb-banner-topo-2026.py
+          python3 catalogos-atuais/scripts/testar-banner-topo-2026.py
           for store in mb-dryfit mb-for-her; do
             grep -q 'class="mbh"' "stores/$store/worker/storefront.html"
             ! grep -q 'class="mbw-hero"' "stores/$store/worker/storefront.html"
@@ -2192,6 +2195,7 @@ jobs:
             done
           done
           python3 catalogos-atuais/scripts/mb-banner-topo-2026.py
+          python3 catalogos-atuais/scripts/testar-banner-topo-2026.py
           for store in mb-dryfit mb-for-her; do
             grep -q 'class="mbh"' "stores/$store/worker/storefront.html"
             ! grep -q 'class="mbw-hero"' "stores/$store/worker/storefront.html"
