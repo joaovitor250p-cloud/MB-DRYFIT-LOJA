@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
-"""Replace frozen wholesale hero with accessible HTML/CSS hero in BOTH shops.
+"""Replace frozen wholesale hero with accessible HTML/CSS-only hero in BOTH shops.
 
-IMPORTANT: hard-fail unless the four actual, transparent WebP cutouts exist.
-A screenshot/mockup is NOT a valid hero photo. This script never modifies D1,
-products, orders, or published sites. Run only after the last catalog patches.
+No photos, images, videos, uploads, D1 changes or product updates.
+Run after the last catalog patches in the frozen build workflow.
 """
 from pathlib import Path
-import os
 import re
-from PIL import Image
 import sys
 
 STORES={
@@ -65,14 +62,11 @@ html:has(.mbh[data-store=forher]) .campaign-header .mbh-logo b{color:#c44e71!imp
 .mbh-visual{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 .mbh-wash{position:absolute;inset:0;background:var(--wash);clip-path:polygon(28% 0,100% 0,100% 100%,0 100%)}
 .mbh-band{position:absolute;inset:0;background:var(--band);clip-path:polygon(64% 0,89% 0,40% 100%,15% 100%)}
-.mbh-person{position:absolute;bottom:0;left:52%;transform:translateX(-35%);height:96%;width:auto;max-width:none;object-fit:contain;object-position:bottom center}
+.mbh-art-word{position:absolute;right:9%;top:35%;font:italic 900 clamp(50px,8vw,140px)/.94 'Poppins',sans-serif;letter-spacing:-.08em;color:#1a1c21;opacity:.10;transform:rotate(-7deg);white-space:nowrap}
 .mbh-cats{position:absolute;z-index:3;left:10%;bottom:62px;background:#fff;border-radius:18px;padding:18px 23px;box-shadow:0 8px 24px #00000012;min-width:236px;display:grid;gap:6px}
 .mbh-cats small{font:500 11px 'Poppins',sans-serif;color:#73777e}
 .mbh-cats a{display:flex;justify-content:space-between;gap:25px;font:600 13px 'Poppins',sans-serif;color:#1a1c21;text-decoration:none;cursor:pointer}
 .mbh-cats a>span{color:var(--accent)}
-.mbh-dots{position:absolute;right:clamp(20px,6vw,85px);bottom:25px;z-index:4;display:flex;gap:8px;align-items:center}
-.mbh-dots button{width:9px;height:9px;border:0;border-radius:99px;background:#cfd1d4;padding:0;cursor:pointer}
-.mbh-dots button[aria-current=true]{width:28px;background:var(--accent)}
 html[data-theme=dark] .campaign-header,html[data-theme=dark] .mbh{background:#141518!important;color:#fff!important}
 html[data-theme=dark] .mbh h1,html[data-theme=dark] .mbh-badges b{color:#fff}
 html[data-theme=dark] .mbh-sub,html[data-theme=dark] .mbh-badges small{color:#cbd0d6}
@@ -92,14 +86,12 @@ html[data-theme=dark] .campaign-header [data-my-orders]{color:#fff!important}
  .campaign-header .shop-tool{width:29px!important;min-width:29px!important}
  .mbh{grid-template-columns:1fr;min-height:0}
  .mbh-art{order:-1;min-height:0;display:flex;flex-direction:column}
- .mbh-visual{position:relative;height:min(52svh,530px);min-height:265px}
+ .mbh-visual{position:relative;height:min(38svh,360px);min-height:220px}
  .mbh-wash{clip-path:none}
- .mbh-person{height:99%;left:50%;transform:translateX(-50%)}
  .mbh-cats{position:relative;left:auto;bottom:auto;box-shadow:none;border-radius:0;padding:12px 10px;min-width:0;background:transparent;display:flex;gap:7px;justify-content:space-between}
  .mbh-cats small{display:none}
  .mbh-cats a{min-height:44px;flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px 4px;border:1px solid #dadce0;border-radius:999px;background:transparent;font-size:10px}
  html[data-theme=dark] .mbh-cats a{color:#fff;border-color:#555}
- .mbh-dots{right:18px;top:min(calc(52svh - 30px),500px);bottom:auto}
  .mbh-copy{padding:26px 18px 40px}
  .mbh-kicker{margin-bottom:20px}
  .mbh h1{font-size:clamp(31px,7.6vw,49px)}
@@ -137,73 +129,28 @@ JS=r"""
  }));
  // The existing contact chooser delegates clicks on data-contact-vendors anchors.
  // Do not bind another click handler: would open the modal twice.
- const main=hero.querySelector('.mbh-person'),dots=hero.querySelector('.mbh-dots');
- if(!main||!dots)return;
- let slides=[{src:main.currentSrc||main.src,srcset:main.srcset}],active=0,timer=0,visible=true;
- const halt=()=>{if(timer){clearInterval(timer);timer=0}};
- const dialogOpen=()=>!!document.querySelector('dialog[open],[role=dialog]:not([hidden]),.modal.open,.modal.is-open');
- function show(n){
-  active=n;const slide=slides[n];if(!slide)return;
-  main.srcset=slide.srcset||'';main.src=slide.src;
-  [...dots.children].forEach((b,i)=>b.setAttribute('aria-current',String(i===n)));
- }
- function go(){halt();if(slides.length>1&&!reduced&&!document.hidden&&visible&&!dialogOpen()){
-  timer=setInterval(()=>{if(document.hidden||!visible||dialogOpen())return;show((active+1)%slides.length)},6000);
- }}
  function configure(a){
-  // New dedicated hero fields: old stored videos/photos must never reappear.
   for(const [field,selector] of [['mbh_kicker','.mbh-kicker'],['mbh_title_main','.mbh-line-main'],['mbh_title_rest','.mbh-line-rest'],['mbh_title_accent','.mbh-line-accent'],['mbh_subtitle','.mbh-sub']]){
-   const value=a[field];if(typeof value==='string'&&value.trim())hero.querySelector(selector).textContent=value;
-  }
-  for(let i=1;i<=3;i++){
-   const value=a['mbh_cat_'+i];if(typeof value==='string'&&value.trim()){
-    const link=hero.querySelectorAll('.mbh-cats a')[i-1];
-    link.dataset.category=value.trim();link.firstChild.textContent=value.trim()+' ';
+   const value=a[field];if(typeof value==='string'&&value.trim()){
+    const node=hero.querySelector(selector);if(node)node.textContent=value;
    }
   }
-  const rest=[];for(let n=1;n<=3;n++){
-   const url=a['mbh_slide_'+n+'_url'];
-   if(typeof url!=='string'||!url.trim())continue;
-   let valid=false;try{const u=new URL(url,location.origin);valid=(u.origin===location.origin||u.protocol==='https:')&&!u.username&&!u.password}catch{}
-   if(valid)rest.push({src:url,srcset:''});
+  for(let i=1;i<=3;i++){
+   const value=a['mbh_cat_'+i];
+   if(typeof value==='string'&&value.trim()){
+    const link=hero.querySelectorAll('.mbh-cats a')[i-1];
+    if(link){link.dataset.category=value.trim();link.firstChild.textContent=value.trim()+' '}
+   }
   }
-  slides=[slides[0],...rest].slice(0,3);
-  dots.replaceChildren();
-  slides.forEach((_,i)=>{const b=document.createElement('button');b.type='button';b.setAttribute('aria-label','Banner '+(i+1));b.onclick=()=>{show(i);go()};dots.append(b)});
-  show(0);go();
  }
- if('IntersectionObserver' in window)new IntersectionObserver(([entry])=>{visible=entry.isIntersecting;go()},{threshold:.08}).observe(hero);
- document.addEventListener('visibilitychange',go);
- document.addEventListener('click',e=>{if(e.target.closest('[data-open-cart],[data-my-orders],[data-contact-vendors]'))halt();setTimeout(go,500)},{capture:true});
  fetch(location.search.includes('preview=appearance')?'/api/storefront-settings':'/api/shop/appearance',{credentials:'same-origin',cache:'no-store'})
- .then(r=>r.ok?r.json():null).then(a=>configure(a?.published||a?.draft||a?.appearance||a||{})).catch(()=>configure({}));
+ .then(r=>r.ok?r.json():null).then(a=>configure(a?.published||a?.draft||a?.appearance||a||{})).catch(()=>{});
  addEventListener('message',e=>{if(e.origin===location.origin&&e.data?.type==='mb-appearance-preview')configure(e.data.appearance||{})});
 })();
 </script>
 """
 
-def photo_is_webp_transparent(path, expected):
-    raw=path.read_bytes()
-    if len(raw)<250 or raw[:4]!=b"RIFF" or raw[8:12]!=b"WEBP":
-        raise RuntimeError("Arquivo não é WebP válido: "+str(path))
-    with Image.open(path) as im:
-        if im.format!="WEBP" or max(im.size)!=expected:
-            raise RuntimeError("Imagem precisa ser WebP, com lado maior de "+str(expected)+" px: "+str(path))
-        if "A" not in im.getbands() or im.getchannel("A").getextrema()[0]==255:
-            raise RuntimeError("Imagem sem fundo transparente: "+str(path))
-    return True
-
 def main():
-  for store,c in STORES.items():
-    asset=Path('stores')/store/'brand-assets'
-    for suffix in ('.webp','-800.webp'):
-      path=asset/(c['image']+suffix)
-      if not path.is_file():
-        if os.environ.get("MB_BANNER_HTML_ONLY_TEST")=="1" and os.environ.get("GITHUB_EVENT_NAME")=="pull_request":
-          print("PREVIEW SEM FOTO (somente CI): foto real ainda não anexada:",path)
-          continue
-        raise RuntimeError("FOTO REAL RECORTADA AUSENTE: "+str(path)+". Não usar screenshot ou imagem gerada.")
-      photo_is_webp_transparent(path,1600 if suffix=='.webp' else 800)
   for store,c in STORES.items():
     root=Path("stores")/store
     path=root/'worker/storefront.html'
@@ -231,11 +178,9 @@ def main():
       '<b>Atendimento</b><small>direto no WhatsApp</small></a></li></ul></div>'
       '<div class="mbh-art"><div class="mbh-visual">'
       '<div class="mbh-wash"></div><div class="mbh-band"></div>'
-      f'<img class="mbh-person" src="/brand-assets/{c["image"]}.webp" '
-      f'srcset="/brand-assets/{c["image"]}-800.webp 800w, /brand-assets/{c["image"]}.webp 1600w" '
-      'sizes="(max-width:750px) 90vw, 45vw" alt="" fetchpriority="high" decoding="async">'
+      '<span class="mbh-art-word" aria-hidden="true">MB</span>'
       '</div><nav class="mbh-cats" aria-label="Compre por categoria"><small>Compre por categoria</small>'
-      +cats+'</nav><nav class="mbh-dots" aria-label="Escolher banner"></nav></div></section>')
+      +cats+'</nav></div></section>')
     html=html.replace('__MBH_HERO__',section,1)
     # Keep all existing owner tools, contact modal hooks, cart and order events intact.
     a=re.search(r'(<header class="campaign-header"[^>]*>.*?<a class="logo"[^>]*>)(.*?)(</a>)',html,re.S)
@@ -269,8 +214,6 @@ def main():
     extra=("\n for(const [key,max] of Object.entries("+repr(fields).replace("'",'"')+")){"
            "if(input[key]!==undefined&&(typeof input[key]!=='string'||input[key].length>max))"
            "throw Error('Confira o banner: '+key);out[key]=String(input[key]||'').trim()}"
-           "\n for(const n of [2,3]){const key='mbh_slide_'+n+'_url';"
-           "const value=String(input[key]||'');out[key]=value?safeURL(value,true):''}"
            "\n")
     a=a.replace(needle,extra+needle,1)
     appearance.write_text(a,encoding='utf-8')
@@ -286,7 +229,7 @@ def main():
        "mbh_title_accent:"+repr('Seu estilo.' if store=='mb-for-her' else 'treino')+","
        "mbh_subtitle:"+repr(c['subtitle'])+","
        "mbh_cat_1:"+repr(c['cats'][0])+",mbh_cat_2:"+repr(c['cats'][1])+","
-       "mbh_cat_3:"+repr(c['cats'][2])+",mbh_slide_2_url:'',mbh_slide_3_url:''});\n"
+       "mbh_cat_3:"+repr(c['cats'][2])+"});\n"
     )
     e=e.replace(starts,defaults+starts,1)
     # The existing form collector serializes all [name] fields, so these become
@@ -302,8 +245,6 @@ def main():
        "input('mbh_cat_1','Categoria 1',45)+"
        "input('mbh_cat_2','Categoria 2',45)+"
        "input('mbh_cat_3','Categoria 3',45)+"
-       "input('mbh_slide_2_url','Foto transparente 2 (URL HTTPS)',2000)+"
-       "input('mbh_slide_3_url','Foto transparente 3 (URL HTTPS)',2000)+"
     )
     e=e.replace(banner_anchor,banner_anchor+fields_js,1)
     # Previous marketing patch hid every Banner label except old 5 media
@@ -312,15 +253,7 @@ def main():
     if old_hide not in e:raise RuntimeError(store+" editor: CSS antigo de campos não localizado")
     e=e.replace(old_hide,'label:not(:has([name^="mbh_"]))',1)
     editor.write_text(e,encoding='utf-8')
-    builder=root/'scripts/build.mjs'
-    js=builder.read_text(encoding="utf-8")
-    if 'jpg|mp4|svg|webp' not in js:
-      js=js.replace('jpg|mp4|svg','jpg|mp4|svg|webp')
-    if "file.endsWith('.webp')?'image/webp'" not in js:
-      js=js.replace("file.endsWith('.svg')?'image/svg+xml':'image/jpeg'",
-        "file.endsWith('.svg')?'image/svg+xml':file.endsWith('.webp')?'image/webp':'image/jpeg'")
-    builder.write_text(js,encoding="utf-8")
-    print(store+": HTML/CSS novo e vídeo legado removido; fotos reais "+("NÃO validadas (somente teste de PR)" if os.environ.get("MB_BANNER_HTML_ONLY_TEST")=="1" else "verificadas")+"; D1 intocado")
+    print(store+": banner HTML/CSS sem fotos, sem vídeo e sem dependência do R2; D1 intocado")
 
 if __name__=="__main__":
   try:main()
