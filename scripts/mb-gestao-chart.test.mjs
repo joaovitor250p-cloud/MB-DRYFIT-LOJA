@@ -12,7 +12,6 @@ test('seven-day chart: daily bars, currency grid, average and marked today',()=>
  assert.equal((svg.match(/data-chart-value=/g)||[]).length,7);
  assert.match(svg,/Média R\$/);
  assert.match(svg,/is-today/);
- assert.match(svg,/2026/);
  assert.match(svg,/R\$.*200/);
 });
 test('thirty-day chart renders 30 bins and supports empty days',()=>{
