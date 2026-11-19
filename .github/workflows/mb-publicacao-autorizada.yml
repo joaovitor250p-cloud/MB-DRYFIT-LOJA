@@ -10,10 +10,6 @@ on:
       - scripts/limpar-catalogos-publicos.py
       - scripts/mb-banner-topo-2026.py
       - scripts/testar-banner-topo-2026.py
-      - stores/mb-dryfit/brand-assets/hero-dryfit.webp
-      - stores/mb-dryfit/brand-assets/hero-dryfit-800.webp
-      - stores/mb-for-her/brand-assets/hero-forher.webp
-      - stores/mb-for-her/brand-assets/hero-forher-800.webp
       - scripts/aplicar-filtros-marca-peca.py
       - scripts/organizar-modelos-export-mobile.py
       - scripts/carrinho-tela-imediata.py
@@ -61,7 +57,6 @@ on:
       - .github/workflows/mb-publicacao-autorizada.yml
       - scripts/mb-banner-topo-2026.py
       - scripts/testar-banner-topo-2026.py
-      - 'stores/**/brand-assets/hero-*.webp'
   workflow_dispatch:
 permissions:
   contents: read
@@ -1044,19 +1039,9 @@ jobs:
       - run: npm ci
       - name: Ajustar fixtures históricas aos cadastros com REF obrigatória
         run: python3 catalogos-atuais/scripts/atualizar-fixtures-ref.py
-      - name: Testar novo banner HTML/CSS sem imagens fictícias nos sites
-        env:
-          MB_BANNER_HTML_ONLY_TEST: ${{ github.event_name == 'pull_request' && '1' || '0' }}
+      - name: Testar banner HTML/CSS sem fotos nas duas lojas
         run: |
           python3 -m py_compile catalogos-atuais/scripts/mb-banner-topo-2026.py
-          for store in mb-dryfit mb-for-her; do
-            case "$store" in mb-dryfit) prefix=hero-dryfit;; *) prefix=hero-forher;; esac
-            for image in "$prefix.webp" "$prefix-800.webp"; do
-              if test -f "catalogos-atuais/stores/$store/brand-assets/$image"; then
-                cp "catalogos-atuais/stores/$store/brand-assets/$image" "stores/$store/brand-assets/$image"
-              fi
-            done
-          done
           python3 catalogos-atuais/scripts/mb-banner-topo-2026.py
           python3 catalogos-atuais/scripts/testar-banner-topo-2026.py
           for store in mb-dryfit mb-for-her; do
@@ -2185,15 +2170,9 @@ jobs:
         run: node --test catalogos-atuais/scripts/mb-final-order-2026.test.mjs
       - name: Atualizar apenas testes legados dos rótulos de pedidos
         run: python3 catalogos-atuais/scripts/ajustar-fixtures-ultimos-2026.py
-      - name: Aplicar banner final com fotos reais nas duas lojas antes do build
+      - name: Aplicar banner HTML/CSS sem fotos antes do build
         run: |
           python3 -m py_compile catalogos-atuais/scripts/mb-banner-topo-2026.py
-          for store in mb-dryfit mb-for-her; do
-            case "$store" in mb-dryfit) prefix=hero-dryfit;; *) prefix=hero-forher;; esac
-            for image in "$prefix.webp" "$prefix-800.webp"; do
-              cp "catalogos-atuais/stores/$store/brand-assets/$image" "stores/$store/brand-assets/$image"
-            done
-          done
           python3 catalogos-atuais/scripts/mb-banner-topo-2026.py
           python3 catalogos-atuais/scripts/testar-banner-topo-2026.py
           for store in mb-dryfit mb-for-her; do
