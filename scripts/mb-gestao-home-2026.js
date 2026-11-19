@@ -119,6 +119,7 @@ renderOperationsHome=async function(){
   const t=data.totals||{},orders=data.orders||{},c=data.comparison||{};
   if(isOwner){
    const newOrders=Number(orders.new_orders||0),working=Number(orders.awaiting_sale||0);
+   if(typeof mbMenuPendingCount!=='undefined'){mbMenuPendingCount=newOrders+working;const b=document.getElementById('mbNavPending');if(b){b.hidden=!mbMenuPendingCount;b.textContent=String(mbMenuPendingCount)}}
    document.getElementById('mbHomeCards').innerHTML=
     mbHomeCard('Vendas de hoje',mbHomeCurrency(t.today_total),insights.today_units+' peças',
       mbHomePercent(t.today_total,insights.same_weekday_total))+
@@ -151,6 +152,7 @@ renderOperationsHome=async function(){
     '<div class="mb-home-list-item"><b class="mb-home-rank">'+(i+1)+'</b><span>'+esc(p.name)+'</span><strong>'+Number(p.units||0)+' peças</strong></div>'
    ).join(''):'<p class="sub">Nenhuma venda registrada nesta semana.</p>';
   }else{
+   if(typeof mbMenuPendingCount!=='undefined'){mbMenuPendingCount=Number(data.assigned_online_orders||0);const b=document.getElementById('mbNavPending');if(b){b.hidden=!mbMenuPendingCount;b.textContent=String(mbMenuPendingCount)}}
    document.getElementById('mbHomeCards').innerHTML=
     mbHomeCard('Suas vendas hoje',mbHomeCurrency(t.today_total),insights.today_units+' peças',
      mbHomePercent(t.today_total,insights.same_weekday_total))+
