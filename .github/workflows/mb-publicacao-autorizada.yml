@@ -37,6 +37,10 @@ on:
       - scripts/mb-customer-checkout-ui.js
       - scripts/mb-staff-commerce-ui.js
       - scripts/mb-promotion-catalog-ui.js
+      - scripts/latency-overlays-2026.py
+      - scripts/mb-externalize-worker.mjs
+      - scripts/mb-prepare-assets-patch.mjs
+      - scripts/mb-verify-release-assets.mjs
       - scripts/mb-promo-checkout-trigger.sql
       - scripts/mb-promo-checkout-guard.mjs
       - scripts/test-promo-checkout-trigger.py
@@ -52,9 +56,12 @@ on:
       - scripts/mb-final-order-2026.test.mjs
       - scripts/ajustar-fixtures-ultimos-2026.py
   pull_request:
-    branches: [main]
     paths:
       - .github/workflows/mb-publicacao-autorizada.yml
+      - scripts/latency-overlays-2026.py
+      - scripts/mb-externalize-worker.mjs
+      - scripts/mb-prepare-assets-patch.mjs
+      - scripts/mb-verify-release-assets.mjs
       - scripts/mb-banner-topo-2026.py
       - scripts/testar-banner-topo-2026.py
   workflow_dispatch:
@@ -1039,29 +1046,37 @@ jobs:
       - run: npm ci
       - name: Ajustar fixtures históricas aos cadastros com REF obrigatória
         run: python3 catalogos-atuais/scripts/atualizar-fixtures-ref.py
-      - name: Testar banner HTML/CSS sem fotos nas duas lojas
+      - name: Aplicar otimizações finais ao pacote de pré-verificação congelado
+        run: python3 catalogos-atuais/scripts/latency-overlays-2026.py
+      - name: Aplicar e testar o novo banner das duas lojas na versão congelada
         run: |
           python3 -m py_compile catalogos-atuais/scripts/mb-banner-topo-2026.py
           python3 catalogos-atuais/scripts/mb-banner-topo-2026.py
           python3 catalogos-atuais/scripts/testar-banner-topo-2026.py
-          for store in mb-dryfit mb-for-her; do
-            grep -q 'class="mbh"' "stores/$store/worker/storefront.html"
-            ! grep -q 'class="mbw-hero"' "stores/$store/worker/storefront.html"
-            node --check "stores/$store/scripts/build.mjs"
-          done
       - run: npm run check
       - run: npm run test:hosting
+      - name: Extrair arquivos estáticos e privados na pré-verificação
+        run: |
+          node catalogos-atuais/scripts/mb-externalize-worker.mjs
+          node catalogos-atuais/scripts/mb-prepare-assets-patch.mjs
       - name: Preparar apenas o código, sem ativar R2 nem aplicar a migração 0042
         env:
           MB_RELEASE_CODE_ONLY: '1'
         run: node scripts/cloudflare-prepare.mjs cloudflare.domains.config.json
+      - name: Verificar tamanho, cache, Nex privado e renderizadores das duas lojas
+        run: node catalogos-atuais/scripts/mb-verify-release-assets.mjs
       - name: Garantir campo de pareamento no Worker final antes do deploy
         shell: bash
         run: |
           node --input-type=module <<'NODE'
-          import {readFileSync} from 'node:fs';
+          import {readFileSync,readdirSync} from 'node:fs';
           for (const store of ['dryfit','her']) {
-            const built=readFileSync('cloudflare-dist/'+store+'/worker.js','utf8');
+            const dir='cloudflare-dist/'+store;
+            const worker=readFileSync(dir+'/worker.js','utf8');
+            if(Buffer.byteLength(worker)>=1000000)throw Error(store+': Worker excede 1 MB');
+            const staticDir=dir+'/public/_mb/static';
+            const built=worker+'\n'+readdirSync(staticDir).filter(x=>x.endsWith('.js')).map(x=>readFileSync(staticDir+'/'+x,'utf8')).join('\n');
+            if(store==='dryfit'&&!worker.includes('/_mb/private/'))throw Error(store+': dados Nex sem bloqueio');
             for (const term of ['mbPrinterToken','function mountDirectPrinter','function reviewLabelBatch','mbBridgeRequest','Salvar e conectar uma vez','mbPrinterConnectedPanel','/downloads/mb-impressao-elgin-windows.zip','Tutorial de instalação em computador novo','function mbPrinterAllowPaint()','Preparando lista:']) {
               if(!built.includes(term))throw Error(store+': campo ou integração de impressão ausente no Worker final: '+term);
             }
@@ -1087,8 +1102,8 @@ jobs:
           }
           NODE
   publicar:
-    name: Publicar Workers da Cloudflare
     if: github.event_name != 'pull_request'
+    name: Publicar Workers da Cloudflare
     needs: preparar
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -1110,7 +1125,7 @@ jobs:
       - name: Buscar apenas os catálogos atualizados
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.event.pull_request.head.sha || 'main' }}
           path: catalogos-atuais
           persist-credentials: false
       - name: Instalar codificador de frames para vídeos leves
@@ -2170,15 +2185,13 @@ jobs:
         run: node --test catalogos-atuais/scripts/mb-final-order-2026.test.mjs
       - name: Atualizar apenas testes legados dos rótulos de pedidos
         run: python3 catalogos-atuais/scripts/ajustar-fixtures-ultimos-2026.py
-      - name: Aplicar banner HTML/CSS sem fotos antes do build
+      - name: Aplicar otimizações finais de desempenho sem alterar o visual nem dados
+        run: python3 catalogos-atuais/scripts/latency-overlays-2026.py
+      - name: Aplicar e testar o banner HTML CSS sem fotos nas duas lojas
         run: |
           python3 -m py_compile catalogos-atuais/scripts/mb-banner-topo-2026.py
           python3 catalogos-atuais/scripts/mb-banner-topo-2026.py
           python3 catalogos-atuais/scripts/testar-banner-topo-2026.py
-          for store in mb-dryfit mb-for-her; do
-            grep -q 'class="mbh"' "stores/$store/worker/storefront.html"
-            ! grep -q 'class="mbw-hero"' "stores/$store/worker/storefront.html"
-          done
       - name: Revalidar a suíte completa após otimização da versão final
         run: npm run check
       - name: Empacotar módulos das promoções e pedidos em Workers únicos
@@ -2188,8 +2201,14 @@ jobs:
             node --check "stores/$store/scripts/build.mjs"
           done
       - run: npm run build
+      - name: Extrair UI, bibliotecas e dados Nex privados do Worker
+        run: |
+          node catalogos-atuais/scripts/mb-externalize-worker.mjs
+          node catalogos-atuais/scripts/mb-prepare-assets-patch.mjs
       - name: Preparar Workers sem migrações novas
         run: node scripts/cloudflare-prepare.mjs cloudflare.domains.config.json
+      - name: Verificar tamanho, cache, Nex privado e renderizadores das duas lojas
+        run: node catalogos-atuais/scripts/mb-verify-release-assets.mjs
       - name: Garantir campo de pareamento no Worker final antes do deploy
         shell: bash
         run: |
