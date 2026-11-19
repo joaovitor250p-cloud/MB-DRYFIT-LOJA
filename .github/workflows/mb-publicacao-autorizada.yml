@@ -50,6 +50,9 @@ on:
       - scripts/ajustar-fixtures-ultimos-2026.py
   pull_request:
     paths:
+      - scripts/testar-codigos-curtos.py
+      - scripts/pending-migrations/**
+      - scripts/mb-promotion-catalog-ui.js
       - .github/workflows/mb-publicacao-autorizada.yml
       - scripts/latency-overlays-2026.py
       - scripts/mb-externalize-worker.mjs
@@ -1038,6 +1041,8 @@ jobs:
       - name: Aplicar otimizações finais ao pacote de pré-verificação congelado
         run: python3 catalogos-atuais/scripts/latency-overlays-2026.py
       - run: npm run check
+      - name: Testar sequências curtas das duas lojas sem tocar no D1 real
+        run: python3 catalogos-atuais/scripts/testar-codigos-curtos.py
       - run: npm run test:hosting
       - name: Extrair arquivos estáticos e privados na pré-verificação
         run: |
