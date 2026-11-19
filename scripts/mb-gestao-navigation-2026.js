@@ -14,6 +14,7 @@ function mbMenuDefinition(){
   ['Configurações',[['settings','Impressora'],['mbBackup','Backup'],['mbConta','Conta']]]
  ];
 }
+let mbMenuPendingCount=0;
 const mbMenuKey='mb-workspace-menu-v2';
 function mbMenuGet(){
  try{return JSON.parse(localStorage.getItem(mbMenuKey)||'{}')}catch{return {}}
@@ -40,6 +41,11 @@ nav=function(){
     '<span>'+esc(title)+'</span>'+(target==='orders'?'<span id="mbNavPending" class="mb-nav-count" hidden></span>':'')+'</button>').join('')+
    '</div></section>';
  }).join('');
+ const pendingBadge=host.querySelector('#mbNavPending');
+ if(pendingBadge){
+  pendingBadge.hidden=!mbMenuPendingCount;
+  pendingBadge.textContent=mbMenuPendingCount>99?'99+':String(mbMenuPendingCount);
+ }
  host.querySelectorAll('[data-mb-header]').forEach(button=>button.onclick=()=>{
   const section=button.closest('.mb-nav-group'),pane=section.querySelector('.mb-nav-children'),expanded=pane.hidden;
   pane.hidden=!expanded;button.setAttribute('aria-expanded',String(expanded));
