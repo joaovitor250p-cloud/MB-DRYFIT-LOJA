@@ -1085,7 +1085,7 @@ jobs:
           python3 catalogos-atuais/scripts/mb-search-short-codes-2026.py
           python3 catalogos-atuais/scripts/mb-dashboard-indicadores-2026.py
           python3 catalogos-atuais/scripts/mb-historico-cancelados-2026.py
-          MB_REQUIRE_SOLDOUT_API=1 python3 catalogos-atuais/scripts/mb-esgotados-catalogo-2026.py
+          python3 catalogos-atuais/scripts/mb-esgotados-catalogo-2026.py
           for store in mb-dryfit mb-for-her; do
             node --check "stores/$store/worker/staff-workspace.js"
             node --check "stores/$store/worker/storefront-orders.js"
