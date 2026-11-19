@@ -6,6 +6,12 @@ on:
       - fix/mover-mb-impressao-para-github-release-20261119
     paths:
       - .github/workflows/mb-impressao-github-release.yml
+      - scripts/testar-link-impressao-github-release.mjs
+      - stores/mb-dryfit/worker/api.js
+      - stores/mb-dryfit/worker/staff-sales.js
+      - stores/mb-for-her/worker/api.js
+      - stores/mb-for-her/worker/staff-sales.js
+      - .github/workflows/mb-publicacao-autorizada.yml
   workflow_dispatch:
 
 permissions:
@@ -26,6 +32,12 @@ jobs:
       MB_ARCHIVE: MB-Impressao-Elgin-Windows.zip
       MB_SHA256: 448e4dc5e5d8e5f7a5b2adcc88e18fda791c1f3abae84f8c221420b487f6483b
     steps:
+      - name: Conferir arquivos das duas lojas, sem alterar a ponte de impressão
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validar botão e redirecionamento em cada painel do dono
+        run: node scripts/testar-link-impressao-github-release.mjs
       - name: Baixar instalador ORIGINAL gerado no GitHub Actions (sem recompilar)
         uses: actions/download-artifact@v4
         with:
