@@ -23,7 +23,7 @@ MEDIA_HOOK = """
  if(!proto)return;
  const show=proto.showModal,close=proto.close;
  const update=()=>{
-   const open=!!document.querySelector('dialog[open],.shop-cart-workspace[open],.mb-orders-overlay[open]');
+   const open=!!document.querySelector('dialog[open],.shop-cart-workspace[open],.mb-orders-overlay[open],#shopCartDialog:not([hidden])')||document.body.classList.contains('shopping-page');
    document.querySelectorAll('video').forEach(video=>{
      if(open){if(!video.paused)video.dataset.mbRestorePlaying='1';video.pause();}
      else if(video.dataset.mbRestorePlaying==='1'){
@@ -54,12 +54,13 @@ def save(path,fn):
 
 def cart_fix(s):
  # A cart is a section, not an HTMLDialogElement. Update hero media explicitly.
- s=once(s,"document.body.classList.add('shopping-page');document.body.classList.remove('favorites-page');",
-   "document.body.classList.add('shopping-page');document.body.classList.remove('favorites-page');if(typeof window!=='undefined')window.mbRefreshDialogMedia?.();",
-   'pause hero when cart opens')
- s=once(s,"document.body.classList.remove('shopping-page');if(updateHash",
-   "document.body.classList.remove('shopping-page');if(typeof window!=='undefined')window.mbRefreshDialogMedia?.();if(updateHash",
-   'resume hero when cart closes')
+ # Cart DOM has evolved through preceding frozen-build patches: attach to the
+ # stable function entries rather than brittle inline classList sequences.
+ s=once(s,'function openShopCart(', 'function openShopCart(', 'cart function present') if False else s
+ if 'window.mbRefreshDialogMedia' not in s:
+  s=re.sub(r'(function openShopCart\\([^)]*\\)\\{)', r"\\1queueMicrotask(()=>window.mbRefreshDialogMedia?.());", s, count=1)
+  s=re.sub(r'(function closeShopCart\\([^)]*\\)\\{)', r"\\1queueMicrotask(()=>window.mbRefreshDialogMedia?.());", s, count=1)
+
 
  start=s.index('async function mbGuestSellers(){')
  end=s.index('\nfunction mbContactStorageKey()',start)
