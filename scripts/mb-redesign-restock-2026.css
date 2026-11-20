@@ -116,6 +116,10 @@ body.staff-workspace[data-theme="dark"] .mb-size-pill.on{color:var(--mb-accent);
  body.staff-workspace .mb-r-stepper{height:35px}
  body.staff-workspace .mb-r-stepper button{width:25px}
  body.staff-workspace [data-mb-label]{width:49px}
- body.staff-workspace .mb-r-actions{position:sticky;bottom:0;z-index:14;
- background:var(--mb-card);padding:10px 0;box-shadow:0 -5px 10px #00000008}
+ body.staff-workspace .mb-restock-page{padding-bottom:115px}
+ body.staff-workspace .mb-r-actions{position:fixed;bottom:0;left:0;right:0;z-index:800;
+ background:var(--mb-card);border-top:1px solid var(--mb-border);
+ display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:8px;
+ padding:10px 12px;box-shadow:0 -5px 16px #00000012}
+ body.staff-workspace .mb-r-actions button{font-size:11px;min-height:46px;padding:9px 5px}
 }
