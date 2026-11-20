@@ -26,7 +26,7 @@ for store in ("mb-dryfit","mb-for-her"):
         s=s.replace(old,new,1)
         # Remove the retired management menu section and its superseded badge.
         s=s.replace("['Loja online',[['appearance','Banner e aparência']]],","")
-        s=s.replace("(target==='orders'?'<span id=\\\"mbNavPending\\\" class=\\\"mb-nav-count\\\" hidden></span>':'')","''")
+        s=s.replace("""(target==='orders'?'<span id="mbNavPending" class="mb-nav-count" hidden></span>':'')""","''")
         # Preserve existing gallery, photos and prices. Extend size chips.
         custom=r"""
 const mbBeforeOpenModel=openModel;
