@@ -68,6 +68,9 @@ openModel=function(...args){
         assert s.count(anchor)==1,(store,"model control")
         s=s.replace(anchor,custom+"\n"+anchor,1)
         s=s.replace("button.textContent='Salvar modelo e variações ↗'","button.textContent='Salvar e imprimir etiquetas'")
+        # Finish the create-and-print path only if an actual label batch exists.
+        s=s.replace("$('#modelModal').close();await refresh();toast(result.created",
+                    "$('#modelModal').close();await refresh();if(page==='labels'&&selected.size)document.getElementById('printBtn')?.click();toast(result.created")
         at=s.rfind("</style>")
         assert at>0,(store,"missing style")
         s=s[:at]+"\n"+styles+"\n"+s[at:]
