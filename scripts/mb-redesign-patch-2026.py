@@ -33,11 +33,17 @@ for store in ("mb-dryfit","mb-for-her"):
         custom=r"""
 const mbBeforeOpenModel=openModel;
 openModel=function(...args){
+ const fallback=(a,b)=>{
+  const order=['PP','P','M','G','GG','XG','EG','EGG','EXG','XGG','G1','G2','G3','G4','ÚNICO',...Array.from({length:21},(_,i)=>String(34+i))];
+  const rank=s=>{const n=order.indexOf(String(s).toLocaleUpperCase('pt-BR'));return n<0?999:n};
+  return rank(a)-rank(b)||String(a).localeCompare(String(b),'pt-BR');
+ };
+ const sorter=typeof mbSizeSort==='function'?mbSizeSort:fallback;
  for(const p of products){
   const size=String(p.size||'').trim();
   if(size&&!sizeOptions.some(x=>x.toLocaleUpperCase('pt-BR')===size.toLocaleUpperCase('pt-BR')))sizeOptions.push(size);
  }
- sizeOptions.sort(mbSizeSort);mbBeforeOpenModel(...args);
+ sizeOptions.sort(sorter);mbBeforeOpenModel(...args);
  const rows=document.getElementById('modelColorRows');
  if(!rows||document.getElementById('mbAddModelSize'))return;
  const button=document.createElement('button');
@@ -49,7 +55,7 @@ openModel=function(...args){
   const size=String(answer).trim().toLocaleUpperCase('pt-BR');
   if(!/^[A-Z0-9À-Ú][A-Z0-9À-Ú.-]{0,5}$/u.test(size)){toast('Informe até 6 caracteres, sem espaços.');return}
   if(sizeOptions.some(x=>x.toLocaleUpperCase('pt-BR')===size)){toast('Tamanho já disponível.');return}
-  sizeOptions.push(size);sizeOptions.sort(mbSizeSort);drawModelColors();
+  sizeOptions.push(size);sizeOptions.sort(sorter);drawModelColors();
  };
  rows.before(button);
  const save=document.getElementById('saveModel');
