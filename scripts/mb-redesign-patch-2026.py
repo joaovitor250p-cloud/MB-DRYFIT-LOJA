@@ -20,10 +20,12 @@ for store in ("mb-dryfit","mb-for-her"):
                "if(page==='mbCreate'&&staff()){mbRenderCreate();return}"
                "if(page==='mbFechamento'&&owner()){mbRenderClosing();return}")
         s=s.replace(anchor,marker+"\n"+shell+"\n"+restock+"\n"+anchor+guard,1)
-        old="const sizeOptions=['P','M','G','GG','EG','EGG','Único'];"
+        options=("const sizeOptions=['P','M','G','GG','EG','EGG','Único'];",
+                 "const sizeOptions=['PP','P','M','G','GG','EG','EGG','Único'];")
+        matches=[item for item in options if s.count(item)==1]
+        assert len(matches)==1,(store,"size options anchor",matches)
         new="let sizeOptions=['PP','P','M','G','GG','XG','EG','EGG','EXG','XGG','G1','G2','G3','G4','Único',...Array.from({length:21},(_,i)=>String(34+i))];"
-        assert s.count(old)==1,(store,"size options anchor")
-        s=s.replace(old,new,1)
+        s=s.replace(matches[0],new,1)
         # Remove the retired management menu section and its superseded badge.
         s=s.replace("['Loja online',[['appearance','Banner e aparência']]],","")
         s=s.replace("""(target==='orders'?'<span id="mbNavPending" class="mb-nav-count" hidden></span>':'')""","''")
