@@ -1129,6 +1129,9 @@ jobs:
           python3 catalogos-atuais/scripts/mb-gestao-tests-2026.py
           python3 catalogos-atuais/scripts/testar-mb-impressao-compartilhado.py
           node --test catalogos-atuais/scripts/mb-gestao-chart.test.mjs
+          python3 catalogos-atuais/scripts/mb-redesign-patch-2026.py
+          python3 catalogos-atuais/scripts/mb-redesign-patch-2026.py
+          python3 catalogos-atuais/scripts/mb-redesign-tests-2026.py
           for store in mb-dryfit mb-for-her; do
             node --check "stores/$store/worker/staff-workspace.js"
             node --check "stores/$store/worker/retail-ui.js"
@@ -2303,6 +2306,9 @@ jobs:
           python3 catalogos-atuais/scripts/mb-gestao-tests-2026.py
           python3 catalogos-atuais/scripts/testar-mb-impressao-compartilhado.py
           node --test catalogos-atuais/scripts/mb-gestao-chart.test.mjs
+          python3 catalogos-atuais/scripts/mb-redesign-patch-2026.py
+          python3 catalogos-atuais/scripts/mb-redesign-patch-2026.py
+          python3 catalogos-atuais/scripts/mb-redesign-tests-2026.py
           for store in mb-dryfit mb-for-her; do
             node --check "stores/$store/worker/staff-workspace.js"
             node --check "stores/$store/worker/retail-ui.js"
