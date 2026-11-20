@@ -14,7 +14,7 @@ const mbCashChoose=tab=>{
  const current=document.getElementById('cashContent');
  current.hidden=tab!=='current';
  if(mbCashHistoryPanel)mbCashHistoryPanel.hidden=tab!=='history';
- mbCashExtra.hidden=['current','history'].includes(tab)&&Boolean(mbCashHistoryPanel);
+ mbCashExtra.hidden=tab==='current'||(tab==='history'&&Boolean(mbCashHistoryPanel));
  if(tab==='history'&&!mbCashHistoryPanel){
   mbCashExtra.hidden=false;mbCashExtra.innerHTML='<h2>Caixas anteriores</h2><p class="sub">O histórico completo de caixas é restrito ao dono da loja.</p>';
  }
