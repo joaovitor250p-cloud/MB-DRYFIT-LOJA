@@ -24,6 +24,9 @@ for store in ("mb-dryfit","mb-for-her"):
         new="let sizeOptions=['PP','P','M','G','GG','XG','EG','EGG','EXG','XGG','G1','G2','G3','G4','Único',...Array.from({length:21},(_,i)=>String(34+i))];"
         assert s.count(old)==1,(store,"size options anchor")
         s=s.replace(old,new,1)
+        # Remove the retired management menu section and its superseded badge.
+        s=s.replace("['Loja online',[['appearance','Banner e aparência']]],","")
+        s=s.replace("(target==='orders'?'<span id=\\\"mbNavPending\\\" class=\\\"mb-nav-count\\\" hidden></span>':'')","''")
         # Preserve existing gallery, photos and prices. Extend size chips.
         custom=r"""
 const mbBeforeOpenModel=openModel;
