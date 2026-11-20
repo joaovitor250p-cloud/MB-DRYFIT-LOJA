@@ -101,8 +101,9 @@ body.staff-workspace[data-theme="dark"] .mb-size-pill.on{color:var(--mb-accent);
 @media(max-width:980px){
  body.staff-workspace .mb-r-layout{grid-template-columns:minmax(0,1fr)}
  body.staff-workspace .mb-r-aside{display:contents}
- body.staff-workspace .mb-r-summary{order:4}
  body.staff-workspace .mb-r-main{order:1}
+ body.staff-workspace .mb-r-summary{order:2}
+ body.staff-workspace .mb-r-aside>.mb-r-card:not(.mb-r-summary){order:3}
 }
 @media(max-width:700px){
  body.staff-workspace .mb-r-heading h1{font-size:24px}
