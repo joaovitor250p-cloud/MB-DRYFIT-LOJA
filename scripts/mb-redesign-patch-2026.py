@@ -120,4 +120,15 @@ openModel=function(...args){
     s=s.replace("if(m){const old=await env.DB.prepare('SELECT * FROM products WHERE id=?')",
                 "if(m){if(!owner)return json({error:'Acesso restrito ao dono.'},403);const old=await env.DB.prepare('SELECT * FROM products WHERE id=?')")
     api.write_text(s,encoding="utf-8")
-    print(store+": navigation, single badge, atomical restock and role protection patched")
+    # Cash header and responsive tabs remain in the real retail workspace.
+    cash=folder/"retail-ui.js"
+    c=cash.read_text(encoding="utf-8")
+    title='<span class="eyebrow">GESTÃO DE CAIXA</span><h2>Abertura, movimento e conferência.</h2>'
+    c=c.replace(title,'<span class="eyebrow">VENDER / CAIXA</span><h2>Caixa</h2>')
+    if "const mbCashTabs=document.createElement('nav');" not in c:
+        anchor="$('#cashBackToSale').onclick=()=>{page='sell';render()};const load=async"
+        assert c.count(anchor)==1,(store,"cash tab anchor")
+        extra=(root/"mb-redesign-cash-2026.js").read_text(encoding="utf-8")
+        c=c.replace(anchor,"$('#cashBackToSale').onclick=()=>{page='sell';render()};"+extra+"\nconst load=async",1)
+    cash.write_text(c,encoding="utf-8")
+    print(store+": navigation, single badge, cash tabs and restock role protection patched")
