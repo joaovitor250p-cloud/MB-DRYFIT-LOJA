@@ -94,13 +94,15 @@ openModel=function(...args){
                 "if(u.pathname==='/api/stock-receipts'){\nif(!staff)")
     s=s.replace("SELECT l.*,r.created_at,r.note FROM stock_receipt_lines l JOIN stock_receipts r ON r.id=l.receipt_id",
                 "SELECT l.*,r.created_at,r.note,r.owner_id AS operator_id,m.email AS operator_email FROM stock_receipt_lines l JOIN stock_receipts r ON r.id=l.receipt_id LEFT JOIN members m ON m.id=r.owner_id")
-    s=s.replace("if(u.pathname==='/api/product-models'&&req.method==='POST'){\n",
-                "if(u.pathname==='/api/product-models'&&req.method==='POST'){\nif(!staff)return json({error:'Acesso restrito à equipe.'},403);\n")
+    if "if(u.pathname==='/api/product-models'&&req.method==='POST'){\nif(!staff)" not in s:
+        s=s.replace("if(u.pathname==='/api/product-models'&&req.method==='POST'){\n",
+                    "if(u.pathname==='/api/product-models'&&req.method==='POST'){\nif(!staff)return json({error:'Acesso restrito à equipe.'},403);\n")
     s=s.replace("color.sizes.length>12","color.sizes.length>60")
     s=s.replace("if(!['P','M','G','GG','EG','EGG','Único'].includes(size.size))",
                 "if(!/^[A-Z0-9À-Ú][A-Z0-9À-Ú.-]{0,5}$/u.test(String(size.size||'').trim().toLocaleUpperCase('pt-BR')))")
-    s=s.replace("if(u.pathname==='/api/products'&&req.method==='POST'){",
-                "if(u.pathname==='/api/products'&&req.method==='POST'){if(!staff)return json({error:'Acesso restrito à equipe.'},403);")
+    if "if(u.pathname==='/api/products'&&req.method==='POST'){if(!staff)" not in s:
+        s=s.replace("if(u.pathname==='/api/products'&&req.method==='POST'){",
+                    "if(u.pathname==='/api/products'&&req.method==='POST'){if(!staff)return json({error:'Acesso restrito à equipe.'},403);")
     s=s.replace("if(m){const old=await env.DB.prepare('SELECT * FROM products WHERE id=?')",
                 "if(m){if(!owner)return json({error:'Acesso restrito ao dono.'},403);const old=await env.DB.prepare('SELECT * FROM products WHERE id=?')")
     api.write_text(s,encoding="utf-8")
