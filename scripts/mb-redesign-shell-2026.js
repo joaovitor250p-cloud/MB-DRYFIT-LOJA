@@ -58,8 +58,13 @@ function mbShell(){
  if(role)role.textContent=owner()?'Modo dono':'Modo vendedor';
  const bottom=side.querySelector('.aside-bottom');
  if(bottom&&!bottom.querySelector('#mbSidebarFooter')){
-  bottom.innerHTML='<div id="mbSidebarFooter"><button type="button" class="mb-footer-link" id="mbSettingsLink" title="Configurações">'+navIcon('settings')+'<span>Configurações</span></button><button type="button" class="mb-footer-account" id="mbFooterAccount" title="Sair da conta"><span class="mb-footer-initials">'+sig+'</span><span><strong>'+(owner()?'Dono da rede MB':'Vendedor')+'</strong><small>Sair da conta</small></span></button></div>';
-  bottom.querySelector('#mbSettingsLink').onclick=()=>mbGo('settings');
+  bottom.innerHTML='<div id="mbSidebarFooter"><button type="button" class="mb-footer-link" id="mbSettingsLink" title="Configurações" aria-expanded="false">'+navIcon('settings')+'<span>Configurações</span></button><div id="mbFooterSettingsItems" hidden>'+(owner()?'<button data-mb-footer-go="settings">Impressora</button><button data-mb-footer-go="mbBackup">Backup</button><button data-mb-footer-go="mbConta">Conta</button>':'<button data-mb-footer-go="settings">Impressora</button>')+'</div><button type="button" class="mb-footer-account" id="mbFooterAccount" title="Sair da conta"><span class="mb-footer-initials">'+sig+'</span><span><strong>'+(owner()?'Dono da rede MB':'Vendedor')+'</strong><small>Sair da conta</small></span></button></div>';
+  bottom.querySelector('#mbSettingsLink').onclick=()=>{
+   const menu=bottom.querySelector('#mbFooterSettingsItems');
+   menu.hidden=!menu.hidden;
+   bottom.querySelector('#mbSettingsLink').setAttribute('aria-expanded',String(!menu.hidden));
+  };
+  bottom.querySelectorAll('[data-mb-footer-go]').forEach(button=>button.onclick=()=>mbGo(button.dataset.mbFooterGo));
   bottom.querySelector('#mbFooterAccount').onclick=mbLogout;
  }
  if(!top.querySelector('#mbTopSearch')){
