@@ -84,6 +84,11 @@ body.staff-workspace #mbSidebarFooter button{width:100%;text-align:left;display:
  gap:11px;border-radius:11px;background:transparent;padding:8px 11px;color:var(--mb-text);
  font:500 13px Poppins,sans-serif}
 body.staff-workspace #mbSidebarFooter .nav-icon{width:17px;height:17px;flex:none}
+body.staff-workspace #mbFooterSettingsItems{display:flex;flex-direction:column;gap:2px;margin:0 0 5px 24px}
+body.staff-workspace #mbFooterSettingsItems[hidden]{display:none!important}
+body.staff-workspace #mbSidebarFooter #mbFooterSettingsItems button{font-size:11px;min-height:31px;padding:6px 9px;color:var(--mb-dim)}
+body.staff-workspace #mbSidebarFooter #mbFooterSettingsItems button:hover{background:var(--mb-base);color:var(--mb-accent)}
+body.staff-workspace.sidebar-compact #mbFooterSettingsItems{position:absolute;bottom:95px;left:61px;width:150px;background:var(--mb-card);border:1px solid var(--mb-border);border-radius:9px;padding:7px;z-index:210;margin:0;box-shadow:0 8px 22px #0002}
 body.staff-workspace #mbSidebarFooter .mb-footer-account{background:#f3f4f6;min-height:53px}
 body.staff-workspace #mbSidebarFooter .mb-footer-account .mb-footer-initials{background:#1e2026;border-radius:50%}
 body.staff-workspace .mb-footer-account>span:last-child{display:flex;flex-direction:column;gap:2px}
