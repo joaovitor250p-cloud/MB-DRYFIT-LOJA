@@ -214,7 +214,8 @@ body.staff-workspace .mb-cash-tabs button[aria-pressed="true"]{
  background:color-mix(in srgb,var(--mb-accent) 12%,var(--mb-card));
  color:var(--mb-accent);font-weight:600}
 body.staff-workspace #mbCashExtra[hidden],
-body.staff-workspace #cashContent[hidden]{display:none!important}
+body.staff-workspace #cashContent[hidden],
+body.staff-workspace #view section.panel[hidden]{display:none!important}
 body.staff-workspace #mbCashExtra h2{font-size:18px;margin:0 0 8px}
 body.staff-workspace .mb-cash-count-grid{display:grid;
  grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-top:20px}
